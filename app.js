@@ -852,11 +852,80 @@ function screenSettings(){
     </div>
   </div>
 
+  <div class="section"><h2>Update from a list</h2>
+    <button class="btn" data-act="paste-list">${svg('i-plus')} Paste what I&rsquo;ve got</button>
+    <p class="hint">Say your fridge out loud to Claude, or to anything else, and drop the list
+       in here. Commas or one per line, both fine. It works out what each thing is, so
+       &ldquo;coriandre&rdquo; and &ldquo;2 boxes of eggs&rdquo; both land in the right place.</p>
+  </div>
+
   <div class="section"><h2>Your data</h2>
     <button class="btn ghost" data-act="export">Save a backup file</button>
     <button class="btn ghost" data-act="import">Restore from a backup</button>
     <p class="hint">Everything lives on this phone only. Nothing is uploaded, ever.</p>
   </div>`;
+}
+
+/* ------------------------------------------- reading a list someone wrote
+
+   Free text in, inventory out. The list might come from Claude, from a note,
+   or from Jerome talking into the box, so it has to cope with bullets,
+   quantities and the word "and". */
+const LIST_NOISE = /^[\s\-•*\d.)\]]+|\b(a|an|some|few|couple|of|and|i|ive|i've|have|got|there|is|are|my|the)\b/gi;
+const QTY_LEAD = /^\s*(\d+[\d\/.,]*)\s*(x|kg|g|lb|lbs|oz|ml|l|litres?|liters?|cups?|tbsp|tsp|cloves?|pieces?|packs?|packets?|boxes?|box|bags?|bunch(es)?|tins?|cans?|jars?|bottles?)?\s*/i;
+
+function tabForAisle(aisle){
+  if (aisle === 'frozen') return 'freezer';
+  if (aisle === 'spices') return 'spices';
+  if (aisle === 'produce' || aisle === 'dairy' || aisle === 'meat') return 'fridge';
+  return 'pantry';
+}
+
+function applyItemList(text){
+  const ticked = [], added = [], unknown = [];
+  String(text).split(/[,;\n\r]+|\band\b/i).forEach(raw => {
+    let s = norm(String(raw).replace(QTY_LEAD, '').replace(LIST_NOISE, ' '))
+              .replace(/[^a-z0-9'\s-]/g,' ').replace(/\s+/g,' ').trim();
+    if (s.length < 2) return;
+    if (!itemParts(s)) { unknown.push(raw.trim()); return; }
+
+    const known = allItems().find(i => norm(i.name) === s)
+               || allItems().find(i => sameItem(i.name, s));
+    if (known){
+      state.inventory[known.tab][known.name] = { have:true, low:false };
+      ticked.push(known.name);
+      return;
+    }
+    const tab = tabForAisle(aisleOf(s));
+    if (!state.custom[tab].some(o => norm(o.name) === s))
+      state.custom[tab].push({ name:s, aisle:aisleOf(s, tab), staple:false });
+    state.inventory[tab][s] = { have:true, low:false };
+    added.push(s);
+  });
+  return { ticked, added, unknown };
+}
+
+function reportList(r){
+  const line = (label, arr) => arr.length
+    ? `<p><b>${arr.length} ${label}</b><br><span class="hint">${esc(arr.slice(0,12).join(', '))}${arr.length>12?` and ${arr.length-12} more`:''}</span></p>`
+    : '';
+  const nothing = !r.ticked.length && !r.added.length;
+  openSheet(`<h2>${nothing ? 'Nothing I could read' : 'Kitchen updated'}</h2>
+    ${line('ticked', r.ticked)}
+    ${line('added as new', r.added)}
+    ${r.unknown.length ? line('I couldn&rsquo;t work out', r.unknown) : ''}
+    <button class="btn" data-act="close-sheet">Done</button>`);
+}
+
+function openPasteList(){
+  openSheet(`<h2>Paste what you&rsquo;ve got</h2>
+    <p class="hint">Commas or one per line. Quantities are fine &mdash; they&rsquo;re ignored.</p>
+    <textarea data-role="listbox" rows="7" placeholder="eggs, harissa, chicken thighs,
+2 boxes of coriandre, spring onions"></textarea>
+    <button class="btn" data-act="apply-list">Add all of it</button>
+    <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
+  const box = document.querySelector('[data-role=listbox]');
+  if (box) box.focus();
 }
 
 /* ------------------------------------------------------------- sheets */
@@ -1003,6 +1072,14 @@ document.addEventListener('click', e => {
     case 'spice+': state.prefs.spice = Math.min(5, state.prefs.spice + 1); save(); render(); break;
     case 'spice-': state.prefs.spice = Math.max(1, state.prefs.spice - 1); save(); render(); break;
     case 'toggle-staples': state.prefs.staplesOn = !state.prefs.staplesOn; save(); render(); break;
+
+    case 'paste-list': openPasteList(); break;
+    case 'apply-list': {
+      const box = document.querySelector('[data-role=listbox]');
+      const r = applyItemList(box ? box.value : '');
+      save(); render(); reportList(r);
+      break;
+    }
 
     case 'clear-search': view.search = ''; render(); break;
     case 'add-item': {
@@ -1251,9 +1328,26 @@ async function runAI(){
 }
 
 /* ------------------------------------------------------------------ boot */
+/* A link can carry a shopping trip's worth of kitchen in it:
+     …/food-app/#have=eggs,harissa,spring onions
+   Tap it and the app ticks the lot. That's how a list from a chat gets in
+   without a server, an account, or anything leaving the phone. */
+function applyLinkList(){
+  const m = /[#&]have=([^&]*)/.exec(location.hash || '');
+  if (!m) return null;
+  let text = '';
+  try { text = decodeURIComponent(m[1].replace(/\+/g,' ')); } catch(e){ text = m[1]; }
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!text.trim()) return null;
+  return applyItemList(text);
+}
+
 load();
 setTheme();
+const fromLink = applyLinkList();
+if (fromLink) save();
 render();
+if (fromLink) reportList(fromLink);
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape'){
@@ -1265,6 +1359,6 @@ window.addEventListener('keydown', e => {
 /* The one door into the closure, so the check-phone harness can test the
    name matching against real recipe data instead of me eyeballing it.
    Read-only helpers; nothing here changes state. */
-window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, view, state };
+window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList, view, state };
 
 })();
