@@ -1,0 +1,602 @@
+<title>Frigo — Pick a Look</title>
+
+<style>
+/* ============================================================
+   PICKER CHROME  — deliberately quiet so the specimens speak.
+   Theme-aware: light / dark / system all handled at token level.
+   ============================================================ */
+:root{
+  --p-bg:#F2F2F0;
+  --p-surface:#FFFFFF;
+  --p-ink:#17181A;
+  --p-muted:#6B6E72;
+  --p-line:#DEDEDB;
+  --p-accent:#1F5E4B;
+  --p-accent-soft:#E4EFEA;
+  --p-shadow:0 1px 2px rgba(0,0,0,.05), 0 8px 24px -12px rgba(0,0,0,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --p-bg:#0E0F10;
+    --p-surface:#171819;
+    --p-ink:#EDEDEA;
+    --p-muted:#93979B;
+    --p-line:#2A2C2E;
+    --p-accent:#6FC7A6;
+    --p-accent-soft:#17302A;
+    --p-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --p-bg:#0E0F10;
+  --p-surface:#171819;
+  --p-ink:#EDEDEA;
+  --p-muted:#93979B;
+  --p-line:#2A2C2E;
+  --p-accent:#6FC7A6;
+  --p-accent-soft:#17302A;
+  --p-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--p-bg);
+  color:var(--p-ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:96px;
+}
+
+.wrap{max-width:760px;margin:0 auto;padding:32px 20px 0}
+
+.masthead{
+  display:flex;flex-direction:column;gap:10px;
+  padding-bottom:24px;margin-bottom:28px;
+  border-bottom:1px solid var(--p-line);
+}
+.kicker{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--p-accent);font-weight:600;
+}
+.masthead h1{
+  margin:0;font-size:clamp(28px,7vw,38px);line-height:1.1;
+  letter-spacing:-.02em;text-wrap:balance;font-weight:650;
+}
+.masthead p{margin:0;color:var(--p-muted);max-width:52ch}
+
+.howto{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--p-accent-soft);
+  border-radius:10px;padding:14px 16px;margin-bottom:32px;
+  font-size:14.5px;line-height:1.45;
+}
+.howto b{font-weight:640}
+
+/* ---- specimen frame ---- */
+.grid{display:flex;flex-direction:column;gap:34px}
+
+.spec{
+  background:var(--p-surface);
+  border:1px solid var(--p-line);
+  border-radius:14px;
+  overflow:hidden;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.spec[data-picked="1"]{
+  border-color:var(--p-accent);
+  box-shadow:0 0 0 2px var(--p-accent) inset, var(--p-shadow);
+}
+
+.spec-head{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:4px 14px;
+  align-items:center;
+  padding:16px 18px;
+  border-bottom:1px solid var(--p-line);
+}
+.spec-num{
+  font-variant-numeric:tabular-nums;
+  font-size:12px;font-weight:700;letter-spacing:.06em;
+  color:var(--p-muted);
+  border:1px solid var(--p-line);border-radius:999px;
+  padding:3px 9px;
+}
+.spec-name{margin:0;font-size:17px;font-weight:640;letter-spacing:-.01em}
+.spec-desc{
+  grid-column:2/4;margin:0;font-size:13.5px;color:var(--p-muted);line-height:1.4;
+}
+.choose{
+  font:inherit;font-size:13px;font-weight:600;
+  border:1px solid var(--p-line);background:transparent;color:var(--p-ink);
+  border-radius:999px;padding:7px 16px;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,color .15s ease;
+}
+.choose:hover{border-color:var(--p-accent);color:var(--p-accent)}
+.choose:focus-visible{outline:2px solid var(--p-accent);outline-offset:2px}
+.spec[data-picked="1"] .choose{
+  background:var(--p-accent);border-color:var(--p-accent);color:var(--p-surface);
+}
+
+.stage{
+  padding:22px 18px 26px;
+  display:flex;justify-content:center;
+  background:
+    repeating-linear-gradient(45deg,transparent,transparent 9px,var(--p-line) 9px,var(--p-line) 10px);
+  background-color:var(--p-bg);
+  opacity:1;
+}
+.phone{
+  width:300px;max-width:100%;
+  border-radius:26px;
+  overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.18), 0 20px 44px -20px rgba(0,0,0,.4);
+}
+
+/* ---- sticky verdict bar ---- */
+.verdict{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;
+  background:var(--p-surface);
+  border-top:1px solid var(--p-line);
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:12px;justify-content:center;
+  font-size:14.5px;text-align:center;
+  box-shadow:0 -6px 20px -12px rgba(0,0,0,.3);
+}
+.verdict .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--p-accent);flex:none;
+}
+.verdict.empty .dot{background:var(--p-muted);opacity:.4}
+.verdict b{font-weight:650}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;animation:none !important}
+}
+
+/* ============================================================
+   SPECIMEN COMPONENTS
+   One shared component sheet driven by per-style tokens.
+   These colors are FIXED on purpose — a specimen must look the
+   same on any host theme, or you can't compare them.
+   ============================================================ */
+.ui{
+  --r:10px; --r-sm:8px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-h:var(--font);
+  --font-num:ui-monospace,"SF Mono",Consolas,monospace;
+  --pad:16px;
+  --card-bd:none;
+  --card-sh:0 1px 3px rgba(0,0,0,.10);
+  --btn-r:var(--r);
+  --btn-sh:none;
+  --thumb-h:110px;
+
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--ink);
+  display:flex;flex-direction:column;
+  min-height:470px;
+}
+.ui-bar{
+  padding:14px var(--pad) 12px;
+  font-family:var(--font-h);
+  font-size:17px;font-weight:650;letter-spacing:-.01em;
+  color:var(--ink);
+  background:var(--bar-bg,transparent);
+  border-bottom:var(--bar-bd,none);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ui-bar .spice{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+.ui-body{flex:1;padding:var(--pad);display:flex;flex-direction:column;gap:16px}
+
+.card{
+  background:var(--surface);
+  border-radius:var(--r);
+  border:var(--card-bd);
+  box-shadow:var(--card-sh);
+  overflow:hidden;
+}
+.thumb{height:var(--thumb-h);display:block;width:100%}
+.thumb svg{display:block;width:100%;height:100%}
+.card-body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:7px}
+.eyebrow{
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:650;color:var(--accent);
+}
+.card-body h3{
+  margin:0;font-family:var(--font-h);
+  font-size:19px;line-height:1.18;letter-spacing:-.015em;font-weight:640;
+  color:var(--ink);text-wrap:balance;
+}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:1px}
+.chips span{
+  font-size:11px;font-weight:560;padding:3px 8px;
+  border-radius:var(--chip-r,999px);
+  background:var(--chip-bg);color:var(--chip-ink);
+  border:var(--chip-bd,none);
+  font-variant-numeric:tabular-nums;
+}
+.match{
+  margin:2px 0 0;font-size:12.5px;line-height:1.35;color:var(--muted);
+}
+.match b{color:var(--ink);font-weight:620}
+
+.list-label{
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:650;color:var(--muted);
+}
+.list{list-style:none;margin:-6px 0 0;padding:0;display:flex;flex-direction:column}
+.list li{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 0;font-size:14.5px;color:var(--ink);
+  border-bottom:1px solid var(--line);
+}
+.list li:last-child{border-bottom:none}
+.box{
+  width:19px;height:19px;flex:none;
+  border-radius:var(--box-r,5px);
+  border:1.5px solid var(--line-strong,var(--line));
+  background:transparent;
+  position:relative;
+}
+.list li.on .box{background:var(--accent);border-color:var(--accent)}
+.list li.on .box::after{
+  content:"";position:absolute;left:5.5px;top:2px;
+  width:5px;height:10px;
+  border:solid var(--accent-ink);border-width:0 2px 2px 0;
+  transform:rotate(42deg);
+}
+.list li.off{color:var(--muted)}
+.list li .tag{
+  margin-left:auto;font-size:10.5px;font-weight:620;letter-spacing:.03em;
+  color:var(--accent);
+}
+
+.btn{
+  font:inherit;font-family:var(--font-h);
+  font-size:15px;font-weight:640;letter-spacing:var(--btn-ls,0);
+  text-transform:var(--btn-tt,none);
+  padding:13px 18px;width:100%;
+  border:var(--btn-bd,none);
+  border-radius:var(--btn-r);
+  background:var(--accent);color:var(--accent-ink);
+  box-shadow:var(--btn-sh);
+  cursor:pointer;
+}
+.ui-nav{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--line);
+  background:var(--nav-bg,var(--surface));
+}
+.ui-nav span{
+  padding:11px 2px 13px;text-align:center;
+  font-size:10.5px;font-weight:600;letter-spacing:.03em;
+  color:var(--muted);
+}
+.ui-nav span.active{color:var(--accent)}
+
+/* ---------- 01  WARM BISTRO ---------- */
+.s1{
+  --bg:#FBF7F1; --surface:#FFFFFF; --ink:#241C18; --muted:#7A6A5F;
+  --accent:#7B2231; --accent-ink:#FFF7F2; --line:#E6DCCF; --line-strong:#C9B9A6;
+  --chip-bg:transparent; --chip-ink:#7A6A5F; --chip-bd:1px solid #DCCFBE; --chip-r:3px;
+  --font-h:Georgia,"Noto Serif",serif;
+  --r:4px; --btn-r:3px; --card-sh:0 1px 0 #EADFCF;
+  --card-bd:1px solid #EADFCF;
+  --bar-bd:1px solid #E6DCCF;
+  --btn-tt:uppercase; --btn-ls:.09em;
+}
+.s1 .ui-bar{font-family:Georgia,"Noto Serif",serif;letter-spacing:.02em}
+.s1 .eyebrow{font-family:Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.02em;font-size:12px}
+.s1 .list li{border-bottom:1px dotted #D3C4B2}
+.s1 .btn{font-size:13px}
+
+/* ---------- 02  SCANDINAVIAN CLEAN ---------- */
+.s2{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#1A1C1A; --muted:#7E857D;
+  --accent:#5C7F58; --accent-ink:#FFFFFF; --line:#E8EBE7; --line-strong:#C6CCC3;
+  --chip-bg:#F2F4F1; --chip-ink:#5A615A; --chip-r:4px;
+  --r:6px; --btn-r:6px; --pad:20px;
+  --card-sh:none; --card-bd:1px solid #E8EBE7;
+  --thumb-h:126px;
+}
+.s2 .card-body{padding:16px 16px 18px;gap:9px}
+.s2 .ui-body{gap:22px}
+.s2 .card-body h3{font-weight:560;letter-spacing:-.01em}
+.s2 .btn{font-weight:560}
+
+/* ---------- 03  BOLD MODERN ---------- */
+.s3{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#767676;
+  --accent:#FF4A17; --accent-ink:#FFFFFF; --line:#111111; --line-strong:#111111;
+  --chip-bg:#111111; --chip-ink:#FFFFFF; --chip-r:0;
+  --r:0; --btn-r:0; --card-sh:none; --card-bd:none;
+  --pad:0; --thumb-h:140px;
+  --btn-tt:uppercase; --btn-ls:.06em;
+}
+.s3 .ui-bar{padding:14px 16px 12px;font-weight:800;letter-spacing:-.03em;font-size:19px}
+.s3 .ui-body{padding:0 0 16px;gap:0}
+.s3 .card-body{padding:14px 16px 16px}
+.s3 .card-body h3{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1.02;text-transform:uppercase}
+.s3 .eyebrow{letter-spacing:.16em;color:#000}
+.s3 .list-label{padding:0 16px;margin-top:18px}
+.s3 .list{padding:0 16px}
+.s3 .list li{border-bottom:2px solid #000}
+.s3 .btn{margin:18px 16px 0;width:calc(100% - 32px)}
+.s3 .box{--box-r:0}
+
+/* ---------- 04  DARK KITCHEN ---------- */
+.s4{
+  --bg:#111010; --surface:#1B1918; --ink:#F3EEE6; --muted:#9B938A;
+  --accent:#E7A23C; --accent-ink:#1A1512; --line:#2C2926; --line-strong:#443F3A;
+  --chip-bg:#262320; --chip-ink:#C9C0B4; --chip-r:999px;
+  --r:14px; --btn-r:12px;
+  --card-sh:0 10px 30px -14px rgba(0,0,0,.9); --card-bd:1px solid #262320;
+  --nav-bg:#161413;
+  --thumb-h:124px;
+}
+.s4 .ui-bar{border-bottom:1px solid #221F1D}
+
+/* ---------- 05  MATERIAL YOU ---------- */
+.s5{
+  --bg:#F6F2FA; --surface:#FFFFFF; --ink:#1C1B1F; --muted:#75717E;
+  --accent:#6750A4; --accent-ink:#FFFFFF; --line:#E6E0EC; --line-strong:#C6C0D0;
+  --chip-bg:#EADDFF; --chip-ink:#4A3C7A; --chip-r:999px;
+  --r:22px; --btn-r:999px;
+  --card-sh:0 1px 3px rgba(28,27,31,.13); --card-bd:none;
+  --nav-bg:#F1EBF8;
+  --box-r:6px;
+  --thumb-h:120px;
+}
+.s5 .card-body{padding:14px 18px 18px}
+.s5 .ui-nav span.active{
+  background:linear-gradient(#EADDFF,#EADDFF) center 6px/44px 26px no-repeat;
+}
+
+/* ---------- 06  RECIPE CARD ---------- */
+.s6{
+  --bg:#E7E1D3; --surface:#FDFAF1; --ink:#2E2A21; --muted:#847B69;
+  --accent:#AE4227; --accent-ink:#FDFAF1; --line:#D9CFB9; --line-strong:#B7A98D;
+  --chip-bg:transparent; --chip-ink:#847B69; --chip-bd:1px dashed #C0B399; --chip-r:2px;
+  --r:3px; --btn-r:2px;
+  --card-sh:1px 2px 0 rgba(0,0,0,.10); --card-bd:1px solid #CFC3A8;
+  --font-h:Georgia,"Noto Serif",serif;
+  --nav-bg:#F5EFE1;
+  --box-r:2px;
+}
+.s6 .card-body{
+  background:repeating-linear-gradient(#FDFAF1 0 25px,#EFE7D4 25px 26px);
+}
+.s6 .chips span{font-family:var(--font-num);font-size:10.5px}
+.s6 .eyebrow{font-family:Georgia,serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:12.5px}
+.s6 .list li{border-bottom:1px dashed #CFC3A8}
+.s6 .btn{font-family:Georgia,serif;letter-spacing:.03em}
+
+/* ---------- 07  SOFT GLASS ---------- */
+.s7{
+  --bg:#EDF2FA; --surface:rgba(255,255,255,.66); --ink:#252B38; --muted:#727B90;
+  --accent:#3F72CC; --accent-ink:#FFFFFF; --line:rgba(120,140,180,.22); --line-strong:rgba(120,140,180,.45);
+  --chip-bg:rgba(255,255,255,.7); --chip-ink:#4B5468; --chip-r:999px;
+  --r:20px; --btn-r:16px;
+  --card-sh:0 8px 26px -12px rgba(40,60,110,.42);
+  --card-bd:1px solid rgba(255,255,255,.8);
+  --nav-bg:rgba(255,255,255,.6);
+  --box-r:7px;
+}
+.s7{background:linear-gradient(158deg,#EAF1FB 0%,#F3EEF9 52%,#FCF0F2 100%)}
+.s7 .card{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.s7 .ui-nav{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.s7 .btn{box-shadow:0 6px 16px -6px rgba(63,114,204,.7)}
+
+/* ---------- 08  UTILITY ---------- */
+.s8{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#5A5A5A;
+  --accent:#0032CC; --accent-ink:#FFFFFF; --line:#000000; --line-strong:#000000;
+  --chip-bg:#F0F0F0; --chip-ink:#000000; --chip-r:0; --chip-bd:1px solid #000;
+  --r:0; --btn-r:0; --card-sh:none; --card-bd:1px solid #000;
+  --font:ui-monospace,"SF Mono",Consolas,"Roboto Mono",monospace;
+  --pad:12px; --thumb-h:88px; --box-r:0;
+}
+.s8 .ui-bar{font-size:14px;font-weight:700;border-bottom:1px solid #000;text-transform:uppercase;letter-spacing:.06em}
+.s8 .ui-body{gap:12px}
+.s8 .card-body{padding:10px 11px 12px;gap:5px}
+.s8 .card-body h3{font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:none}
+.s8 .eyebrow{font-size:10px;letter-spacing:.08em}
+.s8 .list li{padding:7px 0;font-size:13px;border-bottom:1px solid #D8D8D8}
+.s8 .btn{font-size:13px;padding:11px;text-transform:uppercase;letter-spacing:.08em}
+.s8 .ui-nav span{font-size:10px;text-transform:uppercase}
+
+/* ---------- 09  EDITORIAL ---------- */
+.s9{
+  --bg:#FCFCF9; --surface:#FCFCF9; --ink:#15171B; --muted:#6C7178;
+  --accent:#1E4F45; --accent-ink:#FCFCF9; --line:#E3E3DD; --line-strong:#BFC0B9;
+  --chip-bg:transparent; --chip-ink:#6C7178; --chip-bd:1px solid #DCDCD4; --chip-r:999px;
+  --r:2px; --btn-r:2px; --pad:20px;
+  --card-sh:none; --card-bd:none; --thumb-h:150px;
+  --font-h:Georgia,"Noto Serif",serif;
+}
+.s9 .ui-bar{
+  font-family:Georgia,serif;justify-content:center;font-size:15px;
+  letter-spacing:.22em;text-transform:uppercase;font-weight:400;
+  border-bottom:1px solid #E3E3DD;padding:15px 0 13px;
+}
+.s9 .ui-body{padding:0 0 18px;gap:0}
+.s9 .card-body{padding:18px 20px 6px;gap:9px;align-items:flex-start}
+.s9 .card-body h3{font-size:25px;font-weight:400;line-height:1.14;letter-spacing:-.012em}
+.s9 .eyebrow{letter-spacing:.18em;font-weight:600;font-size:9.5px}
+.s9 .match{font-family:Georgia,serif;font-size:13.5px;font-style:italic}
+.s9 .list-label{padding:0 20px;margin-top:20px;border-top:1px solid #E3E3DD;padding-top:18px}
+.s9 .list{padding:0 20px}
+.s9 .btn{margin:18px 20px 0;width:calc(100% - 40px);font-size:13px;text-transform:uppercase;letter-spacing:.13em}
+
+/* ---------- 10  NEO-BRUTALIST ---------- */
+.s10{
+  --bg:#FFE9AE; --surface:#FFFFFF; --ink:#000000; --muted:#4A4A4A;
+  --accent:#FF3D6E; --accent-ink:#FFFFFF; --line:#000000; --line-strong:#000000;
+  --chip-bg:#2BD4A8; --chip-ink:#000000; --chip-r:0; --chip-bd:2px solid #000;
+  --r:0; --btn-r:0; --box-r:0;
+  --card-sh:5px 5px 0 #000; --card-bd:3px solid #000;
+  --btn-sh:4px 4px 0 #000; --btn-bd:3px solid #000;
+  --nav-bg:#2BD4A8;
+  --thumb-h:112px;
+}
+.s10 .ui-bar{
+  font-weight:900;text-transform:uppercase;letter-spacing:-.02em;font-size:20px;
+  border-bottom:3px solid #000;background:#FFFFFF;
+}
+.s10 .card-body h3{font-weight:900;letter-spacing:-.03em;text-transform:uppercase;font-size:22px;line-height:1.02}
+.s10 .thumb{border-bottom:3px solid #000}
+.s10 .list li{border-bottom:2px solid #000}
+.s10 .box{border-width:2.5px}
+.s10 .ui-nav{border-top:3px solid #000}
+.s10 .ui-nav span{color:#000}
+.s10 .ui-nav span.active{font-weight:900;text-decoration:underline;text-underline-offset:3px}
+</style>
+
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <symbol id="dish" viewBox="0 0 320 130" preserveAspectRatio="xMidYMid slice">
+    <rect width="320" height="130" fill="var(--thumb-bg,#EFEAE2)"/>
+    <circle cx="160" cy="72" r="58" fill="var(--thumb-plate,#FFFFFF)" opacity=".95"/>
+    <circle cx="160" cy="72" r="45" fill="none" stroke="var(--thumb-ring,rgba(0,0,0,.10))" stroke-width="1.5"/>
+    <path d="M118 78c14-16 32-22 42-22s28 6 42 22c-12 12-27 18-42 18s-30-6-42-18z"
+          fill="var(--accent)" opacity=".9"/>
+    <ellipse cx="141" cy="62" rx="17" ry="11" transform="rotate(-14 141 62)" fill="var(--accent)"/>
+    <ellipse cx="176" cy="58" rx="19" ry="12" transform="rotate(9 176 58)" fill="var(--accent)" opacity=".82"/>
+    <path d="M186 84c9-3 16-9 19-17" stroke="var(--thumb-leaf,#4E7A46)" stroke-width="4"
+          stroke-linecap="round" fill="none"/>
+    <circle cx="132" cy="86" r="4" fill="var(--thumb-leaf,#4E7A46)"/>
+    <circle cx="149" cy="90" r="3" fill="var(--thumb-leaf,#4E7A46)" opacity=".75"/>
+  </symbol>
+</svg>
+
+<template id="tpl">
+  <div class="ui">
+    <div class="ui-bar"><span>Frigo</span><span class="spice">SPICE 4</span></div>
+    <div class="ui-body">
+      <article class="card">
+        <div class="thumb"><svg><use href="#dish"></use></svg></div>
+        <div class="card-body">
+          <div class="eyebrow">French &middot; Stovetop</div>
+          <h3>Poulet &agrave; la Moutarde</h3>
+          <div class="chips"><span>30 min</span><span>Easy</span><span>2 servings</span></div>
+          <p class="match">You have <b>7 of 9</b> &mdash; still need Dijon and cr&egrave;me fra&icirc;che.</p>
+        </div>
+      </article>
+      <div class="list-label">In my fridge</div>
+      <ul class="list">
+        <li class="on"><span class="box"></span>Chicken thighs</li>
+        <li class="on"><span class="box"></span>Shallots<span class="tag">LOW</span></li>
+        <li class="off"><span class="box"></span>Dijon mustard</li>
+      </ul>
+      <button class="btn" type="button" tabindex="-1">Find me a recipe</button>
+    </div>
+    <nav class="ui-nav">
+      <span class="active">Cook</span><span>Fridge</span><span>List</span><span>Plan</span>
+    </nav>
+  </div>
+</template>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="kicker">Frigo &middot; Step 0</div>
+    <h1>Pick the look before I build it</h1>
+    <p>The same screen &mdash; one recipe card, a slice of your fridge list &mdash; drawn ten
+       different ways. Everything else about the app is already decided; this is just how it
+       should feel to use.</p>
+  </header>
+
+  <div class="howto">
+    <div>Scroll through all ten, tap <b>Choose</b> on the one you like, then tell me the number.
+       Nothing here is final &mdash; colours and spacing get tuned once we know the direction.
+       Dark mode gets designed either way.</div>
+  </div>
+
+  <main class="grid" id="grid"></main>
+</div>
+
+<div class="verdict empty" id="verdict" role="status" aria-live="polite">
+  <span class="dot"></span><span id="verdict-text">No style picked yet &mdash; tap Choose on your favourite.</span>
+</div>
+
+<script>
+const STYLES = [
+  {n:1,  key:'s1',  name:'Warm Bistro',
+   desc:'Cream paper, burgundy, serif headings, dotted rules. Reads like a French menu.'},
+  {n:2,  key:'s2',  name:'Scandinavian Clean',
+   desc:'White, lots of air, one sage accent, hairline borders. The calmest of the ten.'},
+  {n:3,  key:'s3',  name:'Bold Modern',
+   desc:'Huge uppercase headline, edge-to-edge photo, one orange. Loud but tidy.'},
+  {n:4,  key:'s4',  name:'Dark Kitchen',
+   desc:'Near-black with warm amber. Food glows. Best in a dim kitchen at night.'},
+  {n:5,  key:'s5',  name:'Material You',
+   desc:'Native Samsung feel — big rounded cards, soft shadows, purple accent.'},
+  {n:6,  key:'s6',  name:'Recipe Card',
+   desc:'Ruled index-card paper, dashed edges, measurements in typewriter type.'},
+  {n:7,  key:'s7',  name:'Soft Glass',
+   desc:'Frosted translucent panels over a pastel wash. Light and modern.'},
+  {n:8,  key:'s8',  name:'Utility',
+   desc:'Monospace, hard 1px boxes, zero decoration. Fastest thing here to scan.'},
+  {n:9,  key:'s9',  name:'Editorial',
+   desc:'Serif, wide margins, one big photo. A grown-up cooking magazine.'},
+  {n:10, key:'s10', name:'Neo-Brutalist',
+   desc:'Thick black borders, hard shadows, mustard and hot pink. Impossible to confuse.'},
+];
+
+const grid = document.getElementById('grid');
+const tpl  = document.getElementById('tpl');
+const pad  = n => String(n).padStart(2,'0');
+
+STYLES.forEach(s => {
+  const spec = document.createElement('section');
+  spec.className = 'spec';
+  spec.dataset.key = s.key;
+
+  const head = document.createElement('div');
+  head.className = 'spec-head';
+  head.innerHTML =
+    '<span class="spec-num">' + pad(s.n) + '</span>' +
+    '<h2 class="spec-name"></h2>' +
+    '<button class="choose" type="button">Choose</button>' +
+    '<p class="spec-desc"></p>';
+  head.querySelector('.spec-name').textContent = s.name;
+  head.querySelector('.spec-desc').textContent = s.desc;
+
+  const stage = document.createElement('div');
+  stage.className = 'stage';
+  const phone = document.createElement('div');
+  phone.className = 'phone';
+  const ui = tpl.content.cloneNode(true);
+  ui.querySelector('.ui').classList.add(s.key);
+  phone.appendChild(ui);
+  stage.appendChild(phone);
+
+  spec.append(head, stage);
+  grid.appendChild(spec);
+
+  head.querySelector('.choose').addEventListener('click', () => pick(s));
+});
+
+const verdict = document.getElementById('verdict');
+const vtext   = document.getElementById('verdict-text');
+
+function pick(s){
+  document.querySelectorAll('.spec').forEach(el => {
+    const on = el.dataset.key === s.key;
+    el.dataset.picked = on ? '1' : '0';
+    el.querySelector('.choose').textContent = on ? 'Picked' : 'Choose';
+  });
+  verdict.classList.remove('empty');
+  vtext.innerHTML = 'You picked <b>' + pad(s.n) + ' &middot; ' + s.name +
+                    '</b> &mdash; tell Claude &ldquo;style ' + s.n + '&rdquo;.';
+  try { localStorage.setItem('frigo.style', s.key); } catch(e){}
+}
+
+try {
+  const saved = localStorage.getItem('frigo.style');
+  const hit = STYLES.find(s => s.key === saved);
+  if (hit) pick(hit);
+} catch(e){}
+</script>
