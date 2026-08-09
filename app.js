@@ -174,9 +174,13 @@ function allItems(){
   TABS.forEach(tab => itemsFor(tab).forEach(it => out.push({ ...it, tab })));
   return out;
 }
-function aisleOf(name){
-  const hit = allItems().find(i => norm(i.name) === norm(name));
+function aisleOf(name, tab){
+  const hit = allItems().find(i => norm(i.name) === norm(name))
+           || allItems().find(i => sameItem(i.name, name));
   if (hit) return hit.aisle;
+  const ing = recipePool().flatMap(r => r.ingredients || [])
+                          .find(i => sameItem(i.item, name));
+  if (ing && ing.aisle) return ing.aisle;
   const n = norm(name);
   if (/\b(chicken|beef|pork|lamb|sausage|bacon|fish|salmon|shrimp|prawn)\b/.test(n)) return 'meat';
   if (/\b(milk|cream|cheese|yogurt|butter|egg)\b/.test(n)) return 'dairy';
@@ -185,33 +189,103 @@ function aisleOf(name){
   if (/\b(frozen)\b/.test(n)) return 'frozen';
   if (/\b(bread|pita|tortilla|bun)\b/.test(n)) return 'bakery';
   if (/\b(paprika|cumin|pepper|salt|spice|powder|seed|dried|cinnamon)\b/.test(n)) return 'spices';
-  return 'produce';
+  /* Nothing in the name gave it away, so trust the shelf he put it on — that's
+     a better guess than assuming every unknown word is a vegetable. */
+  return { fridge:'produce', freezer:'frozen', pantry:'canned', spices:'spices' }[tab] || 'produce';
 }
 
-/* Do we have this ingredient? Tolerant matching — "yellow onion" finds "onions". */
+/* ------------------------------------------- understanding an item name
+
+   Jerome types what he calls a thing; the recipes call it something else. He's
+   French and half of these have a British name too, so "coriandre", "coriander"
+   and "cilantro" all have to land on the same shelf.
+
+   Whole-phrase swaps run first, then single words. Left is what someone types,
+   right is what the recipes say. */
+const SAME_PHRASE = [
+  [/\b(spring|green|salad)\s+onions?\b/g, 'scallion'],
+  [/\bchilli?\s+bean\s+paste\b/g, 'doubanjiang'],
+  [/\bsichuan\s+chilli?\s+bean\s+paste\b/g, 'doubanjiang'],
+  [/\bpul\s+biber\b/g, 'aleppo pepper'],
+  [/\bgarbanzo\s+beans?\b/g, 'chickpea'],
+  [/\bmasoor\s+dal\b/g, 'red lentil'],
+  [/\bdouble\s+cream\b/g, 'heavy cream'],
+  [/\bwhipping\s+cream\b/g, 'heavy cream'],
+  [/\bcreme\s+fraiche\b/g, 'heavy cream'],
+  [/\bbell\s+peppers?\b/g, 'bell pepper'],
+  [/\bspring\s+onions?\b/g, 'scallion'],
+  [/\bcrushed\s+chilli?e?s?\b/g, 'chilli flake'],
+  [/\bred\s+pepper\s+flakes?\b/g, 'chilli flake'],
+  [/\bstock\s+cubes?\b/g, 'stock']
+];
+const SAME_WORD = {
+  coriandre:'cilantro', coriander:'cilantro',
+  persil:'parsley', ail:'garlic', oignon:'onion', oignons:'onion',
+  citron:'lemon', beurre:'butter', creme:'cream', poulet:'chicken',
+  boeuf:'beef', porc:'pork', oeuf:'egg', oeufs:'egg', poivron:'bell pepper',
+  courgette:'zucchini', aubergine:'eggplant', capsicum:'bell pepper',
+  prawn:'shrimp', prawns:'shrimp', langoustine:'shrimp',
+  mince:'ground', minced:'ground', broth:'stock', bouillon:'stock',
+  tinned:'canned', passata:'tomato', concentrate:'paste',
+  scallions:'scallion', chilli:'chili', chillies:'chili', chile:'chili',
+  chiles:'chili', capsicums:'bell pepper', rocket:'arugula',
+  swede:'turnip', maize:'corn', sultanas:'raisin', gram:'chickpea'
+};
+
+/* Words that describe a thing without changing what it is. Dropping these is
+   what lets "large ripe tomatoes" find "tomato". Anything that DOES change the
+   thing — dried, ground, smoked, black — is deliberately not here. */
+const FILLER = new Set(['fresh','raw','whole','large','small','medium','ripe','plain',
+  'canned','jarred','boneless','skinless','cooked','uncooked','organic','free','range',
+  'extra','virgin','unsalted','salted','peeled','deveined','chopped','sliced','diced',
+  'grated','of','a','the','good','quality','some','my','skin','on','bone','in','and',
+  'piece','pieces','pack','packet','tub','jar','tin','can','bunch','clove','cloves']);
+
+const singular = w => w.length > 3 ? w.replace(/ies$/,'y').replace(/(ses|xes|zes|ches|shes)$/,m=>m.slice(0,-2)).replace(/s$/,'') : w;
+
+/* Break a name into the thing itself plus the words that qualify it.
+   "extra virgin olive oil" -> head "oil", mods {olive}. */
+function itemParts(name){
+  let s = norm(name).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g,' ').trim();
+  SAME_PHRASE.forEach(([re, to]) => { s = s.replace(re, to); });
+  const words = s.split(' ')
+    .map(w => SAME_WORD[w] || w)
+    .join(' ').split(' ')
+    .map(singular)
+    .map(w => SAME_WORD[w] || w)
+    .filter(w => w && !FILLER.has(w));
+  if (!words.length) return null;
+  return { head: words[words.length - 1], mods: new Set(words.slice(0, -1)) };
+}
+
+/* Two names mean the same thing when they're the same thing (same head noun)
+   and nothing about them disagrees. "chicken stock" matches "chicken broth"
+   but not "beef stock"; "black pepper" never matches "red bell pepper". */
+function sameItem(a, b){
+  const x = itemParts(a), y = itemParts(b);
+  if (!x || !y || x.head !== y.head) return false;
+  const smaller = x.mods.size <= y.mods.size ? x.mods : y.mods;
+  const bigger  = smaller === x.mods ? y.mods : x.mods;
+  for (const m of smaller) if (!bigger.has(m)) return false;
+  return true;
+}
+
+/* Do we have this ingredient? */
 function inventoryHas(name){
-  const n = norm(name);
   for (const tab of TABS){
     const inv = state.inventory[tab];
     for (const key in inv){
       if (!inv[key] || !inv[key].have) continue;
-      const k = norm(key);
-      if (k === n) return true;
-      const kSing = k.replace(/(es|s)$/,''), nSing = n.replace(/(es|s)$/,'');
-      if (kSing && (nSing === kSing)) return true;
-      if (kSing.length > 3 && n.includes(kSing)) return true;
-      if (nSing.length > 3 && k.includes(nSing)) return true;
+      if (norm(key) === norm(name) || sameItem(key, name)) return true;
     }
   }
   return false;
 }
 function inventoryLow(name){
-  const n = norm(name);
   for (const tab of TABS){
     const inv = state.inventory[tab];
     for (const key in inv){
-      if (inv[key] && inv[key].have && inv[key].low && norm(key).replace(/(es|s)$/,'') ===
-          n.replace(/(es|s)$/,'')) return true;
+      if (inv[key] && inv[key].have && inv[key].low && sameItem(key, name)) return true;
     }
   }
   return false;
@@ -297,13 +371,24 @@ function matchRecipes(){
 }
 
 /* ------------------------------------------------------------- rendering */
+/* If building a screen throws, the old screen stays on the glass and the app
+   looks merely unresponsive — a typo in here once read as "the search box is
+   broken". Say so out loud instead. */
 function render(){
   const bar = $('#topbar'), main = $('#screen');
   if (view.cookAlong){ renderCookAlong(); return; }
   document.querySelectorAll('.cookalong').forEach(n => n.remove());
 
+  let html;
+  try{
+    html = screenHTML();
+  }catch(err){
+    console.error('render failed', err);
+    html = `<div class="empty"><strong>Something broke on this screen</strong>
+      <p>${esc(String(err && err.message || err))}</p></div>`;
+  }
   bar.innerHTML = topbar();
-  main.innerHTML = screenHTML();
+  main.innerHTML = html;
   renderTabs();
   main.scrollTop = 0;
 }
@@ -465,7 +550,7 @@ function screenFridge(){
     `<button class="opt" data-tab="${t}" aria-pressed="${tab===t}">${TAB_LABEL[t]}</button>`).join('')}</div>`;
 
   const search = `<div class="searchbox">${svg('i-search')}
-    <input type="text" placeholder="Search or add an item" value="${esc(view.search)}"
+    <input type="text" placeholder="Type anything &mdash; found or not" value="${esc(view.search)}"
            data-role="search" enterkeyhint="done" autocomplete="off">
     ${view.search ? `<button class="bar-btn" data-act="clear-search" aria-label="Clear">${svg('i-x','icon-sm')}</button>` : ''}
   </div>`;
@@ -481,19 +566,43 @@ function screenFridge(){
     </button>`;
   }).join('');
 
-  const canAdd = view.search.trim() &&
-    !items.some(i => norm(i.name) === norm(view.search));
-  const addBtn = canAdd
-    ? `<button class="btn ghost" data-act="add-item">${svg('i-plus')} Add &ldquo;${esc(view.search.trim())}&rdquo; to ${TAB_LABEL[tab].toLowerCase()}</button>`
-    : '';
+  /* The add button sits directly under the box you typed in. It used to live
+     below the whole list, where on a phone it was off the bottom of the screen
+     and nobody ever found it. */
+  const typed = view.search.trim();
+  const already = items.find(i => norm(i.name) === norm(typed));
+  const knownAs = !already && typed
+    ? allItems().find(i => sameItem(i.name, typed))
+    : null;
+
+  let addBlock = '';
+  if (typed && !already){
+    addBlock = knownAs
+      ? `<button class="btn" data-act="add-known" data-name="${esc(knownAs.name)}"
+                 data-ktab="${knownAs.tab}">
+           ${svg('i-plus')} Tick &ldquo;${esc(knownAs.name)}&rdquo;
+         </button>
+         <p class="hint">You typed &ldquo;${esc(typed)}&rdquo; &mdash; same thing, already on your
+           ${TAB_LABEL[knownAs.tab].toLowerCase()} list.</p>`
+      : `<button class="btn" data-act="add-item">
+           ${svg('i-plus')} Add &ldquo;${esc(typed)}&rdquo; to ${TAB_LABEL[tab].toLowerCase()}
+         </button>
+         <p class="hint">Goes in ${AISLES[aisleOf(typed, tab)].toLowerCase()}. Recipes asking for it will
+           count it, whatever they call it.</p>`;
+  }
+
+  const addAlways = typed ? '' :
+    `<button class="btn ghost" data-act="focus-search">${svg('i-plus')} Add something that isn&rsquo;t listed</button>`;
 
   const count = Object.values(inv).filter(v => v && v.have).length;
 
-  return tabs + search
+  return tabs + search + addBlock
     + (items.length
         ? `<div class="group">${rows}</div>`
-        : `<div class="empty"><strong>Nothing here yet</strong><p>Type a name above to add your first item.</p></div>`)
-    + addBtn
+        : typed
+          ? ''
+          : `<div class="empty"><strong>Nothing here yet</strong><p>Type a name above to add your first item.</p></div>`)
+    + addAlways
     + `<p class="eyebrow" style="text-align:center;padding-top:6px">${count} item${count===1?'':'s'} in your ${TAB_LABEL[tab].toLowerCase()}</p>`;
 }
 
@@ -759,10 +868,14 @@ function openSheet(html){
 function closeSheet(){ $('#sheet').hidden = true; $('#sheet').innerHTML = ''; }
 
 /* ------------------------------------------------------------- actions */
-function addToShopping(item, qty, fromTitle){
+/* Every recipe ingredient already declares the aisle it belongs to, and that
+   hand-checked value beats guessing from the name. Only fall back to a guess
+   when the item came from somewhere without one. */
+function addToShopping(item, qty, fromTitle, aisle){
   const exists = state.shopping.find(s => norm(s.item) === norm(item) && !s.done);
   if (exists) return false;
-  state.shopping.push({ item, qty: qty || '', aisle: aisleOf(item), from: fromTitle || '', done:false });
+  state.shopping.push({ item, qty: qty || '', aisle: aisle || aisleOf(item),
+                        from: fromTitle || '', done:false });
   return true;
 }
 
@@ -863,7 +976,7 @@ document.addEventListener('click', e => {
     const ing = r && r.ingredients[Number(t.dataset.buy)];
     if (ing){
       const a = analyse(r, state.prefs.servings);
-      addToShopping(ing.item, qtyLabel(ing, a.factor), r.title);
+      addToShopping(ing.item, qtyLabel(ing, a.factor), r.title, ing.aisle);
       save(); render(); toast(ing.item + ' added to your list');
     }
     return;
@@ -895,9 +1008,24 @@ document.addEventListener('click', e => {
     case 'add-item': {
       const name = view.search.trim();
       if (!name) break;
-      state.custom[view.tab].push({ name, aisle: aisleOf(name), staple:false });
+      if (!state.custom[view.tab].some(o => norm(o.name) === norm(name)))
+        state.custom[view.tab].push({ name, aisle: aisleOf(name, view.tab), staple:false });
       state.inventory[view.tab][name] = { have:true, low:false };
-      view.search = ''; save(); render(); toast(name + ' added');
+      view.search = ''; save(); render(); toast(name + ' added — you have it');
+      break;
+    }
+    /* Typed a different word for something already on the list — tick that
+       instead of creating a duplicate row that says the same thing. */
+    case 'add-known': {
+      const name = t.dataset.name, ktab = t.dataset.ktab || view.tab;
+      state.inventory[ktab][name] = { have:true, low:false };
+      view.search = ''; view.tab = ktab; save(); render();
+      toast(name + ' ticked in ' + TAB_LABEL[ktab].toLowerCase());
+      break;
+    }
+    case 'focus-search': {
+      const box = document.querySelector('[data-role=search]');
+      if (box) box.focus();
       break;
     }
     case 'toggle-low': {
@@ -923,7 +1051,7 @@ document.addEventListener('click', e => {
       const r = findRecipe(view.recipeId);
       const a = analyse(r, state.prefs.servings);
       let n = 0;
-      a.missing.forEach(ing => { if (addToShopping(ing.item, qtyLabel(ing, a.factor), r.title)) n++; });
+      a.missing.forEach(ing => { if (addToShopping(ing.item, qtyLabel(ing, a.factor), r.title, ing.aisle)) n++; });
       save(); render(); toast(n + ' item' + (n===1?'':'s') + ' added to your list'); break;
     }
     case 'clear-done': {
@@ -962,7 +1090,7 @@ document.addEventListener('click', e => {
       const p = state.planned[Number(t.dataset.i)], r = findRecipe(p.recipeId);
       const a = analyse(r, p.servings || state.prefs.servings);
       let n = 0;
-      a.missing.forEach(ing => { if (addToShopping(ing.item, qtyLabel(ing, a.factor), r.title)) n++; });
+      a.missing.forEach(ing => { if (addToShopping(ing.item, qtyLabel(ing, a.factor), r.title, ing.aisle)) n++; });
       save(); view.screen = 'list'; render();
       toast(n + ' item' + (n===1?'':'s') + ' added for ' + r.title);
       break;
@@ -1133,5 +1261,10 @@ window.addEventListener('keydown', e => {
     else if (view.cookAlong){ view.cookAlong = null; releaseWakeLock(); render(); }
   }
 });
+
+/* The one door into the closure, so the check-phone harness can test the
+   name matching against real recipe data instead of me eyeballing it.
+   Read-only helpers; nothing here changes state. */
+window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, view, state };
 
 })();
