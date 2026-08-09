@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111010">
+<title>Frigo — ingredient list</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Editor-only styling. Kept here rather than in styles.css so the app's
+   stylesheet stays the app's — nothing below ships to the phone. */
+body{padding:0}
+.ed{max-width:900px;margin:0 auto;padding:20px 16px 140px}
+.ed h1{font-size:28px;letter-spacing:-.015em;text-wrap:balance}
+.ed .lede{color:var(--ink-2);font-size:15px;line-height:1.5;margin:8px 0 0;max-width:62ch}
+.ed .lede b{color:var(--ink)}
+
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 6px}
+.tools .searchbox{flex:1;min-width:220px;margin:0}
+
+.sect{margin-top:26px}
+.sect > header{
+  display:flex;align-items:baseline;gap:10px;
+  padding:0 2px 8px;border-bottom:1px solid var(--line);
+}
+.sect h2{font-size:19px;font-weight:640;letter-spacing:-.015em}
+.sect .n{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+.erow{
+  display:grid;grid-template-columns:1fr 170px auto auto;
+  gap:8px;align-items:center;
+  padding:6px 0;border-bottom:1px solid var(--line);
+}
+.erow.gone{display:none}
+.erow input[type=text],.erow select{
+  background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:11px 12px;font-size:15.5px;font-family:var(--font);
+  min-height:44px;box-sizing:border-box;width:100%;
+}
+.erow input[type=text]:focus,.erow select:focus{outline:none;border-color:var(--accent)}
+.erow.dupe input[type=text]{border-color:var(--need)}
+.erow.edited input[type=text]{border-color:var(--accent)}
+
+.stap{
+  display:flex;align-items:center;gap:7px;
+  min-height:44px;padding:0 10px;cursor:pointer;
+  font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+  font-weight:650;color:var(--ink-3);white-space:nowrap;
+}
+/* The browser's own checkbox is stark white on this ground. */
+.stap input{
+  appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
+  width:22px;height:22px;flex:none;position:relative;
+  border:1.6px solid var(--line-2);border-radius:var(--r-sm);
+  background:var(--surface-2);
+}
+.stap input:checked{background:var(--accent);border-color:var(--accent)}
+.stap input:checked::after{
+  content:"";position:absolute;left:7px;top:3px;
+  width:6px;height:11px;
+  border:solid var(--accent-ink);border-width:0 2.2px 2.2px 0;
+  transform:rotate(42deg);
+}
+.stap input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stap.on{color:var(--accent)}
+
+.del{
+  width:44px;height:44px;border:none;background:none;border-radius:var(--r-sm);
+  color:var(--ink-3);font-size:22px;line-height:1;cursor:pointer;
+}
+.del:hover{background:var(--surface-2);color:var(--need)}
+
+.addrow{margin-top:10px}
+.warn{
+  color:var(--need);font-size:13.5px;margin:10px 2px 0;
+}
+
+.saver{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:var(--surface);border-top:1px solid var(--line-2);
+  box-shadow:var(--shadow);
+}
+.saver .in{
+  max-width:900px;margin:0 auto;padding:14px 16px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.saver .status{flex:1;min-width:200px;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.saver .status b{color:var(--ink)}
+.saver .btn{width:auto;min-width:150px}
+
+@media (max-width:560px){
+  .erow{grid-template-columns:1fr auto;grid-template-areas:"name del" "aisle stap"}
+  .erow input[type=text]{grid-area:name}
+  .erow select{grid-area:aisle}
+  .stap{grid-area:stap;justify-self:end}
+  .del{grid-area:del}
+}
+</style>
+</head>
+<body>
+
+<div class="ed">
+  <h1>Ingredient list</h1>
+  <p class="lede">These are the tick-boxes you start from on the Fridge screen. Fix a
+    spelling, move something to a different aisle, add or remove a line — then
+    <b>download the file and drop it into the Food App folder</b>, replacing the old
+    <code>ingredients.js</code>. Nothing here saves by itself.</p>
+
+  <div class="tools">
+    <div class="searchbox">
+      <input type="text" id="filter" placeholder="Find an item" autocomplete="off">
+    </div>
+    <button class="btn ghost sm" id="revert">Undo all my changes</button>
+  </div>
+
+  <div id="sections"></div>
+</div>
+
+<div class="saver"><div class="in">
+  <div class="status" id="status"></div>
+  <button class="btn ghost" id="copy">Copy the code</button>
+  <button class="btn" id="download">Download ingredients.js</button>
+</div></div>
+
+<script>
+/* Cache-busted on purpose: the service worker holds a copy of ingredients.js for
+   the app, and without this you'd edit the file, reload, and be shown the old
+   list from the cache. */
+document.write('<script src="ingredients.js?fresh=' + Date.now() + '"><\/script>');
+</script>
+
+<script>
+(function(){
+'use strict';
+
+const TABS  = ['fridge','freezer','pantry','spices'];
+const LABEL = { fridge:'Fridge', freezer:'Freezer', pantry:'Pantry', spices:'Spices' };
+const AISLES = [
+  ['produce','Produce'], ['bakery','Bakery'], ['meat','Meat & Seafood'],
+  ['dairy','Dairy & Eggs'], ['dry','Dry Goods & Pasta'], ['canned','Canned & Jars'],
+  ['frozen','Frozen'], ['spices','Spices'], ['other','Other']
+];
+
+const src = window.FRIGO_INGREDIENTS;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).toLowerCase().trim().replace(/\s+/g,' ');
+
+if (!src){
+  $('#sections').innerHTML = '<p class="warn">Couldn&rsquo;t read ingredients.js. ' +
+    'Open this page through a server (<code>python -m http.server 8777</code>), ' +
+    'not by double-clicking the file.</p>';
+  return;
+}
+
+const read = () => {
+  const out = {};
+  TABS.forEach(t => {
+    out[t] = (src[t] || []).map(([name, aisle, staple]) =>
+      ({ name, aisle, staple: !!staple }));
+  });
+  return out;
+};
+
+const original = read();
+let data = read();
+let filter = '';
+
+/* ------------------------------------------------------------------ render */
+function render(){
+  $('#sections').innerHTML = TABS.map(tab => {
+    const rows = data[tab].map((it, i) => `
+      <div class="erow" data-tab="${tab}" data-i="${i}">
+        <input type="text" value="${esc(it.name)}" data-role="name"
+               spellcheck="false" autocapitalize="none">
+        <select data-role="aisle">${AISLES.map(([v,l]) =>
+          `<option value="${v}"${it.aisle===v?' selected':''}>${l}</option>`).join('')}</select>
+        <label class="stap${it.staple?' on':''}" title="Assumed always in the kitchen, never counted as missing">
+          <input type="checkbox" data-role="staple"${it.staple?' checked':''}>staple</label>
+        <button class="del" data-role="del" aria-label="Remove ${esc(it.name)}">&times;</button>
+      </div>`).join('');
+    return `<section class="sect" data-sect="${tab}">
+      <header><h2>${LABEL[tab]}</h2><span class="n">${data[tab].length} items</span></header>
+      ${rows}
+      <button class="btn ghost sm addrow" data-role="add" data-tab="${tab}">Add an item to ${LABEL[tab].toLowerCase()}</button>
+    </section>`;
+  }).join('');
+  applyFilter();
+  flag();
+  status();
+}
+
+function applyFilter(){
+  const q = norm(filter);
+  document.querySelectorAll('.erow').forEach(row => {
+    const it = data[row.dataset.tab][Number(row.dataset.i)];
+    row.classList.toggle('gone', !!q && !norm(it.name).includes(q));
+  });
+  document.querySelectorAll('.sect').forEach(sect => {
+    const any = sect.querySelectorAll('.erow:not(.gone)').length;
+    sect.style.display = (norm(filter) && !any) ? 'none' : '';
+  });
+}
+
+/* Red border on a name that already exists on the same shelf, amber on one
+   that differs from the file as shipped. */
+function flag(){
+  TABS.forEach(tab => {
+    const seen = {};
+    data[tab].forEach(it => { const n = norm(it.name); seen[n] = (seen[n]||0) + 1; });
+    document.querySelectorAll(`.erow[data-tab="${tab}"]`).forEach(row => {
+      const it = data[tab][Number(row.dataset.i)];
+      const was = original[tab][Number(row.dataset.i)];
+      row.classList.toggle('dupe', seen[norm(it.name)] > 1 || !it.name.trim());
+      row.classList.toggle('edited', !!was && was.name !== it.name);
+    });
+  });
+}
+
+function countChanges(){
+  let n = 0;
+  TABS.forEach(tab => {
+    const a = original[tab], b = data[tab];
+    n += Math.abs(a.length - b.length);
+    const len = Math.min(a.length, b.length);
+    for (let i = 0; i < len; i++){
+      if (a[i].name !== b[i].name || a[i].aisle !== b[i].aisle || a[i].staple !== b[i].staple) n++;
+    }
+  });
+  return n;
+}
+
+function problems(){
+  const out = [];
+  TABS.forEach(tab => {
+    const seen = {};
+    data[tab].forEach(it => {
+      const n = norm(it.name);
+      if (!n) out.push(`an empty name in ${LABEL[tab].toLowerCase()}`);
+      else if (seen[n]) out.push(`“${it.name}” twice in ${LABEL[tab].toLowerCase()}`);
+      seen[n] = true;
+    });
+  });
+  return out;
+}
+
+function status(){
+  const n = countChanges(), bad = problems();
+  const total = TABS.reduce((s,t) => s + data[t].length, 0);
+  const ok = !bad.length;
+  $('#download').disabled = !ok;
+  $('#copy').disabled = !ok;
+  $('#status').innerHTML = !ok
+    ? `<span style="color:var(--need)">Fix first: ${esc(bad.slice(0,3).join(', '))}${bad.length>3?` and ${bad.length-3} more`:''}.</span>`
+    : n
+      ? `<b>${n} change${n===1?'':'s'}</b> — ${total} items. Download the file and put it in the Food App folder.`
+      : `${total} items, nothing changed yet.`;
+}
+
+/* ------------------------------------------------------------------ events */
+$('#sections').addEventListener('input', e => {
+  const row = e.target.closest('.erow');
+  if (!row) return;
+  const it = data[row.dataset.tab][Number(row.dataset.i)];
+  const role = e.target.dataset.role;
+  if (role === 'name')  it.name = e.target.value;
+  if (role === 'aisle') it.aisle = e.target.value;
+  if (role === 'staple'){
+    it.staple = e.target.checked;
+    e.target.closest('.stap').classList.toggle('on', it.staple);
+  }
+  flag(); status();
+});
+
+$('#sections').addEventListener('click', e => {
+  const add = e.target.closest('[data-role=add]');
+  if (add){
+    const tab = add.dataset.tab;
+    data[tab].push({ name:'', aisle: tab === 'spices' ? 'spices'
+                                   : tab === 'freezer' ? 'frozen' : 'produce', staple:false });
+    render();
+    const rows = document.querySelectorAll(`.erow[data-tab="${tab}"] [data-role=name]`);
+    const last = rows[rows.length - 1];
+    if (last){ last.focus(); last.scrollIntoView({ block:'center' }); }
+    return;
+  }
+  const del = e.target.closest('[data-role=del]');
+  if (del){
+    const row = del.closest('.erow');
+    data[row.dataset.tab].splice(Number(row.dataset.i), 1);
+    render();
+  }
+});
+
+$('#filter').addEventListener('input', e => { filter = e.target.value; applyFilter(); });
+
+$('#revert').addEventListener('click', () => {
+  if (countChanges() && !confirm('Throw away every change on this page?')) return;
+  data = read(); render();
+});
+
+/* ------------------------------------------------------- writing the file */
+const HEAD = `/* ==========================================================================
+   Frigo — the master ingredient list
+   --------------------------------------------------------------------------
+   This is the list of tick-boxes Jerome starts from on the Fridge screen.
+   Data only. No logic. Safe to edit by hand.
+
+   Each line is:   ['name', 'aisle']            a normal item
+              or:  ['name', 'aisle', true]      a staple — assumed always present,
+                                                never counted as a missing ingredient
+
+   'aisle' must be one of, and it decides where the item lands in the
+   shopping list:
+       produce · bakery · meat · dairy · dry · canned · frozen · spices · other
+
+   Prefer editing this in items.html (open it in a browser) — it checks the
+   aisle names for you and writes this file back out.
+   ========================================================================== */
+window.FRIGO_INGREDIENTS = {
+`;
+
+/* A name with an apostrophe in it — za'atar — goes in double quotes rather
+   than being escaped, so the file stays readable in the editor. */
+function quote(s){
+  return s.includes("'") ? JSON.stringify(s) : `'${s}'`;
+}
+
+function fileText(){
+  const blocks = TABS.map(tab => {
+    const items = data[tab].filter(it => it.name.trim());
+    const width = items.reduce((w, it) => Math.max(w, quote(it.name.trim()).length), 0) + 2;
+    const lines = items.map(it => {
+      const name = (quote(it.name.trim()) + ',').padEnd(width);
+      return `    [${name}'${it.aisle}'${it.staple ? ', true' : ''}]`;
+    }).join(',\n');
+    return `  ${tab}: [\n${lines}\n  ]`;
+  }).join(',\n\n');
+  return HEAD + '\n' + blocks + '\n\n};\n';
+}
+
+$('#download').addEventListener('click', () => {
+  const blob = new Blob([fileText()], { type:'text/javascript;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ingredients.js';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+$('#copy').addEventListener('click', async () => {
+  const btn = $('#copy'), text = fileText();
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied';
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+    btn.textContent = 'Copied';
+  }
+  setTimeout(() => { btn.textContent = 'Copy the code'; }, 1800);
+});
+
+window.addEventListener('beforeunload', e => {
+  if (countChanges()){ e.preventDefault(); e.returnValue = ''; }
+});
+
+render();
+})();
+</script>
+</body>
+</html>

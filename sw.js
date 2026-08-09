@@ -1,12 +1,13 @@
 /* Frigo service worker — offline-first.
    BUMP CACHE_VERSION ON EVERY DEPLOY or the phone keeps running old code. */
-const CACHE_VERSION = 'frigo-v7';
+const CACHE_VERSION = 'frigo-v8';
 
 const SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './ingredients.js',
   './recipes.js',
   './ai.js',
   './manifest.json',

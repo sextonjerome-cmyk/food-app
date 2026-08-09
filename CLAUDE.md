@@ -61,6 +61,8 @@ numbers spoken naturally ("about ten minutes", not "10-12 min").
 index.html      app shell and screens
 styles.css      all styling, tokens at the top
 app.js          inventory, matching, scaling, ratings, shopping list, planning
+ingredients.js  the tick-box list Jerome starts from (data only, one item per line)
+items.html      edit that list on a computer, then download the file back out
 recipes.js      the recipe collection (data only, no logic)
 ai.js           optional Claude API call
 img/            one small WebP per recipe

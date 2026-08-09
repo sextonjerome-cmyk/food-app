@@ -21,6 +21,18 @@ Run it in the background from the project root. The app is a static site — no 
 Use the `chrome-devtools` MCP tools:
 
 1. `start_chrome_and_connect` → `navigate_to_url` `http://localhost:8777`
+   **Get past the service worker first — every time, in every harness.** `sw.js` is
+   cache-first, so a page load will happily serve you the previous deploy's CSS and
+   you will debug a bug you already fixed. `shot.py` does this and yours must too:
+   ```
+   Network.setBypassServiceWorker  {"bypass": true}
+   Network.setCacheDisabled        {"cacheDisabled": true}
+   ```
+   If a worker is already registered from an earlier run, unregister it outright:
+   ```js
+   (await navigator.serviceWorker.getRegistrations()).forEach(r => r.unregister());
+   (await caches.keys()).forEach(k => caches.delete(k));
+   ```
 2. Set the viewport to **412 × 915** (Galaxy S-series) with a device pixel ratio of 3.
    Also spot-check **360 × 800** — the narrowest phone worth supporting.
 3. Screenshot the screen you changed.
@@ -56,6 +68,9 @@ for both in the scratchpad (`shot.py`, `tap.py`); rewrite it if it's gone.
   `clientWidth` — they must match.
 - **Touch targets ≥ 44 px.** Checkboxes and nav items especially; they get tapped hundreds
   of times. Measure them; don't eyeball it. The chips looked fine and were 40 px.
+  **Measure every tappable thing, not every `<button>`.** The ⊕ on an inventory row is a
+  `span`, sat at 34 px, and an audit that only queried `button, input, .tab` called it
+  clean. Include `[data-more]`, `label`, and anything else with a click handler.
 - **Body text is 16 px or more.** This is read across a counter, not held to your face.
 - **The bottom nav clears the home bar** — `env(safe-area-inset-bottom)` is respected.
 - **Amber is the only saturated colour** apart from the food photos. Per

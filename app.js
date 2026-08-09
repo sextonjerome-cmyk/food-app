@@ -14,64 +14,10 @@ const AISLES = {
 const AISLE_ORDER = ['produce','bakery','meat','dairy','dry','canned','frozen','spices','other'];
 
 /* --------------------------------------------------- default inventory */
-/* [name, aisle, isStaple] — the checkbox lists Jerome starts from. */
-const DEFAULTS = {
-  fridge: [
-    ['eggs','dairy'],['milk','dairy'],['butter','dairy',true],['heavy cream','dairy'],
-    ['crème fraîche','dairy'],['sour cream','dairy'],['plain yogurt','dairy'],
-    ['parmesan','dairy'],['gruyère','dairy'],['cheddar','dairy'],['feta','dairy'],
-    ['mozzarella','dairy'],['dijon mustard','canned'],['mayonnaise','canned'],
-    ['ketchup','canned'],['soy sauce','canned'],['harissa','canned'],['hot sauce','canned'],
-    ['lemons','produce'],['limes','produce'],['garlic','produce'],['shallots','produce'],
-    ['carrots','produce'],['celery','produce'],['bell peppers','produce'],
-    ['mushrooms','produce'],['spinach','produce'],['tomatoes','produce'],
-    ['cucumber','produce'],['scallions','produce'],['fresh parsley','produce'],
-    ['fresh cilantro','produce'],['fresh thyme','produce'],['ginger','produce'],
-    ['chicken thighs','meat'],['chicken breast','meat'],['ground beef','meat'],
-    ['bacon','meat'],['sausage','meat'],['salmon','meat'],['shrimp','meat'],
-    ['tofu','other'],['olives','canned'],['pickles','canned']
-  ],
-  freezer: [
-    ['frozen peas','frozen'],['frozen corn','frozen'],['frozen spinach','frozen'],
-    ['frozen green beans','frozen'],['frozen broccoli','frozen'],
-    ['frozen mixed vegetables','frozen'],['frozen berries','frozen'],
-    ['frozen chicken breast','frozen'],['frozen chicken thighs','frozen'],
-    ['frozen ground beef','frozen'],['frozen shrimp','frozen'],['frozen fish fillets','frozen'],
-    ['frozen fries','frozen'],['puff pastry','frozen'],['pie crust','frozen'],
-    ['frozen dumplings','frozen'],['ice cubes','frozen'],['bread (frozen)','frozen']
-  ],
-  pantry: [
-    ['spaghetti','dry'],['penne','dry'],['orzo','dry'],['egg noodles','dry'],
-    ['white rice','dry'],['basmati rice','dry'],['arborio rice','dry'],['couscous','dry'],
-    ['bulgur','dry'],['quinoa','dry'],['lentils','dry'],['chickpeas (dried)','dry'],
-    ['all-purpose flour','dry',true],['sugar','dry',true],['brown sugar','dry'],
-    ['baking powder','dry'],['cornstarch','dry'],['breadcrumbs','dry'],['panko','dry'],
-    ['rolled oats','dry'],['honey','canned'],['olive oil','canned',true],
-    ['vegetable oil','canned',true],['sesame oil','canned'],['red wine vinegar','canned'],
-    ['white wine vinegar','canned'],['balsamic vinegar','canned'],['tahini','canned'],
-    ['peanut butter','canned'],['canned tomatoes','canned'],['tomato paste','canned'],
-    ['canned chickpeas','canned'],['canned white beans','canned'],['canned coconut milk','canned'],
-    ['canned tuna','canned'],['chicken stock','canned'],['vegetable stock','canned'],
-    ['onions','produce'],['potatoes','produce'],['sweet potatoes','produce'],
-    ['bread','bakery'],['tortillas','bakery'],['pita bread','bakery'],
-    ['white wine','other'],['red wine','other'],['salt','spices',true],
-    ['black pepper','spices',true]
-  ],
-  spices: [
-    ['smoked paprika','spices'],['sweet paprika','spices'],['cumin','spices'],
-    ['coriander','spices'],['turmeric','spices'],['cinnamon','spices'],
-    ['cayenne pepper','spices'],['chilli flakes','spices'],['aleppo pepper','spices'],
-    ['sumac','spices'],['za\'atar','spices'],['ras el hanout','spices'],
-    ['baharat','spices'],['garam masala','spices'],['curry powder','spices'],
-    ['dried oregano','spices'],['dried thyme','spices'],['dried rosemary','spices'],
-    ['herbes de provence','spices'],['bay leaves','spices'],['dried mint','spices'],
-    ['fennel seeds','spices'],['mustard seeds','spices'],['nutmeg','spices'],
-    ['cardamom','spices'],['cloves','spices'],['star anise','spices'],
-    ['garlic powder','spices'],['onion powder','spices'],['chilli powder','spices'],
-    ['white pepper','spices'],['saffron','spices'],['vanilla extract','spices'],
-    ['sesame seeds','spices'],['pul biber','spices']
-  ]
-};
+/* The list itself lives in ingredients.js so it can be edited by hand, or
+   through items.html, without going anywhere near this file. */
+const DEFAULTS = window.FRIGO_INGREDIENTS
+              || { fridge:[], freezer:[], pantry:[], spices:[] };
 
 const TABS = ['fridge','freezer','pantry','spices'];
 const TAB_LABEL = { fridge:'Fridge', freezer:'Freezer', pantry:'Pantry', spices:'Spices' };
@@ -192,6 +138,38 @@ function aisleOf(name, tab){
   /* Nothing in the name gave it away, so trust the shelf he put it on — that's
      a better guess than assuming every unknown word is a vegetable. */
   return { fridge:'produce', freezer:'frozen', pantry:'canned', spices:'spices' }[tab] || 'produce';
+}
+
+/* Correct a name in place. A built-in row can't be edited where it lives —
+   ingredients.js is shipped code — so the misspelling is hidden and the fixed
+   name added alongside it, which looks the same on screen.
+   Returns true when the new name was already on the shelf and the two merged. */
+function renameItem(tab, from, to){
+  const was = itemsFor(tab).find(i => i.name === from);
+  const clash = itemsFor(tab).find(i => i.name !== from && norm(i.name) === norm(to));
+
+  const ci = state.custom[tab].findIndex(o => o.name === from);
+  if (ci >= 0){
+    if (clash) state.custom[tab].splice(ci, 1);
+    else state.custom[tab][ci].name = to;
+  } else {
+    if (!state.hidden[tab].includes(from)) state.hidden[tab].push(from);
+    if (!clash) state.custom[tab].push({
+      name: to,
+      aisle: (was && was.aisle) || aisleOf(to, tab),
+      staple: !!(was && was.staple)
+    });
+  }
+
+  const inv = state.inventory[tab], old = inv[from];
+  if (old){
+    const now = inv[to] || { have:false, low:false };
+    inv[to] = { have: now.have || old.have, low: now.low || old.low };
+    delete inv[from];
+  }
+
+  state.shopping.forEach(s => { if (norm(s.item) === norm(from)) s.item = to; });
+  return !!clash;
 }
 
 /* ------------------------------------------- understanding an item name
@@ -1069,6 +1047,7 @@ document.addEventListener('click', e => {
       <button class="btn ${cur.low?'':'ghost'}" data-act="toggle-low" data-name="${esc(name)}">
         ${cur.low ? 'Not running low any more' : 'Mark as running low'}</button>
       <button class="btn ghost" data-act="to-list" data-name="${esc(name)}">Add to shopping list</button>
+      <button class="btn ghost" data-act="rename-item" data-name="${esc(name)}">Fix the spelling</button>
       <button class="btn ghost" data-act="hide-item" data-name="${esc(name)}">Remove from my list</button>
       <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
     return;
@@ -1168,6 +1147,28 @@ document.addEventListener('click', e => {
     case 'to-list': {
       addToShopping(t.dataset.name, '', '');
       closeSheet(); save(); render(); toast('Added to your list'); break;
+    }
+    case 'rename-item': {
+      const name = t.dataset.name;
+      openSheet(`<h2>What should it be called?</h2>
+        <input type="text" data-role="renamebox" value="${esc(name)}"
+               enterkeyhint="done" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <p class="hint">Ticked or not, running low, and anything already on your shopping
+           list all follow the new name.</p>
+        <button class="btn" data-act="rename-save" data-name="${esc(name)}">Save</button>
+        <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
+      const box = document.querySelector('[data-role=renamebox]');
+      if (box){ box.focus(); box.select(); }
+      break;
+    }
+    case 'rename-save': {
+      const box = document.querySelector('[data-role=renamebox]');
+      const from = t.dataset.name, to = box ? box.value.trim().replace(/\s+/g,' ') : '';
+      if (!to || to === from){ closeSheet(); break; }
+      const merged = renameItem(view.tab, from, to);
+      closeSheet(); save(); render();
+      toast(merged ? `Merged into “${to}”` : `Now called “${to}”`);
+      break;
     }
     case 'hide-item': {
       const n = t.dataset.name;

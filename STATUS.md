@@ -84,6 +84,23 @@ A `#have=eggs,harissa,prawns` link also works (Claude can generate one; tapping
 it ticks the lot) — kept because it costs nothing, but the microphone is the
 route to show people.
 
+### Fixing a name that's spelt wrong
+
+Two routes, because the list lives in two places.
+
+- **On the phone** — tap the ⊕ on any row, then **Fix the spelling**. The ticked
+  state, the running-low flag and anything already on the shopping list all
+  follow the new name. Renaming a built-in row hides the original and adds the
+  corrected one beside it, so it looks like an edit in place. Renaming onto a
+  name that already exists merges the two instead of making a duplicate.
+- **On the computer** — open **`items.html`**. All 144 rows, each with its name,
+  its aisle and a staple toggle. It refuses to hand you a file with a duplicate
+  or an empty name in it. **Download ingredients.js** and drop it in the folder,
+  replacing the old one; a round trip through it was verified byte-identical.
+
+The list itself moved out of `app.js` into **`ingredients.js`**, one item per
+line — that alone makes it editable in VS Code without hunting through code.
+
 ### It understands his words
 
 Names reduce to a head noun plus qualifying words, through a synonym table
@@ -118,6 +135,15 @@ data via `window.FrigoTest`.
   couldn't be filtered to.
 - **The shopping list guessed each item's aisle** from its name while every
   ingredient already declares a hand-checked one.
+- **The ⊕ on an inventory row was a 34 px target** and the 44 px audit never saw
+  it, because the audit only measured `button`, `input` and `.tab` — the ⊕ is a
+  `span`. It's 44 px now, and the row height is unchanged because the padding
+  above it paid for the difference.
+- **A cache-first service worker will hand you yesterday's file.** Two rounds of
+  "the fix didn't work" were the worker serving the old `styles.css` and
+  `items.html`. The phone check now unregisters the worker and drops every cache
+  before it tests anything. `items.html` loads `ingredients.js` with a
+  cache-busting query for the same reason.
 
 ## Verified 2026-08-09
 
@@ -137,7 +163,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v7`** (seven deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v8`** (eight deploys). Bump it every time.
 
 ## Then
 
@@ -161,7 +187,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v2`.
+Currently `frigo-v8`.
 
 ## How to look at it
 
