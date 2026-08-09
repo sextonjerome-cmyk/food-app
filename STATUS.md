@@ -98,9 +98,21 @@ recipes loaded:
    left.
 2. More recipes when wanted. Eleven is a real collection, not a demo; the
    `add-recipe` skill does one start to finish.
-3. Public repo `sextonjerome-cmyk/food-app`, GitHub Pages on, Jerome opens the
-   URL in Chrome on the Samsung once and taps **Add to Home Screen**.
-   **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
+3. ~~Publish.~~ **Done 2026-08-09.**
+
+## It's live
+
+**https://sextonjerome-cmyk.github.io/food-app/**
+
+Public repo `sextonjerome-cmyk/food-app`, GitHub Pages on from `main` at root,
+HTTPS enforced. Every file verified served from the live URL, all 11 recipes
+included.
+
+**Jerome's one manual step:** open that URL in Chrome on the Samsung and tap
+**Add to Home Screen**. After that, every `git push` updates his phone.
+
+**Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
+Currently `frigo-v2`.
 
 ## How to look at it
 
