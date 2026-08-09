@@ -594,9 +594,15 @@ function screenFridge(){
   const addAlways = typed ? '' :
     `<button class="btn ghost" data-act="focus-search">${svg('i-plus')} Add something that isn&rsquo;t listed</button>`;
 
+  /* Above the list, not below it. Each tab holds forty-odd rows, so anything
+     placed after them lands a couple of thousand pixels off the bottom of a
+     phone screen — which is exactly how the last two affordances got lost. */
+  const sayAll = typed ? '' :
+    `<button class="btn" data-act="paste-list">${svg('i-speak')} Say or paste my whole kitchen</button>`;
+
   const count = Object.values(inv).filter(v => v && v.have).length;
 
-  return tabs + search + addBlock
+  return tabs + search + addBlock + sayAll
     + (items.length
         ? `<div class="group">${rows}</div>`
         : typed
@@ -881,21 +887,67 @@ function tabForAisle(aisle){
   return 'pantry';
 }
 
+/* Dictated speech rarely has commas in it — "eggs some milk harissa" arrives as
+   one run. These are the words people put between items when they're talking,
+   so they mark a boundary as reliably as a comma does. */
+const LIST_SPLIT = /[,;\n\r]+|\b(?:and|plus|also|then|some|a|an|few|couple)\b/i;
+
+/* Even after splitting, one fragment often holds several things — someone
+   reeling off "eggs milk harissa chicken thighs" pauses for none of it. So
+   rather than trusting the separators, walk the words and take the longest
+   run that matches something we know. Longest-first matters: "double cream"
+   has to win over the "cream" sitting inside it. */
+const MAX_ITEM_WORDS = 4;
+
+/* How many words actually carry meaning, once filler is dropped. */
+function sigCount(name){
+  const p = itemParts(name);
+  return p ? p.mods.size + 1 : 0;
+}
+
+/* sameItem lets a name match when one side's qualifiers are a subset of the
+   other's — right for "tomatoes" vs "ripe tomatoes", disastrous here, because
+   "eggs milk butter garlic" would match plain "garlic" and eat the three words
+   in front of it. Inside a window, both sides must weigh the same. */
+function harvestKnown(words, shelf){
+  const found = [];
+  let i = 0;
+  while (i < words.length){
+    let hit = null, span = 0;
+    for (let n = Math.min(MAX_ITEM_WORDS, words.length - i); n >= 1; n--){
+      const phrase = words.slice(i, i + n).join(' ');
+      const weight = sigCount(phrase);
+      if (!weight) continue;
+      const match = shelf.find(k => norm(k.name) === phrase)
+                 || shelf.find(k => sigCount(k.name) === weight && sameItem(k.name, phrase));
+      if (match){ hit = match; span = n; break; }
+    }
+    if (hit){ found.push(hit); i += span; }
+    else i++;
+  }
+  return found;
+}
+
 function applyItemList(text){
   const ticked = [], added = [], unknown = [];
-  String(text).split(/[,;\n\r]+|\band\b/i).forEach(raw => {
-    let s = norm(String(raw).replace(QTY_LEAD, '').replace(LIST_NOISE, ' '))
-              .replace(/[^a-z0-9'\s-]/g,' ').replace(/\s+/g,' ').trim();
+  const shelf = allItems();
+  String(text).split(LIST_SPLIT).forEach(raw => {
+    const s = norm(String(raw).replace(QTY_LEAD, '').replace(LIST_NOISE, ' '))
+                .replace(/[^a-z0-9'\s-]/g,' ').replace(/\s+/g,' ').trim();
     if (s.length < 2) return;
     if (!itemParts(s)) { unknown.push(raw.trim()); return; }
 
-    const known = allItems().find(i => norm(i.name) === s)
-               || allItems().find(i => sameItem(i.name, s));
-    if (known){
-      state.inventory[known.tab][known.name] = { have:true, low:false };
-      ticked.push(known.name);
+    const hits = harvestKnown(s.split(' '), shelf);
+    if (hits.length){
+      hits.forEach(k => {
+        if (ticked.includes(k.name)) return;
+        state.inventory[k.tab][k.name] = { have:true, low:false };
+        ticked.push(k.name);
+      });
       return;
     }
+    /* Nothing in the fragment is recognised, so take it whole — that's how a
+       genuinely new item like "urfa biber" survives instead of being chopped. */
     const tab = tabForAisle(aisleOf(s));
     if (!state.custom[tab].some(o => norm(o.name) === s))
       state.custom[tab].push({ name:s, aisle:aisleOf(s, tab), staple:false });
@@ -918,10 +970,12 @@ function reportList(r){
 }
 
 function openPasteList(){
-  openSheet(`<h2>Paste what you&rsquo;ve got</h2>
-    <p class="hint">Commas or one per line. Quantities are fine &mdash; they&rsquo;re ignored.</p>
-    <textarea data-role="listbox" rows="7" placeholder="eggs, harissa, chicken thighs,
-2 boxes of coriandre, spring onions"></textarea>
+  openSheet(`<h2>Say what you&rsquo;ve got</h2>
+    <p class="hint">Tap the box, then the <b>microphone</b> on your keyboard, and just say
+       your kitchen out loud. Or paste a list. Quantities and the word &ldquo;and&rdquo; are
+       fine &mdash; it sorts them out.</p>
+    <textarea data-role="listbox" rows="7" placeholder="I've got eggs, some milk, harissa,
+chicken thighs, a bunch of spring onions and prawns"></textarea>
     <button class="btn" data-act="apply-list">Add all of it</button>
     <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
   const box = document.querySelector('[data-role=listbox]');
