@@ -69,11 +69,55 @@ salmon fillets or two bone-in thighs is genuinely what that basket holds.
 At 4 servings the app now says *"Tight fit in your 2 qt air fryer at 4 servings —
 cook it in two batches"* — verified on screen.
 
-### Fixed while checking
+## Filling the kitchen — three ways in
 
-`app.js` had no `other` entry in `CUISINES`, so the two recipes with
-`cuisine: "other"` rendered as **"FOOD"** in the eyebrow and could not be
-filtered to. Added `['other','Other']`.
+1. **Tap a row.** Each tab holds 45-odd items; tapping ticks it.
+2. **Type in the search box.** Finds an item, or offers to add what you typed.
+   If the word is a synonym of something already listed it offers to tick *that*
+   instead of making a duplicate, and names the tab it lives on.
+3. **"Say or paste my whole kitchen"** — the fast one. Under the search box on
+   the Fridge screen. Tap it, tap the **keyboard's microphone**, say the kitchen
+   out loud. One spoken sentence ticked seven items in testing. No link, no
+   server, no API key, works offline.
+
+A `#have=eggs,harissa,prawns` link also works (Claude can generate one; tapping
+it ticks the lot) — kept because it costs nothing, but the microphone is the
+route to show people.
+
+### It understands his words
+
+Names reduce to a head noun plus qualifying words, through a synonym table
+covering the French and British names Jerome actually uses: coriandre/coriander →
+cilantro, courgette, aubergine, prawns, double cream, mince, pul biber,
+doubanjiang, garbanzo, spring onions/scallions.
+
+**Deliberately narrow as well as wide** — "chicken stock" matches "chicken broth"
+but **not** "beef stock"; "black pepper" never matches "red bell pepper".
+31 cases including every false-positive guard are verified against real recipe
+data via `window.FrigoTest`.
+
+## Bugs found and fixed — the ones worth remembering
+
+- **An always-on overlay swallowed every tap.** `.sheet{display:flex}` outranks
+  the browser's `[hidden]{display:none}`, so the bottom sheet sat permanently at
+  `inset:0, z-index:70` over the whole app. Two symptoms, one cause: nothing was
+  tappable, and both themes looked washed out (that was its scrim).
+  **It shipped because the phone check used synthetic `.click()`, which skips
+  hit-testing entirely.** `check-phone` now requires real touch events.
+- **Anything rendered after a long list is off the bottom of the screen.** Three
+  separate affordances got lost this way (y≈2824 on a 915-tall screen). Put
+  actions *above* the list.
+- **`render()` swallowed exceptions**, leaving the previous screen on the glass —
+  a typo read as "the app is unresponsive". Failures are shown now.
+- **A tapped `#have=` link did nothing when the app was already open**, because
+  changing only the hash is a same-document navigation. Handled on `hashchange`.
+- **`sameItem`'s subset rule ate words.** "eggs milk butter garlic" matched plain
+  *garlic* and swallowed the three words in front of it — nine spoken items came
+  back as three. Window matching now requires equal significant-word weight.
+- **`CUISINES` had no `other` entry**, so two recipes rendered as "FOOD" and
+  couldn't be filtered to.
+- **The shopping list guessed each item's aisle** from its name while every
+  ingredient already declares a hand-checked one.
 
 ## Verified 2026-08-09
 
@@ -88,7 +132,12 @@ recipes loaded:
 - **State survives reload** — ratings, shopping list and ticked inventory all came
   back.
 - **Console clean**, zero errors, zero warnings.
-- `sw.js` `CACHE_VERSION` bumped to `frigo-v2`.
+- **Driven with real taps**, not synthetic clicks — filters, bottom nav, ticking
+  an ingredient, opening a recipe, the servings stepper, star rating, cook-along,
+  and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
+- **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
+  38 — all raised.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v7`** (seven deploys). Bump it every time.
 
 ## Then
 
