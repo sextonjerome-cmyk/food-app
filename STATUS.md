@@ -93,10 +93,21 @@ Two routes, because the list lives in two places.
   follow the new name. Renaming a built-in row hides the original and adds the
   corrected one beside it, so it looks like an edit in place. Renaming onto a
   name that already exists merges the two instead of making a duplicate.
-- **On the computer** — open **`items.html`**. All 144 rows, each with its name,
-  its aisle and a staple toggle. It refuses to hand you a file with a duplicate
-  or an empty name in it. **Download ingredients.js** and drop it in the folder,
-  replacing the old one; a round trip through it was verified byte-identical.
+- **On the computer** — open **`items.html`**. It shows **two** lists, and the
+  difference matters:
+  - **Your own items** — what he added inside the app. These live in
+    `localStorage`, so the page only sees them when it's opened at the *same
+    origin* he uses the app at. Editing them saves straight back to the app. A
+    button moves them into the built-in list for good.
+  - **The built-in list** — all 144 rows from `ingredients.js`, each with its
+    name, aisle and staple toggle. It refuses to hand you a file with a
+    duplicate or an empty name. **Download ingredients.js**, drop it in the
+    folder; a round trip through it was verified byte-identical.
+
+  **This caught him out once.** He opened the page expecting the items he'd added
+  and saw only the shipped list. If the page finds no Frigo data at that address
+  it now says so, names the address, and points out that phone data stays on the
+  phone.
 
 The list itself moved out of `app.js` into **`ingredients.js`**, one item per
 line — that alone makes it editable in VS Code without hunting through code.
@@ -163,7 +174,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v8`** (eight deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v9`** (nine deploys). Bump it every time.
 
 ## Then
 
@@ -187,7 +198,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v8`.
+Currently `frigo-v9`.
 
 ## How to look at it
 

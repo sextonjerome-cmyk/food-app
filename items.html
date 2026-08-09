@@ -76,6 +76,8 @@ body{padding:0}
 .warn{
   color:var(--need);font-size:13.5px;margin:10px 2px 0;
 }
+.ed .hint{font-size:13.5px;color:var(--ink-2);line-height:1.5;margin:10px 2px 0}
+.sect .lede{margin:12px 2px 0;font-size:14.5px}
 
 .saver{
   position:fixed;left:0;right:0;bottom:0;z-index:60;
@@ -103,10 +105,10 @@ body{padding:0}
 
 <div class="ed">
   <h1>Ingredient list</h1>
-  <p class="lede">These are the tick-boxes you start from on the Fridge screen. Fix a
-    spelling, move something to a different aisle, add or remove a line — then
-    <b>download the file and drop it into the Food App folder</b>, replacing the old
-    <code>ingredients.js</code>. Nothing here saves by itself.</p>
+  <p class="lede">Two lists live here. <b>Your own items</b> are the ones you added inside
+    the app — those save straight back to it. <b>The built-in list</b> is the set of
+    tick-boxes the app ships with; changing that one means downloading a file and
+    dropping it into the Food App folder.</p>
 
   <div class="tools">
     <div class="searchbox">
@@ -115,6 +117,7 @@ body{padding:0}
     <button class="btn ghost sm" id="revert">Undo all my changes</button>
   </div>
 
+  <div id="mine"></div>
   <div id="sections"></div>
 </div>
 
@@ -143,6 +146,7 @@ const AISLES = [
   ['frozen','Frozen'], ['spices','Spices'], ['other','Other']
 ];
 
+const STORE = 'frigo.v1';
 const src = window.FRIGO_INGREDIENTS;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c =>
@@ -168,6 +172,165 @@ const read = () => {
 const original = read();
 let data = read();
 let filter = '';
+
+/* --------------------------------------------- the items Jerome added himself
+
+   These aren't in ingredients.js — they live in the app's own storage, which is
+   tied to this browser at this address. Added on the Samsung, they are on the
+   Samsung; nothing here can reach across. `was` remembers the name each row had
+   when it loaded, so a rename can carry the ticked state with it. */
+function readMine(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch(e){ s = null; }
+  const out = { store:s, items:{} };
+  TABS.forEach(t => {
+    const list = (s && s.custom && s.custom[t]) || [];
+    out.items[t] = list.map(o => ({ name:o.name, aisle:o.aisle || 'other',
+                                    staple:!!o.staple, was:o.name }));
+  });
+  return out;
+}
+let mine = readMine();
+let mineNote = '';
+const mineCount = () => TABS.reduce((n,t) => n + mine.items[t].length, 0);
+
+function renderMine(){
+  const box = $('#mine');
+  const where = `<code>${esc(location.origin === 'null' ? 'this file' : location.origin)}</code>`;
+  const note = mineNote
+    ? `<p class="hint" data-role="mine-status"><b>${esc(mineNote)}</b></p>` : '';
+
+  if (!mine.store){
+    box.innerHTML = `<section class="sect"><header><h2>Your own items</h2></header>
+      <p class="lede">Nothing saved at ${where}. The app keeps your kitchen in the
+      browser you use it in, so open this page from the <b>same address you open
+      Frigo at</b> and your items appear here.</p>
+      <p class="lede">If you added them on your phone, they are on the phone — this
+      computer can't see them. Fix those on the phone itself: tap the
+      <b>&plus;</b> on the row, then <b>Fix the spelling</b>.</p>${note}</section>`;
+    return;
+  }
+  if (!mineCount()){
+    box.innerHTML = `<section class="sect"><header><h2>Your own items</h2>
+      <span class="n">none right now</span></header>
+      <p class="lede">Frigo is saving here, but there are no items of your own in this
+      browser — everything ticked came from the built-in list below.</p>${note}</section>`;
+    return;
+  }
+
+  const rows = TABS.filter(t => mine.items[t].length).map(t => `
+    <div class="eyebrow" style="padding:14px 2px 6px">${LABEL[t]}</div>
+    ${mine.items[t].map((it, i) => `
+      <div class="erow" data-mtab="${t}" data-mi="${i}">
+        <input type="text" value="${esc(it.name)}" data-role="name"
+               spellcheck="false" autocapitalize="none">
+        <select data-role="aisle">${AISLES.map(([v,l]) =>
+          `<option value="${v}"${it.aisle===v?' selected':''}>${l}</option>`).join('')}</select>
+        <label class="stap${it.staple?' on':''}">
+          <input type="checkbox" data-role="staple"${it.staple?' checked':''}>staple</label>
+        <button class="del" data-role="del" aria-label="Remove ${esc(it.name)}">&times;</button>
+      </div>`).join('')}`).join('');
+
+  box.innerHTML = `<section class="sect"><header><h2>Your own items</h2>
+      <span class="n">${mineCount()} you added</span></header>
+    ${rows}
+    <div class="tools" style="margin-top:14px">
+      <button class="btn sm" data-role="save-mine">Save these back to the app</button>
+      <button class="btn ghost sm" data-role="promote">Move them into the built-in list</button>
+    </div>
+    <p class="hint" data-role="mine-status">${mineNote ? `<b>${esc(mineNote)}</b>`
+      : `Saved at ${where}. Renaming one keeps it ticked and keeps it on your
+         shopping list.`}</p></section>`;
+}
+
+function saveMine(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch(e){ s = null; }
+  if (!s) return false;
+  s.custom = s.custom || {};
+  s.inventory = s.inventory || {};
+  TABS.forEach(t => {
+    const inv = s.inventory[t] = s.inventory[t] || {};
+    const before = (s.custom[t] || []).map(o => o.name);
+    const hidden = (s.hidden && s.hidden[t]) || [];
+    const onShelf = (src[t] || []).filter(([n]) => !hidden.includes(n));
+    const kept = [];
+    mine.items[t].forEach(o => {
+      const name = o.name.trim().replace(/\s+/g,' ');
+      if (!name) return;
+      if (o.was && o.was !== name && inv[o.was]){
+        inv[name] = inv[o.was];
+        delete inv[o.was];
+      }
+      /* Correcting "gruyere cheeze" to "gruyère" lands on a name the built-in
+         list already has. Keep the tick — on the spelling that row actually
+         uses — and drop the duplicate. */
+      const already = onShelf.find(([n]) => norm(n) === norm(name));
+      if (already){
+        const exact = already[0];
+        if (inv[name] && exact !== name){ inv[exact] = inv[name]; delete inv[name]; }
+        return;
+      }
+      if (kept.some(k => norm(k.name) === norm(name))) return;
+      kept.push({ name, aisle:o.aisle, staple:o.staple });
+    });
+    const survivors = mine.items[t].map(o => o.was).filter(Boolean);
+    before.forEach(n => { if (!survivors.includes(n)) delete inv[n]; });
+    s.custom[t] = kept;
+  });
+  localStorage.setItem(STORE, JSON.stringify(s));
+  mine = readMine();
+  return true;
+}
+
+$('#mine').addEventListener('input', e => {
+  const row = e.target.closest('.erow');
+  if (!row) return;
+  const it = mine.items[row.dataset.mtab][Number(row.dataset.mi)];
+  const role = e.target.dataset.role;
+  if (role === 'name')  it.name = e.target.value;
+  if (role === 'aisle') it.aisle = e.target.value;
+  if (role === 'staple'){
+    it.staple = e.target.checked;
+    e.target.closest('.stap').classList.toggle('on', it.staple);
+  }
+});
+
+$('#mine').addEventListener('click', e => {
+  const del = e.target.closest('[data-role=del]');
+  if (del){
+    const row = del.closest('.erow');
+    mine.items[row.dataset.mtab].splice(Number(row.dataset.mi), 1);
+    renderMine();
+    return;
+  }
+  if (e.target.closest('[data-role=save-mine]')){
+    const ok = saveMine();
+    mineNote = ok ? 'Saved. Reload Frigo and the new spelling is there.'
+                  : 'Couldn’t save — no Frigo data at this address.';
+    renderMine();
+    return;
+  }
+  if (e.target.closest('[data-role=promote]')){
+    let n = 0;
+    TABS.forEach(t => {
+      mine.items[t].forEach(it => {
+        const name = it.name.trim().replace(/\s+/g,' ');
+        if (!name) return;
+        if (data[t].some(d => norm(d.name) === norm(name))) return;
+        data[t].push({ name, aisle:it.aisle, staple:it.staple });
+        n++;
+      });
+      mine.items[t] = [];
+    });
+    saveMine();
+    mineNote = n
+      ? `${n} moved into the built-in list — now download the file below and drop it in the folder.`
+      : 'They were already in the built-in list.';
+    renderMine(); render();
+    return;
+  }
+});
 
 /* ------------------------------------------------------------------ render */
 function render(){
@@ -369,6 +532,7 @@ window.addEventListener('beforeunload', e => {
   if (countChanges()){ e.preventDefault(); e.returnValue = ''; }
 });
 
+renderMine();
 render();
 })();
 </script>
