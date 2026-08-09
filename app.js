@@ -1349,6 +1349,15 @@ if (fromLink) save();
 render();
 if (fromLink) reportList(fromLink);
 
+/* Tapping a #have= link while the app is ALREADY open only changes the hash —
+   the page never reloads, so the boot call above never runs. That is the normal
+   case for an installed app, and without this the link silently does nothing. */
+window.addEventListener('hashchange', () => {
+  const r = applyLinkList();
+  if (!r) return;
+  save(); render(); reportList(r);
+});
+
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape'){
     if (!$('#sheet').hidden) closeSheet();
