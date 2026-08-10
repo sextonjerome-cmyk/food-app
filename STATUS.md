@@ -1,6 +1,6 @@
 # Frigo — where this stands
 
-**Last worked: 2026-08-09.** Read `CLAUDE.md` first, then `.claude/rules/`.
+**Last worked: 2026-08-10.** Read `CLAUDE.md` first, then `.claude/rules/`.
 
 ## What Frigo is
 
@@ -112,6 +112,31 @@ Two routes, because the list lives in two places.
 The list itself moved out of `app.js` into **`ingredients.js`**, one item per
 line — that alone makes it editable in VS Code without hunting through code.
 
+### Running out, and never running out — added 2026-08-10
+
+Two things Jerome asked for on the Fridge screen.
+
+- **Untick something and it offers the shopping list.** Tapping a ticked row off
+  raises a toast that says *"Out of eggs"* with an **Add to list** button beside
+  it. Tap it and the item lands on the list under its proper aisle. It stays
+  quiet if the item is already on the list, and it's a toast rather than a sheet
+  on purpose — he clears out five things at once and a dialog each time would be
+  unusable. Deleting an item outright is still ⊕ → *Remove from my list*.
+- **Always in stock.** For salt, oil, the things he never actually runs out of.
+  **Hold a row for half a second** and it turns green with an `ALWAYS` badge; hold
+  again to undo. The same switch is the first entry in the ⊕ menu, because a
+  gesture nobody can see is not a feature on its own. Always-items stay ticked,
+  a tap won't untick them (it offers to change the flag instead), they're left
+  out of *"what did you finish?"*, and `usedup-done` can't clear them.
+
+Stored as `always: true` alongside `have`/`low` in the same inventory entry, so
+old saves merge forward untouched.
+
+**Three things that had to be got right and were verified by finger:**
+a 200 ms press still just ticks; dragging a scroll over a row changes nothing;
+and the click that follows a completed hold is swallowed, or the hold would tick
+the row on its way out.
+
 ### It understands his words
 
 Names reduce to a head noun plus qualifying words, through a synonym table
@@ -152,6 +177,11 @@ data via `window.FrigoTest`.
   middle of the ingredients, past the photo. Now the window scrolls to the top
   when the screen changes, and only then: ticking a fridge item must not throw
   you back up. Invisible until photos arrived and there was something to miss.
+- **The toast could only ever be half the screen wide.** `position:fixed` with
+  `left:50%` leaves the box just the right-hand half to shrink into, so as soon
+  as it carried a button beside the text, "Out of eggs" broke across two lines.
+  Invisible while every toast was one short line. Both edges are pinned now and
+  it centres by `margin-inline:auto`.
 - **The ⊕ on an inventory row was a 34 px target** and the 44 px audit never saw
   it, because the audit only measured `button`, `input` and `.tab` — the ⊕ is a
   `span`. It's 44 px now, and the row height is unchanged because the padding
@@ -180,7 +210,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v10`** (ten deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v11`** (eleven deploys). Bump it every time.
 
 ## Photos — done 2026-08-09
 
@@ -227,7 +257,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v10`.
+Currently `frigo-v11`.
 
 ## How to look at it
 

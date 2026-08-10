@@ -99,12 +99,29 @@ const esc = s => String(s).replace(/[&<>"']/g, c =>
 const norm = s => String(s).toLowerCase().trim().replace(/\s+/g,' ');
 const svg = (id, cls) => `<svg class="${cls||'icon'}" aria-hidden="true"><use href="#${id}"></use></svg>`;
 
-function toast(msg){
+/* A toast can carry one button. Unticking the last of something should offer
+   the shopping list right there — a sheet on every untick would be unusable
+   when he's clearing out ten things at once. */
+function toast(msg, action){
   const t = $('#toast');
-  t.textContent = msg;
+  t.textContent = '';
+  const label = document.createElement('span');
+  label.textContent = msg;
+  t.appendChild(label);
+  if (action){
+    const b = document.createElement('button');
+    b.className = 'toast-act';
+    b.textContent = action.label;
+    b.addEventListener('click', () => {
+      clearTimeout(toast._t);
+      t.hidden = true;
+      action.fn();
+    });
+    t.appendChild(b);
+  }
   t.hidden = false;
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => { t.hidden = true; }, 2400);
+  toast._t = setTimeout(() => { t.hidden = true; }, action ? 5200 : 2400);
 }
 
 /* every item across every tab, merged with Jerome's own additions */
@@ -258,6 +275,22 @@ function inventoryHas(name){
     }
   }
   return false;
+}
+/* Flagged "always in stock" — salt, oil, the things he never actually runs out
+   of. They stay ticked, they never get offered to the shopping list, and the
+   "what did you finish?" sheet leaves them alone. */
+function isAlways(name){
+  for (const tab of TABS){
+    const inv = state.inventory[tab];
+    for (const key in inv){
+      if (!inv[key] || !inv[key].always) continue;
+      if (norm(key) === norm(name) || sameItem(key, name)) return true;
+    }
+  }
+  return false;
+}
+function onShoppingList(name){
+  return state.shopping.some(s => !s.done && norm(s.item) === norm(name));
 }
 function inventoryLow(name){
   for (const tab of TABS){
@@ -545,10 +578,12 @@ function screenFridge(){
   const inv = state.inventory[tab];
   const rows = items.map(i => {
     const st = inv[i.name] || {};
-    return `<button class="item ${st.have?'on':''}" data-item="${esc(i.name)}">
+    const flag = st.always ? `<span class="always-tag">ALWAYS</span>`
+               : st.have && st.low ? `<span class="low">LOW</span>` : '';
+    return `<button class="item ${st.have?'on':''} ${st.always?'always':''}" data-item="${esc(i.name)}">
       <span class="box"></span>
       <span class="name">${esc(i.name)}</span>
-      ${st.have && st.low ? `<span class="low">LOW</span>` : ''}
+      ${flag}
       <span class="more" data-more="${esc(i.name)}" role="presentation">${svg('i-plus','icon-sm')}</span>
     </button>`;
   }).join('');
@@ -588,6 +623,7 @@ function screenFridge(){
     `<button class="btn" data-act="paste-list">${svg('i-speak')} Say or paste my whole kitchen</button>`;
 
   const count = Object.values(inv).filter(v => v && v.have).length;
+  const always = Object.values(inv).filter(v => v && v.always).length;
 
   return tabs + search + addBlock + sayAll
     + (items.length
@@ -596,7 +632,9 @@ function screenFridge(){
           ? ''
           : `<div class="empty"><strong>Nothing here yet</strong><p>Type a name above to add your first item.</p></div>`)
     + addAlways
-    + `<p class="eyebrow" style="text-align:center;padding-top:6px">${count} item${count===1?'':'s'} in your ${TAB_LABEL[tab].toLowerCase()}</p>`;
+    /* No "hold a row to…" line down here. Forty-odd rows above it means nobody
+       ever reads it — the ⊕ menu is where that gets taught instead. */
+    + `<p class="eyebrow" style="text-align:center;padding-top:6px">${count} item${count===1?'':'s'} in your ${TAB_LABEL[tab].toLowerCase()}${always ? ` &middot; ${always} always in stock` : ''}</p>`;
 }
 
 /* ------------------------------------------------------------- LIST */
@@ -991,6 +1029,19 @@ function addToShopping(item, qty, fromTitle, aisle){
   return true;
 }
 
+function toggleAlways(tab, name){
+  const inv = state.inventory[tab];
+  const cur = inv[name] || { have:false, low:false };
+  const on = !cur.always;
+  inv[name] = on ? { have:true, low:false, always:true }
+                 : { have:cur.have, low:cur.low };
+  /* A held row changes state with nothing under the finger to show it — the
+     buzz is the only feedback until the render lands. */
+  try{ navigator.vibrate && navigator.vibrate(on ? 18 : 8); }catch(e){}
+  save(); render();
+  toast(on ? name + ' — always in stock' : name + ' — back to normal');
+}
+
 function setTheme(){
   const t = state.prefs.theme;
   if (t === 'auto') document.documentElement.removeAttribute('data-theme');
@@ -1030,8 +1081,45 @@ function isoPlus(days){
   return d.toISOString().slice(0,10);
 }
 
+/* -------------------------------------------------- hold to keep in stock */
+/* The same switch lives in the ⊕ menu. A gesture nobody can see isn't a
+   feature on its own, so the hold is the shortcut, not the only way in. */
+let hold = null;
+let swallowClick = false;
+
+function cancelHold(){
+  if (!hold) return;
+  clearTimeout(hold.timer);
+  hold = null;
+}
+
+document.addEventListener('pointerdown', e => {
+  const row = e.target.closest('#screen [data-item]');
+  if (!row || e.target.closest('[data-more]')) return;
+  const name = row.dataset.item;
+  hold = { name, x:e.clientX, y:e.clientY, timer:0 };
+  hold.timer = setTimeout(() => {
+    hold = null;
+    /* render() replaces the row, so the click that follows may land nowhere
+       useful — or on whatever takes its place. Eat it either way. */
+    swallowClick = true;
+    setTimeout(() => { swallowClick = false; }, 700);
+    toggleAlways(view.tab, name);
+  }, 500);
+});
+document.addEventListener('pointermove', e => {
+  if (hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 12) cancelHold();
+});
+document.addEventListener('pointerup', cancelHold);
+document.addEventListener('pointercancel', cancelHold);
+document.addEventListener('scroll', cancelHold, true);
+document.addEventListener('contextmenu', e => {
+  if (e.target.closest('#screen [data-item]')) e.preventDefault();
+});
+
 /* ------------------------------------------------------------- events */
 document.addEventListener('click', e => {
+  if (swallowClick){ swallowClick = false; e.preventDefault(); e.stopPropagation(); return; }
   const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
   if (!t) {
     if (e.target.id === 'sheet') closeSheet();
@@ -1055,6 +1143,11 @@ document.addEventListener('click', e => {
     e.stopPropagation();
     const name = t.dataset.more, cur = state.inventory[view.tab][name] || {};
     openSheet(`<h2>${esc(name)}</h2>
+      <button class="btn ghost" data-act="toggle-always" data-name="${esc(name)}">
+        ${cur.always ? 'Not always in stock any more' : 'Always in stock'}</button>
+      <p class="hint">${cur.always
+        ? 'It stays ticked and never lands on the shopping list. Holding the row does this too.'
+        : 'For the things you never run out of. Hold the row on the list to do this without opening this menu.'}</p>
       <button class="btn ${cur.low?'':'ghost'}" data-act="toggle-low" data-name="${esc(name)}">
         ${cur.low ? 'Not running low any more' : 'Mark as running low'}</button>
       <button class="btn ghost" data-act="to-list" data-name="${esc(name)}">Add to shopping list</button>
@@ -1066,8 +1159,21 @@ document.addEventListener('click', e => {
   if (t.dataset.item){
     const name = t.dataset.item, inv = state.inventory[view.tab];
     const cur = inv[name] || { have:false, low:false };
-    inv[name] = { have: !cur.have, low: cur.have ? false : cur.low };
-    save(); render(); return;
+    if (cur.always){
+      toast(name + ' is always in stock', { label:'Change that', fn:() => toggleAlways(view.tab, name) });
+      return;
+    }
+    const nowHave = !cur.have;
+    inv[name] = { have: nowHave, low: nowHave ? cur.low : false };
+    save(); render();
+    /* Ran out of something — the next thing he wants is it on the list. */
+    if (!nowHave && !onShoppingList(name)){
+      toast('Out of ' + name, { label:'Add to list', fn:() => {
+        addToShopping(name, '', '', aisleOf(name, view.tab));
+        save(); render(); toast(name + ' is on your shopping list');
+      }});
+    }
+    return;
   }
   if (t.dataset.shop !== undefined && t.dataset.shop !== ''){
     const s = state.shopping[Number(t.dataset.shop)];
@@ -1155,8 +1261,11 @@ document.addEventListener('click', e => {
       inv[n].low = !inv[n].low; inv[n].have = true;
       closeSheet(); save(); render(); break;
     }
+    case 'toggle-always': {
+      closeSheet(); toggleAlways(view.tab, t.dataset.name); break;
+    }
     case 'to-list': {
-      addToShopping(t.dataset.name, '', '');
+      addToShopping(t.dataset.name, '', '', aisleOf(t.dataset.name, view.tab));
       closeSheet(); save(); render(); toast('Added to your list'); break;
     }
     case 'rename-item': {
@@ -1242,7 +1351,7 @@ document.addEventListener('click', e => {
     case 'used-up': {
       const r = findRecipe(view.recipeId);
       const a = analyse(r, state.prefs.servings);
-      const rows = a.have.filter(i => !i.staple).map((ing, i) =>
+      const rows = a.have.filter(i => !i.staple && !isAlways(i.item)).map((ing, i) =>
         `<button class="item" data-usedup="${esc(ing.item)}"><span class="box"></span>
           <span class="name">${esc(ing.item)}</span></button>`).join('');
       openSheet(`<h2>What did you finish?</h2>
@@ -1258,7 +1367,8 @@ document.addEventListener('click', e => {
       picked.forEach(name => {
         TABS.forEach(tab => {
           for (const k in state.inventory[tab])
-            if (norm(k) === norm(name)) state.inventory[tab][k] = { have:false, low:false };
+            if (norm(k) === norm(name) && !state.inventory[tab][k].always)
+              state.inventory[tab][k] = { have:false, low:false };
         });
         addToShopping(name, '', '');
       });

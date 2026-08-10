@@ -321,6 +321,9 @@ p{margin:0}
   border-bottom:1px solid var(--line);
   color:var(--ink-2);
   transition:color .12s ease;
+  /* held for half a second to flag it always-in-stock — Android would
+     otherwise start selecting the text or pop its own menu */
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
 .item:last-child{border-bottom:none}
 .item .box{
@@ -342,6 +345,14 @@ p{margin:0}
 .item .low{
   font-size:10px;font-weight:700;letter-spacing:.08em;
   color:var(--warn);border:1px solid currentColor;
+  border-radius:3px;padding:2px 5px;flex:none;
+}
+/* always in stock — the "got it" green, not a second accent */
+.item.always .box{background:var(--have);border-color:var(--have)}
+.item.always .name{color:var(--ink)}
+.item .always-tag{
+  font-size:10px;font-weight:700;letter-spacing:.08em;
+  color:var(--have);border:1px solid currentColor;
   border-radius:3px;padding:2px 5px;flex:none;
 }
 /* 44px of finger, not 44px of ink — the row keeps its height because the
@@ -560,7 +571,9 @@ p{margin:0}
 }
 
 .toast{
-  position:fixed;left:50%;transform:translateX(-50%);
+  /* left:50% left it only half the screen to grow into, so a message with a
+     button beside it wrapped or clipped. Pin both edges and centre by margin. */
+  position:fixed;left:20px;right:20px;margin-inline:auto;width:fit-content;
   bottom:calc(var(--tab-h) + 20px + env(safe-area-inset-bottom));
   z-index:80;
   background:var(--surface-2);color:var(--ink);
@@ -568,7 +581,18 @@ p{margin:0}
   border-radius:var(--r-pill);
   padding:11px 18px;font-size:14px;font-weight:560;
   box-shadow:var(--shadow);
-  max-width:calc(100% - 40px);text-align:center;
+  max-width:100%;text-align:center;
+  display:flex;align-items:center;gap:14px;
+}
+/* the toast's one button — 44px of finger, paid for with negative margin so
+   the toast itself stays the same height */
+.toast-act{
+  flex:none;margin:-11px -18px -11px 0;padding:11px 18px;
+  min-height:44px;
+  background:none;border:none;border-left:1px solid var(--line-2);
+  color:var(--accent);font:inherit;font-weight:650;
+  border-radius:0 var(--r-pill) var(--r-pill) 0;
+  cursor:pointer;
 }
 
 @media (prefers-reduced-motion: reduce){
