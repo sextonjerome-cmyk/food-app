@@ -6,8 +6,9 @@
    every entry carries a `vetting` line saying what the actual evidence was.
    Add new ones with the `add-recipe` skill.
 
-   No `photo` fields yet — the app draws its own placeholder tile, which is
-   honest. Real photos go in img/ later.
+   Photos are freely-licensed stills from Wikimedia Commons, credited in
+   `photoCredit` and listed in CREDITS.md. A recipe with no honest photo of the
+   real dish keeps the drawn placeholder instead of borrowing a lookalike.
    ========================================================================== */
 window.RECIPES = [
 
@@ -16,6 +17,9 @@ window.RECIPES = [
   id: "poulet-moutarde",
   title: "Poulet à la Moutarde",
   subtitle: "Mustard cream chicken",
+  photo: "img/poulet-moutarde.webp",
+  photoCredit: { by: "French Recipes", lic: "CC BY-SA 3.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Chicken_Fricasse.jpg" },
   cuisine: "french",
   appliances: ["stove"],
   minutes: 45,
@@ -81,6 +85,9 @@ window.RECIPES = [
   id: "shakshuka",
   title: "Shakshuka",
   subtitle: "Eggs poached in spiced tomato and pepper",
+  photo: "img/shakshuka.webp",
+  photoCredit: { by: "Jarosław Ceborski jarson", lic: "CC0",
+                  url: "https://commons.wikimedia.org/wiki/File:Shakshuka_(Unsplash).jpg" },
   cuisine: "middle-eastern",
   appliances: ["stove"],
   minutes: 40,
@@ -148,6 +155,9 @@ window.RECIPES = [
   id: "menemen",
   title: "Menemen",
   subtitle: "Turkish eggs with peppers and tomato",
+  photo: "img/menemen.webp",
+  photoCredit: { by: "FakirNL", lic: "CC BY-SA 4.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Menemen_in_pan.jpg" },
   cuisine: "turkish",
   appliances: ["stove"],
   minutes: 25,
@@ -209,6 +219,9 @@ window.RECIPES = [
   id: "mapo-tofu",
   title: "Mapo Tofu",
   subtitle: "Sichuan tofu with pork, chilli bean paste and numbing pepper",
+  photo: "img/mapo-tofu.webp",
+  photoCredit: { by: "Rezwalker", lic: "CC BY-SA 4.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Homemade_Mapo_doufu.jpg" },
   cuisine: "asian",
   appliances: ["stove"],
   minutes: 30,
@@ -283,6 +296,9 @@ window.RECIPES = [
   id: "smash-burger",
   title: "Smash Burger",
   subtitle: "Thin patties, lacy crust, cheese in the middle",
+  photo: "img/smash-burger.webp",
+  photoCredit: { by: "Kamil", lic: "CC BY-SA 4.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Smashburger_with_fries.jpg" },
   cuisine: "american",
   appliances: ["stove"],
   minutes: 20,
@@ -345,6 +361,9 @@ window.RECIPES = [
   id: "crevettes-ail-citron",
   title: "Garlic Lemon Butter Shrimp",
   subtitle: "Ten minutes, one pan, a lot of bread",
+  photo: "img/crevettes-ail-citron.webp",
+  photoCredit: { by: "Javier Lastras from España/Spain", lic: "CC BY 2.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Gambas_al_ajillo.jpg" },
   cuisine: "other",
   appliances: ["stove"],
   minutes: 20,
@@ -405,6 +424,9 @@ window.RECIPES = [
   id: "crockpot-beef-stew",
   title: "Crockpot Beef Stew",
   subtitle: "Eight hours away, dinner waiting",
+  photo: "img/crockpot-beef-stew.webp",
+  photoCredit: { by: "A Healthier Michigan from Detroit, United States", lic: "CC BY-SA 2.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Irish_Beef_Stew_(34046928633).jpg" },
   cuisine: "american",
   appliances: ["crockpot", "stove"],
   minutes: 480,
@@ -471,6 +493,9 @@ window.RECIPES = [
   id: "mercimek-lentil-soup",
   title: "Red Lentil Soup with Lemon",
   subtitle: "Cumin, chilli and a whole lemon's worth of lift",
+  photo: "img/mercimek-lentil-soup.webp",
+  photoCredit: { by: "E4024", lic: "CC BY-SA 4.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Red_lentil_soup_from_Turkey.jpg" },
   cuisine: "middle-eastern",
   appliances: ["instantpot", "stove"],
   minutes: 35,
@@ -537,6 +562,9 @@ window.RECIPES = [
   id: "airfryer-salmon",
   title: "Air Fryer Salmon",
   subtitle: "Two fillets, twelve minutes, nothing to wash",
+  photo: "img/airfryer-salmon.webp",
+  photoCredit: { by: "DanaTentis", lic: "CC0",
+                  url: "https://commons.wikimedia.org/wiki/File:Grilled_plated_salmon_fillet.jpg" },
   cuisine: "other",
   appliances: ["airfryer"],
   minutes: 15,
@@ -646,6 +674,9 @@ window.RECIPES = [
   id: "airfryer-chicken-thighs",
   title: "Air Fryer Chicken Thighs",
   subtitle: "Two thighs, shattering skin, salt and nothing else",
+  photo: "img/airfryer-chicken-thighs.webp",
+  photoCredit: { by: "Willis Lam", lic: "CC BY-SA 2.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Roast_Chicken_Legs_and_Thighs_(31196736704).jpg" },
   cuisine: "american",
   appliances: ["airfryer"],
   minutes: 30,

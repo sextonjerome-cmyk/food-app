@@ -146,6 +146,12 @@ data via `window.FrigoTest`.
   couldn't be filtered to.
 - **The shopping list guessed each item's aisle** from its name while every
   ingredient already declares a hand-checked one.
+- **Opening a recipe left you a thousand pixels down it.** `render()` reset
+  `#screen.scrollTop`, but the page scrolls on the *window* — so the reset was
+  a no-op and tapping a card from far down the Cook list dropped you into the
+  middle of the ingredients, past the photo. Now the window scrolls to the top
+  when the screen changes, and only then: ticking a fridge item must not throw
+  you back up. Invisible until photos arrived and there was something to miss.
 - **The ⊕ on an inventory row was a 34 px target** and the 44 px audit never saw
   it, because the audit only measured `button`, `input` and `.tab` — the ⊕ is a
   `span`. It's 44 px now, and the row height is unchanged because the padding
@@ -174,16 +180,39 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v9`** (nine deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v10`** (ten deploys). Bump it every time.
+
+## Photos — done 2026-08-09
+
+**Ten of the eleven recipes have a real photo.** All from Wikimedia Commons,
+all under a licence that permits redistribution (CC0 · CC BY · CC BY-SA),
+720 × 540 WebP, 33–54 KB each, **454 KB for the lot**. Credits are in
+`CREDITS.md` and on screen at the bottom of each recipe. `sw.js` precaches
+them, so the Cook screen is complete offline instead of fetching in the
+kitchen.
+
+**Chickpeas has no photo on purpose.** Every freely-licensed candidate was one
+of three wrong things — a market stall of raw chickpeas, Turkish *leblebi*, or
+an Indian *chana chilli* in sauce. Same call as the empty crockpot slot: an
+honest blank beats a lookalike. The drawn placeholder still covers it.
+
+How it was done, if it needs repeating: search Commons via the API filtering on
+`LicenseShortName`, build **contact sheets and actually look at them** — a
+filename is not evidence the photo shows the dish. Half the plausible titles
+were the wrong food.
+
+Two traps worth knowing:
+- **Python can't reach Commons here** — its cert bundle has expired
+  (`CERTIFICATE_VERIFY_FAILED`). PowerShell's `Invoke-RestMethod` uses the
+  Windows store and works. Do network in PowerShell, image work in Python/PIL.
+- **Commons rate-limits hard** (HTTP 429). Sleep ~2 s between downloads and
+  back off, or you lose most of a batch.
 
 ## Then
 
-1. One free-licence photo per recipe → 600 px WebP, ~40 KB, into `img/`.
-   Until then the app draws its own placeholder tile, which is honest — but it
-   takes about half the screen per card, so photos are the biggest visible win
-   left.
-2. More recipes when wanted. Eleven is a real collection, not a demo; the
+1. More recipes when wanted. Eleven is a real collection, not a demo; the
    `add-recipe` skill does one start to finish.
+2. A photo for the chickpeas if a properly-licensed one ever turns up.
 3. ~~Publish.~~ **Done 2026-08-09.**
 
 ## It's live
@@ -198,7 +227,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v9`.
+Currently `frigo-v10`.
 
 ## How to look at it
 

@@ -368,7 +368,16 @@ function render(){
   bar.innerHTML = topbar();
   main.innerHTML = html;
   renderTabs();
-  main.scrollTop = 0;
+
+  /* The page scrolls on the window, not on #screen, so resetting the element's
+     scrollTop did nothing — tapping a recipe from far down the Cook list landed
+     you a thousand pixels into it, past the photo. Only jump to the top when the
+     screen actually changes; ticking a fridge item must not throw you back up. */
+  const where = view.screen + ':' + (view.recipeId || '') + ':' + view.tab;
+  if (where !== render.last){
+    render.last = where;
+    window.scrollTo(0, 0);
+  }
 }
 
 function topbar(){
@@ -738,7 +747,9 @@ function screenRecipe(){
   <button class="btn ghost" data-act="used-up">${svg('i-fridge')} I cooked it &mdash; what did I use up?</button>
 
   ${r.source ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
-    Adapted from ${esc(r.source.name)}</p>` : ''}`;
+    Adapted from ${esc(r.source.name)}</p>` : ''}
+  ${r.photoCredit ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
+    Photo by ${esc(r.photoCredit.by)} &middot; ${esc(r.photoCredit.lic)}</p>` : ''}`;
 }
 
 /* ------------------------------------------------------- COOK-ALONG */
