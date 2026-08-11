@@ -286,25 +286,30 @@ recipes loaded:
   38 — all raised.
 - `sw.js` `CACHE_VERSION` is at **`frigo-v14`** (fourteen deploys). Bump it every time.
 
-## Photos — done 2026-08-09
+## Photos — 15 of 16, last worked 2026-08-10
 
-**Fifteen of the sixteen recipes have a real photo.** All from Wikimedia Commons,
-all under a licence that permits redistribution (CC0 · CC BY · CC BY-SA), one of
-them from Flickr via Openverse rather than Commons,
-720 × 540 WebP, 33–54 KB each, **454 KB for the lot**. Credits are in
-`CREDITS.md` and on screen at the bottom of each recipe. `sw.js` precaches
-them, so the Cook screen is complete offline instead of fetching in the
-kitchen.
+**Fifteen of the sixteen recipes have a real photo.** 720 × 540 WebP, 34–55 KB
+each, **704 KB for the lot**. Every one is under a licence that permits
+redistribution (CC0 · CC BY · CC BY-SA). Credits are in `CREDITS.md` and on
+screen at the bottom of each recipe. `sw.js` precaches all of them, so the Cook
+screen is complete offline instead of trying to fetch in the kitchen.
 
-**Chickpeas has no photo on purpose.** Every freely-licensed candidate was one
-of three wrong things — a market stall of raw chickpeas, Turkish *leblebi*, or
-an Indian *chana chilli* in sauce. Same call as the empty crockpot slot: an
-honest blank beats a lookalike. The drawn placeholder still covers it.
+**Look wider than Wikimedia.** Fourteen came from Commons; the fifteenth came
+from Flickr through **[Openverse](https://api.openverse.org)**, which aggregates
+Flickr, Commons, Nappy and Rawpixel behind one API and filters by licence. No
+key needed. Commons alone had nothing usable for crispy chickpeas across two
+passes; Openverse found it on the first. **Start there next time.**
 
-How it was done, if it needs repeating: search Commons via the API filtering on
-`LicenseShortName`, build **contact sheets and actually look at them** — a
-filename is not evidence the photo shows the dish. Half the plausible titles
-were the wrong food.
+**Za'atar Roast Chicken is the one still without.** Three passes, two sources,
+about forty candidates looked at individually: shawarma, a lahmacun stack, a
+shopfront, restaurant plates, a raw chicken, and a lot of *musakhan* — chicken
+on taboon bread under sumac onions, a close cousin but a different dish.
+**Jerome asked for a photo on everything**, so this is a known gap rather than a
+decision, and it stays blank only until a real one turns up.
+
+How it is done: search by licence, then build **contact sheets and actually look
+at them**. A filename is not evidence the photo shows the dish — roughly half of
+every plausible-looking title turned out to be the wrong food.
 
 Two traps worth knowing:
 - **Python can't reach Commons here** — its cert bundle has expired
@@ -317,7 +322,8 @@ Two traps worth knowing:
 
 1. More recipes when wanted. Sixteen covers every appliance he owns; the
    `add-recipe` skill does one start to finish.
-2. A photo for the chickpeas if a properly-licensed one ever turns up.
+2. A photo for Za'atar Roast Chicken — the last one without. Try Openverse
+   with new search terms; Commons and Openverse are both dry so far.
 3. ~~Publish.~~ **Done 2026-08-09.**
 
 ## It's live
