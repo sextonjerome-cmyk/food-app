@@ -1,5 +1,11 @@
 # Frigo
 
+### ➡️ **[Open the app: sextonjerome-cmyk.github.io/food-app](https://sextonjerome-cmyk.github.io/food-app/)**
+
+*This page is the source code. The link above is the actual app.*
+
+---
+
 A private, offline recipe app for a phone.
 
 Tick off what's actually in your fridge, freezer, pantry and spice rack, and it tells you
@@ -45,5 +51,9 @@ anywhere else.
 
 ## Install it on a phone
 
-Open the GitHub Pages URL in Chrome on Android and tap **Add to Home Screen**. It installs
-as a normal app icon and works offline from then on.
+1. On the phone, open **https://sextonjerome-cmyk.github.io/food-app/** in Chrome.
+2. Tap the **⋮** menu, top right.
+3. Tap **Add to Home Screen**, then **Install**.
+
+It installs as a normal app icon and works offline from then on. Every push to this repo
+updates it — there is nothing to reinstall.
