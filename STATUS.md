@@ -130,7 +130,7 @@ Two routes, because the list lives in two places.
     `localStorage`, so the page only sees them when it's opened at the *same
     origin* he uses the app at. Editing them saves straight back to the app. A
     button moves them into the built-in list for good.
-  - **The built-in list** — all 164 rows from `ingredients.js`, each with its
+  - **The built-in list** — all 157 rows from `ingredients.js`, each with its
     name, aisle and staple toggle. It refuses to hand you a file with a
     duplicate or an empty name. **Download ingredients.js**, drop it in the
     folder; a round trip through it was verified byte-identical.
