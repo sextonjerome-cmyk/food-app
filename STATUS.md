@@ -213,6 +213,13 @@ data via `window.FrigoTest`.
   as it carried a button beside the text, "Out of eggs" broke across two lines.
   Invisible while every toast was one short line. Both edges are pinned now and
   it centres by `margin-inline:auto`.
+- **The app quoted the wrong price for an AI recipe** — twice, in the settings
+  hint and in the sheet that opens when you tap Invent with no key. Both said
+  "a fraction of a penny". Opus 5 is $5 in and $25 out per million tokens, so a
+  recipe is nearer **five cents** — out by roughly twenty times, on a number
+  Jerome was using to decide whether to pay at all. Both now say five cents, and
+  both spell out that an API key is billed separately from a Claude subscription,
+  because that is the thing he actually got wrong.
 - **The Cook screen only ever showed eight cards** while the line above them
   said how many matched. With eleven recipes you barely noticed; at sixteen the
   header read "16 matches" over eight cards and half the collection could not be
@@ -251,7 +258,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v12`** (twelve deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v13`** (thirteen deploys). Bump it every time.
 
 ## Photos — done 2026-08-09
 
@@ -298,7 +305,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v12`.
+Currently `frigo-v13`.
 
 ## How to look at it
 

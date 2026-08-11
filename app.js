@@ -883,8 +883,10 @@ function screenSettings(){
       <input id="apikey" type="password" data-role="apikey" value="${esc(p.apiKey)}"
              placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
       <p class="hint">Only needed for the &ldquo;invent me something&rdquo; button. Stored on this
-         phone and nowhere else. Get one at console.anthropic.com &mdash; it costs a fraction of
-         a penny per recipe.</p>
+         phone and nowhere else. You get a key at console.anthropic.com, and it is billed
+         separately from a Claude subscription &mdash; having one does not give you the other.
+         Each invented recipe costs <b>roughly five cents</b>, so five dollars of credit is
+         about a hundred of them.</p>
     </div>
   </div>
 
@@ -1443,8 +1445,10 @@ document.addEventListener('click', e => {
       if (!state.prefs.apiKey){
         openSheet(`<h2>Invent me something</h2>
           <p class="hint">This one asks Claude to make up a recipe from exactly what&rsquo;s in
-             your kitchen right now. It needs your own API key, which lives on this phone only.
-             Add it in Settings &mdash; a recipe costs a fraction of a penny.</p>
+             your kitchen right now. It needs an API key of your own, which lives on this phone
+             only. That is a separate thing from a Claude subscription, and it is billed
+             separately &mdash; about five cents a recipe.</p>
+          <p class="hint">Everything else in Frigo works without it, offline, forever.</p>
           <button class="btn" data-act="go-settings">Open settings</button>
           <button class="btn ghost" data-act="close-sheet">Not now</button>`);
         break;
