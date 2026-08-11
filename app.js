@@ -56,6 +56,11 @@ function load(){
     if(!raw) { seedStaples(); return; }
     const saved = JSON.parse(raw);
     state = deepMerge(FRESH(), saved);
+    /* Shopping rows saved before the unit fix carry the quantity as a frozen
+       string — "4 piece eggs" — so fixing qtyLabel() never reached them. */
+    (state.shopping || []).forEach(s => {
+      if (typeof s.qty === 'string') s.qty = s.qty.replace(/\s*\bpieces?\b/gi, '').trim();
+    });
   }catch(e){ state = FRESH(); seedStaples(); }
 }
 function deepMerge(base, over){
@@ -1615,7 +1620,11 @@ function promptCookThis(r, servings){
   const mise = (r.misePlace || []).map(m => '- ' + m).join('\n');
   const steps = (r.steps || []).map((s, i) => (i + 1) + '. ' + s.text).join('\n');
 
-  return `I am cooking this now and I want you to talk me through it out loud.
+  /* A recipe with no tip and no make-it-better leaves a stack of blank lines
+     where those two paragraphs would have been. */
+  const squash = t => t.replace(/\n{3,}/g, '\n\n');
+
+  return squash(`I am cooking this now and I want you to talk me through it out loud.
 
 ${r.title}${r.subtitle ? ' — ' + r.subtitle : ''}
 For ${servings} ${servings === 1 ? 'person' : 'people'}. ${r.minutes} minutes in total.
@@ -1633,7 +1642,7 @@ ${r.makeItBetter ? '\nTo lift it above average: ' + r.makeItBetter : ''}
 
 ${COACH_RULES}
 
-Start by telling me what to get ready before the heat goes on, then wait for me to say I am ready.`;
+Start by telling me what to get ready before the heat goes on, then wait for me to say I am ready.`);
 }
 
 function promptWhatToCook(){

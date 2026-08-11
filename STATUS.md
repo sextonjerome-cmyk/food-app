@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v19`.
+Currently `frigo-v20`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -408,7 +408,10 @@ line telling Claude to believe him over the file.
 **Also fixed:** `qtyLabel()` was printing the unit `piece`, so the app said
 "4 piece eggs" on the recipe screen and the shopping list. Counted things now take
 no unit at all. It was always wrong on screen; the read-aloud hand-off is what made
-it obvious.
+it obvious. The audit afterwards found the other half of it: shopping rows store
+the quantity as a **frozen string** at the moment they are added, so any row
+already on his phone still said "4 piece eggs". `load()` now strips the unit from
+saved rows.
 
 ## How to look at it
 
