@@ -371,7 +371,36 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v17`.
+Currently `frigo-v18`.
+
+## Talking to Claude by voice (2026-08-11)
+
+Jerome wanted a two-way spoken conversation while cooking — the Claude phone app
+reading him one step and waiting — and asked whether the Claude app could be built
+into Frigo. It can't: an installed Android app cannot be embedded in a web page, and
+there is no URL scheme to open it with a prompt already loaded. **Android's share
+sheet is the whole bridge.** Frigo builds the text, hands it to `navigator.share()`,
+he picks Claude, and it arrives as the first message of a new chat.
+
+Three hand-offs, all offline (a string given to the OS, no network):
+
+- **Talk it through with Claude** — on any recipe. Sends the scaled ingredients,
+  the mise en place, the numbered method, the beginner tip and the make-it-better
+  note, followed by coaching rules: one step at a time, wait for "next", say
+  numbers as words, describe doneness by look and smell.
+- **Ask Claude on my phone** — on the Cook screen. Sends his ticked inventory, his
+  gear with quart sizes, servings and spice level, and asks for three ideas using
+  only what he has plus at most one thing to buy.
+- **Copy my standing cook's prompt** — in Settings. The reusable one, meant to be
+  pasted into a Claude **Project** so every chat starts already knowing his kitchen.
+
+Fallback chain: `navigator.share` → `clipboard.writeText` + toast → a sheet with the
+text in a selectable box. Verified all three paths.
+
+**Also fixed:** `qtyLabel()` was printing the unit `piece`, so the app said
+"4 piece eggs" on the recipe screen and the shopping list. Counted things now take
+no unit at all. It was always wrong on screen; the read-aloud hand-off is what made
+it obvious.
 
 ## How to look at it
 

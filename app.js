@@ -334,8 +334,10 @@ function scaleIngredient(ing, factor){
 function qtyLabel(ing, factor){
   const s = scaleIngredient(ing, factor);
   const q = prettyQty(s.qty);
-  if (!q && !s.unit) return '';
-  return (q + ' ' + (s.unit || '')).trim();
+  /* "four piece eggs" is not English. Counted things take no unit at all. */
+  const unit = (s.unit === 'piece' || s.unit === 'pieces') ? '' : (s.unit || '');
+  if (!q && !unit) return '';
+  return (q + ' ' + unit).trim();
 }
 
 /* ------------------------------------------------------------ matching */
@@ -522,7 +524,8 @@ function screenCook(){
 
   const filters = bar + panel;
 
-  const ai = `<button class="btn ghost" data-act="ai">${svg('i-sparkle')} Invent me something new</button>`;
+  const ai = `<button class="btn ghost" data-act="claude-kitchen">${svg('i-speak')} Ask Claude on my phone</button>
+    <button class="btn ghost" data-act="ai">${svg('i-sparkle')} Invent me something new</button>`;
 
   if (!recipePool().length){
     return filters + `<div class="empty"><strong>No recipes loaded yet</strong>
@@ -820,6 +823,7 @@ function screenRecipe(){
   </div>
 
   <button class="btn" data-act="cookalong">${svg('i-speak')} Read it to me, step by step</button>
+  <button class="btn ghost" data-act="claude-recipe">${svg('i-sparkle')} Talk it through with Claude</button>
 
   <div class="section"><h2>Ingredients</h2><div>${ings}</div>
     ${a.missing.length
@@ -933,6 +937,16 @@ function screenSettings(){
   <div class="section"><h2>Appearance</h2>
     <div class="filter-row">${[['auto','Follow phone'],['dark','Dark'],['light','Light']].map(([v,l]) =>
       `<button class="opt" data-theme="${v}" aria-pressed="${p.theme===v}">${l}</button>`).join('')}</div>
+  </div>
+
+  <div class="section"><h2>Talking to Claude by voice</h2>
+    <button class="btn ghost" data-act="claude-kitchen">${svg('i-speak')} Send my kitchen to Claude</button>
+    <button class="btn ghost" data-act="claude-standing">${svg('i-sparkle')} Copy my standing cook&rsquo;s prompt</button>
+    <p class="hint">Frigo hands the text to your phone and you pick Claude from the share list.
+       It lands as your first message &mdash; then tap the <b>microphone</b> and talk.
+       The standing prompt is the one to keep: in the Claude app make a <b>Project</b> called
+       Cooking, paste it into the instructions, and every chat you start in there already
+       knows your gear and reads you one step at a time.</p>
   </div>
 
   <div class="section"><h2>Invent-a-recipe</h2>
@@ -1516,6 +1530,16 @@ document.addEventListener('click', e => {
       runAI(); break;
     }
     case 'go-settings': closeSheet(); view.screen = 'settings'; render(); break;
+
+    case 'claude-recipe': {
+      const r = findRecipe(view.recipeId);
+      if (r) sendToClaude(promptCookThis(r, state.prefs.servings), r.title);
+      break;
+    }
+    case 'claude-kitchen':
+      sendToClaude(promptWhatToCook(), 'What should I cook?'); break;
+    case 'claude-standing':
+      sendToClaude(promptStanding(), 'My cooking coach'); break;
   }
 });
 
@@ -1542,6 +1566,107 @@ async function requestWakeLock(){
   try{ if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
 }
 function releaseWakeLock(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock = null; }
+
+/* --------------------------------------------- handing off to Claude
+
+   The Claude phone app cannot be embedded — a web page has no way to open it,
+   fill it, or drive its voice mode. Android's share sheet is the entire bridge:
+   Frigo writes the text, the system hands it to whichever app he picks, and it
+   arrives as the first message of a new chat. Then he taps the microphone.
+   Nothing here goes over the network; it is a string handed to the OS. */
+
+const COACH_RULES =
+`How I want you to do this:
+Talk to me like a patient cook standing next to me. I am a beginner and my hands are busy.
+Give me ONE step at a time, then stop and wait for me. Never read the whole method at once.
+When I say next, give me the next step. When I say again, repeat the last one.
+One action per step, one or two sentences, no lists.
+Say numbers as words, so about ten minutes, not ten to twelve min.
+Tell me how to know it is done by what it looks, smells and sounds like, not just the clock.
+If I ask something in the middle, answer it in a sentence and then put me back where I was.`;
+
+function haveList(){
+  return allItems()
+    .filter(i => (state.inventory[i.tab][i.name] || {}).have)
+    .map(i => i.name);
+}
+function gearList(){
+  return state.appliances.map(a => a.qt ? `${a.name} (${a.qt} quart)` : a.name).join(', ');
+}
+
+function promptCookThis(r, servings){
+  const a = analyse(r, servings);
+  const ings = (r.ingredients || []).map(i => {
+    const q = qtyLabel(i, a.factor);
+    return '- ' + (q ? q + ' ' : '') + i.item + (i.note ? ' (' + i.note + ')' : '');
+  }).join('\n');
+  const mise = (r.misePlace || []).map(m => '- ' + m).join('\n');
+  const steps = (r.steps || []).map((s, i) => (i + 1) + '. ' + s.text).join('\n');
+
+  return `I am cooking this now and I want you to talk me through it out loud.
+
+${r.title}${r.subtitle ? ' — ' + r.subtitle : ''}
+For ${servings} ${servings === 1 ? 'person' : 'people'}. ${r.minutes} minutes in total.
+
+INGREDIENTS
+${ings}
+
+BEFORE THE HEAT GOES ON
+${mise || '- nothing to prep'}
+
+METHOD
+${steps}
+${r.beginnerTip ? '\nThe thing beginners get wrong here: ' + r.beginnerTip : ''}
+${r.makeItBetter ? '\nTo lift it above average: ' + r.makeItBetter : ''}
+
+${COACH_RULES}
+
+Start by telling me what to get ready before the heat goes on, then wait for me to say I am ready.`;
+}
+
+function promptWhatToCook(){
+  const have = haveList();
+  return `Tell me what to cook tonight, using what I actually have.
+
+IN MY KITCHEN RIGHT NOW
+${have.length ? have.join(', ') : '(almost nothing — say so and keep it very simple)'}
+
+MY GEAR: ${gearList()}
+Cooking for ${state.prefs.servings}. My spice tolerance is ${state.prefs.spice} out of five, and I would rather it had a kick than be bland.
+
+Give me three ideas in one or two sentences each, and nothing else yet. Use only what is on that list, or at most one thing I would have to go and buy — and say plainly which one that is. I am a beginner who wants to learn, so lean on real technique rather than shortcuts. When I pick one, walk me through it one step at a time and wait for me between steps.`;
+}
+
+function promptStanding(){
+  return `You are my cooking coach. I am Jerome, a beginner cook in Charleston who wants to get good. I like French, American comfort, Middle Eastern, Turkish and simple Asian food, and I would always rather food had a kick than be bland.
+
+My gear: ${gearList()}
+I usually cook for ${state.prefs.servings}.
+
+Whenever I ask you for something to cook, ask me what I have before you suggest anything, unless I have already told you.
+
+${COACH_RULES}`;
+}
+
+/* share first, clipboard second, show-me-the-text last */
+async function sendToClaude(text, title){
+  if (navigator.share){
+    try{ await navigator.share({ text }); return; }
+    catch(err){ if (err && err.name === 'AbortError') return; }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Copied — paste it into Claude');
+    return;
+  }catch(err){}
+  openSheet(`<h2>${esc(title)}</h2>
+    <p class="hint">Your phone would not let me copy it for you. Press and hold in the box,
+       choose Select all, then Copy.</p>
+    <textarea data-role="handoff" rows="8" readonly>${esc(text)}</textarea>
+    <button class="btn" data-act="close-sheet">Done</button>`);
+  const box = document.querySelector('[data-role=handoff]');
+  if (box){ box.focus(); box.select(); }
+}
 
 /* ------------------------------------------------------------------ AI */
 async function runAI(){
