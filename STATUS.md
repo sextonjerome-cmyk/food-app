@@ -122,6 +122,22 @@ straight to the Fridge screen. The check for "has he told us anything yet"
 **ignores staples**, because seven of them are ticked automatically on first
 run and a raw count is never zero.
 
+### The screen leads with food now
+
+The filters were eating **287 px** off the top, so the first recipe card started
+**535 px** down a 915 px screen — past halfway, on the one screen whose entire
+job is showing him something to cook. Jerome's words were *"the closest thing on
+top."*
+
+They fold away. In their place is one 50 px bar: a button that names whatever
+filters are on ("All recipes", or "French · 30 min"), and the servings stepper,
+which is worth seeing at a glance. Tap it and the full set unfolds exactly as
+before. **First card now starts at 244 px** — photo, title and "You have
+everything" all above the fold.
+
+Open/closed lives in `view`, not `state`. It is ephemeral UI, not his data, and
+it should reset to closed every time he opens the app.
+
 ## Filling the kitchen — three ways in
 
 1. **Tap a row.** Each tab holds 45-odd items; tapping ticks it.
@@ -284,7 +300,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v15`** (fifteen deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v16`** (sixteen deploys). Bump it every time.
 
 ## Photos — all 16, last worked 2026-08-10
 
@@ -341,7 +357,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v15`.
+Currently `frigo-v16`.
 
 ## How to look at it
 

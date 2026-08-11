@@ -89,6 +89,7 @@ const view = {
   search:'',
   recipeId:null,
   cookAlong:null,
+  filtersOpen:false,
   filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any' }
 };
 
@@ -472,7 +473,36 @@ function screenCook(){
   const appOpts = [['any','Any']].concat(state.appliances.map(a => [a.id, a.name]));
   const results = matchRecipes();
 
-  const filters = `
+  /* The filters used to take 287 px off the top, so the first recipe started
+     535 px down a 915 px screen — past the halfway line, on the one screen
+     whose whole job is showing food. They fold away now and the summary line
+     says what's on, so nothing is hidden, just quiet. */
+  const stepper = `<div class="stepper">
+      <button data-act="serv-" aria-label="Fewer servings">&minus;</button>
+      <span class="val num">${state.prefs.servings}</span>
+      <button data-act="serv+" aria-label="More servings">+</button>
+    </div>`;
+
+  const on = [];
+  if (f.appliance !== 'any'){
+    const a = state.appliances.find(x => x.id === f.appliance);
+    if (a) on.push(a.name);
+  }
+  if (f.cuisine !== 'any') on.push(cuisineLabel(f.cuisine));
+  if (f.time) on.push((TIMES.find(t => t[0] === f.time) || [0, ''])[1]);
+  if (f.difficulty !== 'any') on.push(f.difficulty);
+
+  const bar = `<div class="filterbar">
+    <button class="opt fbtn ${on.length?'has':''}" data-act="toggle-filters"
+            aria-expanded="${view.filtersOpen ? 'true' : 'false'}">
+      ${svg('i-sliders','icon-sm')}
+      <span class="fsum">${on.length ? esc(on.join(' &middot; ').replace(/&amp;middot;/g,'·')) : 'All recipes'}</span>
+      ${svg('i-chev','icon-sm chev')}
+    </button>
+    ${stepper}
+  </div>`;
+
+  const panel = !view.filtersOpen ? '' : `
   <div class="filter">
     <div class="eyebrow">Cooking with</div>
     <div class="filter-row">${appOpts.map(([v, l]) =>
@@ -488,14 +518,9 @@ function screenCook(){
     <div class="filter-row">${TIMES.map(([v, l]) =>
       `<button class="opt" data-f="time" data-v="${v}" aria-pressed="${f.time===v}">${esc(l)}</button>`).join('')}</div>
   </div>
-  <div class="row">
-    <div class="lab"><b>Cooking for</b><small>Quantities scale to match</small></div>
-    <div class="stepper">
-      <button data-act="serv-" aria-label="Fewer servings">&minus;</button>
-      <span class="val num">${state.prefs.servings}</span>
-      <button data-act="serv+" aria-label="More servings">+</button>
-    </div>
-  </div>`;
+  <p class="grouplede">Servings are set above. Quantities scale to match.</p>`;
+
+  const filters = bar + panel;
 
   const ai = `<button class="btn ghost" data-act="ai">${svg('i-sparkle')} Invent me something new</button>`;
 
@@ -1260,6 +1285,8 @@ document.addEventListener('click', e => {
     case 'spice+': state.prefs.spice = Math.min(5, state.prefs.spice + 1); save(); render(); break;
     case 'spice-': state.prefs.spice = Math.max(1, state.prefs.spice - 1); save(); render(); break;
     case 'toggle-staples': state.prefs.staplesOn = !state.prefs.staplesOn; save(); render(); break;
+
+    case 'toggle-filters': view.filtersOpen = !view.filtersOpen; render(); break;
 
     case 'paste-list': openPasteList(); break;
     case 'apply-list': {
