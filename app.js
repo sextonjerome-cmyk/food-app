@@ -510,12 +510,45 @@ function screenCook(){
          what you've got.</p></div>` + ai;
   }
 
-  /* This used to stop at eight cards while the line above it said "16 matches",
-     which meant half the collection simply could not be reached. They are ranked
-     best-first, so the ones he can actually cook are still at the top. */
-  const cards = results.map(m => recipeCard(m)).join('');
-  return filters + `<div class="eyebrow">${results.length} match${results.length===1?'':'es'}</div>`
-       + `<div class="section" style="gap:16px">${cards}</div>` + ai;
+  /* Split by how much shopping it needs, because that is the actual question:
+     what can I cook right now, versus what needs a trip to the shop. A flat
+     ranked list buried the cookable ones among the ones he can't touch. */
+  const ready = results.filter(m => m.missing.length === 0);
+  const nearly = results.filter(m => m.missing.length === 1);
+  const shop   = results.filter(m => m.missing.length > 1);
+
+  /* Staples are ticked for him on first run, so a raw count is never zero and
+     "has he told us anything yet" has to ignore them. */
+  const ticked = TABS.reduce((n, t) => {
+    const staples = itemsFor(t).filter(i => i.staple).map(i => i.name);
+    return n + Object.keys(state.inventory[t])
+      .filter(k => state.inventory[t][k] && state.inventory[t][k].have && !staples.includes(k))
+      .length;
+  }, 0);
+
+  const group = (list, label, note) => !list.length ? '' :
+    `<div class="eyebrow" style="padding-top:8px">${label} &middot; ${list.length}</div>`
+    + (note ? `<p class="grouplede">${note}</p>` : '')
+    + `<div class="section" style="gap:16px">${list.map(m => recipeCard(m)).join('')}</div>`;
+
+  /* An empty kitchen puts everything in the last group, which looks broken
+     rather than empty. Say why, and point at the screen that fixes it. */
+  const nudge = ticked < 3
+    ? `<div class="empty"><strong>Tell it what you&rsquo;ve got first</strong>
+         <p>Nothing is ticked in your kitchen yet, so every recipe below looks like a
+            shopping trip. Open <b>Fridge</b> and tick what you actually have &mdash; or
+            tap <b>Say or paste my whole kitchen</b> and just say it out loud.</p>
+         <button class="btn" data-go="fridge">Go to my fridge</button></div>`
+    : !ready.length && !nearly.length
+      ? `<p class="hint" style="margin:10px 2px">Nothing is fully in reach right now.
+           Everything below needs two or more things from the shop.</p>`
+      : '';
+
+  return filters + nudge
+       + group(ready,  'Cook this now',  'Everything for these is already in your kitchen.')
+       + group(nearly, 'One thing short', 'Buy the single missing thing and these are on.')
+       + group(shop,   'Needs a shop',    null)
+       + ai;
 }
 
 function recipeCard(m){

@@ -100,6 +100,28 @@ salmon fillets or two bone-in thighs is genuinely what that basket holds.
 At 4 servings the app now says *"Tight fit in your 2 qt air fryer at 4 servings —
 cook it in two batches"* — verified on screen.
 
+## The Cook screen answers the real question — 2026-08-10
+
+Jerome, once it was on his phone: *"I need the recipes with the stuff I have.
+So I don't want recipes to show up unless... we separate the two."*
+
+It used to be one ranked list, so the things he could actually cook sat among
+fifteen he couldn't. Now it splits into three headed groups:
+
+- **Cook this now** — nothing missing at all.
+- **One thing short** — buy the single missing item and it's on. This is the
+  app's whole selling line, and it now has a place on the page.
+- **Needs a shop** — everything else.
+
+Filters still apply across all three. Nothing is hidden; the count in each
+heading matches the cards under it.
+
+**An empty kitchen used to look broken** — everything landed in "Needs a shop"
+and it read as though the app didn't work. It now says why, and gives a button
+straight to the Fridge screen. The check for "has he told us anything yet"
+**ignores staples**, because seven of them are ticked automatically on first
+run and a raw count is never zero.
+
 ## Filling the kitchen — three ways in
 
 1. **Tap a row.** Each tab holds 45-odd items; tapping ticks it.
@@ -213,6 +235,10 @@ data via `window.FrigoTest`.
   as it carried a button beside the text, "Out of eggs" broke across two lines.
   Invisible while every toast was one short line. Both edges are pinned now and
   it centres by `margin-inline:auto`.
+- **The README described the app in detail and never gave its address.** Jerome
+  opened the repo page, read the feature list — Cook, Fridge, List, Plan — and
+  thought that was the app. The two URLs differ by four characters. The live link
+  is now the first line on the page.
 - **The app quoted the wrong price for an AI recipe** — twice, in the settings
   hint and in the sheet that opens when you tap Invent with no key. Both said
   "a fraction of a penny". Opus 5 is $5 in and $25 out per million tokens, so a
@@ -258,12 +284,13 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v13`** (thirteen deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v14`** (fourteen deploys). Bump it every time.
 
 ## Photos — done 2026-08-09
 
-**Ten of the eleven recipes have a real photo.** All from Wikimedia Commons,
-all under a licence that permits redistribution (CC0 · CC BY · CC BY-SA),
+**Fifteen of the sixteen recipes have a real photo.** All from Wikimedia Commons,
+all under a licence that permits redistribution (CC0 · CC BY · CC BY-SA), one of
+them from Flickr via Openverse rather than Commons,
 720 × 540 WebP, 33–54 KB each, **454 KB for the lot**. Credits are in
 `CREDITS.md` and on screen at the bottom of each recipe. `sw.js` precaches
 them, so the Cook screen is complete offline instead of fetching in the
@@ -305,7 +332,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v13`.
+Currently `frigo-v14`.
 
 ## How to look at it
 

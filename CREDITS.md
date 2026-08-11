@@ -27,18 +27,20 @@ Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 | Pasta all'Amatriciana | Popo le Chien | CC0 | [Bucatini allamatriciana.jpg](https://commons.wikimedia.org/wiki/File:Bucatini_allamatriciana.jpg) |
 | Slow Cooker Tikka Masala | Guilhem Vellut | CC BY 2.0 | [Chicken Tikka Masala, Annecy.jpg](https://commons.wikimedia.org/wiki/File:Chicken_Tikka_Masala_@_Indian%27s_Food_@_Annecy_(38894403364).jpg) |
 | Takikomi Gohan | pelican (Tokyo) | CC BY-SA 2.0 | [Maitake rice.jpg](https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg) |
+| Crispy Air Fryer Chickpeas | ella.o | CC BY 2.0 | [Popcorn Chickpeas (Flickr)](https://www.flickr.com/photos/155807330@N05/45508607031) |
 
-## The two with no photo
+Not every photo comes from Wikimedia now. **Crispy Air Fryer Chickpeas** came
+from Flickr via [Openverse](https://openverse.org), which aggregates Flickr,
+Wikimedia, Nappy and Rawpixel and can filter to licences that allow reuse. That
+is a far bigger pool than Commons alone, and it is where to look first next time.
 
-**Crispy Air Fryer Chickpeas** keeps the drawn placeholder. Every freely-licensed
-candidate was one of three wrong things: a market stall selling raw chickpeas,
-a bag of Turkish *leblebi* (dry-roasted, pale, nothing like the recipe), or an
-Indian *chana chilli* in sauce — a different dish altogether. A photo that
-misrepresents the food is worse than an honest blank, so it stays blank until a
-real one turns up.
+## The one with no photo
 
-**Za'atar Roast Chicken** keeps it too. Seven searches turned up shawarma, a
-lahmacun stack, a shawarma shopfront, and several photos of *musakhan* — chicken
-served on taboon bread under a mound of sumac onions. Musakhan is a fine dish and
-a close cousin, but it is not a tray of roast chicken thighs, and using it would
-tell Jerome he was making something he isn't. Same call as the chickpeas.
+**Za'atar Roast Chicken** keeps the drawn placeholder. Three separate search passes across
+Wikimedia and Openverse, about forty candidates looked at one by one: shawarma, a
+lahmacun stack, a shawarma shopfront, restaurant plates, a raw chicken, and
+several photos of *musakhan* — chicken served on taboon bread under a mound of
+sumac onions. Musakhan is a fine dish and a close cousin, but it is not a tray of
+roast chicken thighs, and using it would tell Jerome he was making something he
+isn't. Jerome has asked for a photo on everything, and this is the one I could
+not honestly get.
