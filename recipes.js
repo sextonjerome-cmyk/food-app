@@ -80,6 +80,66 @@ window.RECIPES = [
   vetting: "Pépin's original thickens with flour and water and uses no cream at all. The home cook who wrote it up said she'd use thighs instead of breast next time — this version starts there. Cream goes in off the heat, which is the standard guard against a mustard sauce splitting; that is the failure people report most with the creamy variants."
 },
 
+{
+  id: "gratin-dauphinois",
+  title: "Gratin Dauphinois",
+  subtitle: "Potatoes baked slowly in cream — no cheese, on purpose",
+  photo: "img/gratin-dauphinois.webp",
+  photoCredit: { by: "Ludovic Péron", lic: "CC BY-SA 3.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Gratin_dauphinois.jpg" },
+  cuisine: "french",
+  appliances: ["stove"],
+  minutes: 110,
+  activeMinutes: 20,
+  difficulty: "easy",
+  baseServings: 4,
+  scalable: [2, 8],
+  capacityQt: 1,
+  tags: ["oven", "comfort", "cheap", "vegetarian"],
+  spiceLevel: 1,
+
+  ingredients: [
+    { item: "potatoes", qty: 1.25, unit: "lb", aisle: "produce", scale: true,
+      note: "Yukon Gold if you can — waxy ones stay in slices, floury ones go to mush" },
+    { item: "milk", qty: 1.5, unit: "cup", aisle: "dairy", scale: true, note: "whole milk" },
+    { item: "heavy cream", qty: 0.5, unit: "cup", aisle: "dairy", scale: true,
+      sub: "half-and-half — a little looser, still good" },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true,
+      note: "crushed and chopped very fine" },
+    { item: "nutmeg", qty: null, unit: null, aisle: "spices", scale: false,
+      note: "a few scrapes, grated fresh over the top" },
+    { item: "butter", qty: 1, unit: "tbsp", aisle: "dairy", scale: false, staple: true,
+      note: "for greasing the dish" },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to three hundred and seventy-five degrees.",
+    "Butter a baking dish well, right up the sides.",
+    "Peel the potatoes and slice them about as thick as a coin. Do not put them anywhere near water afterwards.",
+    "Chop the garlic very fine."
+  ],
+
+  steps: [
+    { text: "Put the potato slices, the milk, the garlic, a good half teaspoon of salt and plenty of pepper into a big saucepan.", minutes: null },
+    { text: "Bring it slowly to a boil, stirring gently now and then to keep the slices apart and stop the bottom catching.", minutes: 8 },
+    { text: "As it reaches the boil you will feel the milk thicken. That is the potato starch doing its job.", minutes: null },
+    { text: "Tip the whole lot into the buttered dish and spread it level.", minutes: null },
+    { text: "Pour the cream evenly over the top and grate a little nutmeg over it.", minutes: null },
+    { text: "Stand the dish on a baking tray and bake for one hour, until the top is golden and a knife slides through the potatoes with no resistance.", minutes: 60 },
+    { text: "Take it out and leave it alone on the counter for twenty-five minutes.", minutes: 25 }
+  ],
+
+  beginnerTip: "Never rinse the potato slices. Every instinct says to wash off the starch, and that starch is the only thing thickening this dish — rinse it away and you get potatoes sitting in thin grey milk instead of a gratin. Slice them and go straight into the pan.",
+  makeItBetter: "The rest at the end is not waiting, it is cooking. Straight from the oven it is a soupy mess; twenty-five minutes on the counter and it sets into something you can cut. If you want it browner, run it under the broiler for two minutes before the rest. Add gruyère on top if you like — just know that officially makes it a gratin savoyard, not a dauphinois.",
+  skills: ["slicing evenly", "starch thickening", "baking a gratin"],
+
+  source: { name: "Jacques Pépin — Gratin Dauphinoise, Essential Pépin (KQED)",
+            url: "https://ww2.kqed.org/essentialpepin/2011/09/11/gratin-dauphinoise/" },
+  vetting: "Pépin's own recipe, published by KQED alongside the Essential Pépin series, and the same stove-then-oven method turns up independently in Gourmet's version. The one warning Pépin gives in his own words is the one built into the beginner tip: do not rinse or soak the slices, because rinsing takes away the starch that thickens the whole thing. His version has no cheese in it at all, which surprises most people, so the note about gruyère says plainly what adding it actually makes."
+},
+
 /* --------------------------------------------------------- middle-eastern -- */
 {
   id: "shakshuka",
@@ -148,6 +208,80 @@ window.RECIPES = [
   source: { name: "America's Test Kitchen — North African–Style Poached Eggs",
             url: "https://www.americastestkitchen.com/articles/1264-north-african-style-poached-eggs" },
   vetting: "Three of America's Test Kitchen's findings are built straight into the steps: a smooth sauce heats the eggs more evenly than a chunky one, spooning sauce over the whites but not the yolks gets the whites set while the yolks stay creamy, and covering the pan cooks the eggs from above as well as below. The two complaints that show up everywhere else are a watery sauce and hard yolks — the sauce is reduced until a spoon leaves a trail before any egg goes near it, and the pan comes off while the yolks still move."
+},
+
+{
+  id: "poulet-zaatar",
+  title: "Za'atar Roast Chicken",
+  subtitle: "Chicken, red onion and lemon, all in one tray",
+  photo: null,
+  cuisine: "middle-eastern",
+  /* His kitchen has one appliance called "Stove & Oven", id `stove`. There is no
+     separate `oven` id, so tagging it that way would drop it out of the filter
+     and mislabel the card. */
+  appliances: ["stove"],
+  minutes: 55,
+  activeMinutes: 15,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.5,
+  tags: ["oven", "one-pan", "weeknight", "leftovers"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 4, unit: "piece", aisle: "meat", scale: true,
+      note: "bone-in, skin-on — boneless will dry out here" },
+    { item: "red onion", qty: 1, unit: "piece", aisle: "produce", scale: true,
+      sub: "a yellow onion; it goes sweeter and less sharp" },
+    { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: true,
+      note: "sliced thin, skin and all" },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true },
+    { item: "za'atar", qty: 1, unit: "tbsp", aisle: "spices", scale: true,
+      sub: "dried thyme plus sesame seeds plus a little extra sumac" },
+    { item: "sumac", qty: 1.5, unit: "tsp", aisle: "spices", scale: true,
+      sub: "the zest of half a lemon — not the same, but it does the sour job" },
+    { item: "cinnamon", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "chicken stock", qty: 0.5, unit: "cup", aisle: "canned", scale: true },
+    { item: "pine nuts", qty: 2, unit: "tbsp", aisle: "dry", scale: true,
+      sub: "flaked almonds, or leave them out — the dish still works" },
+    { item: "fresh parsley", qty: 2, unit: "tbsp", aisle: "produce", scale: false,
+      note: "roughly chopped" },
+    { item: "olive oil", qty: 2, unit: "tbsp", aisle: "canned", scale: true, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false,
+      staple: true, note: "to taste" }
+  ],
+
+  misePlace: [
+    "Take the chicken out of the fridge and pat every piece really dry.",
+    "Slice the onion into thin half moons.",
+    "Slice the half lemon into thin rounds and flick out the pips.",
+    "Crush the garlic.",
+    "Mix the za'atar, the sumac, the cinnamon, a good teaspoon of salt and plenty of pepper in a small bowl."
+  ],
+
+  steps: [
+    { text: "Heat the oven to four hundred and twenty-five degrees.", minutes: null },
+    { text: "Put the chicken, the onion, the lemon slices and the garlic in a big bowl.", minutes: null },
+    { text: "Add the olive oil and the spice mix, and rub it into the chicken with your hands until every piece is coated.", minutes: null },
+    { text: "If you have an hour to spare, leave it in the fridge now. If you don't, carry straight on.", minutes: null },
+    { text: "Lay everything in a roasting tin in one layer, chicken skin side up, with a gap between the pieces.", minutes: null },
+    { text: "Pour the stock into the tin around the chicken, never over the skin.", minutes: null },
+    { text: "Roast for thirty-five minutes.", minutes: 35 },
+    { text: "Turn the broiler on and give it three more minutes, until the skin is crisp and dark at the edges.", minutes: 3 },
+    { text: "While that happens, toast the pine nuts in a small dry pan over medium heat, shaking them the whole time, for about two minutes.", minutes: 2 },
+    { text: "Let the tray sit for five minutes before you touch it.", minutes: 5 },
+    { text: "Scatter the pine nuts and the parsley over the top and spoon the juices from the tin back over the chicken.", minutes: null }
+  ],
+
+  beginnerTip: "The gap between the pieces is the whole recipe. Chicken crammed into a small tin steams in its own moisture and comes out pale and rubbery. If four thighs don't fit with room to spare, use a bigger tin or two smaller ones — never pile them up.",
+  makeItBetter: "Squash the roasted lemon slices into the pan juices with a fork before you spoon them over. They go soft and jammy in the oven and the whole tray turns sharp and bright instead of just savoury. A pinch of Aleppo pepper in the rub adds heat without fighting the sumac.",
+  skills: ["roasting", "marinating", "toasting nuts"],
+
+  source: { name: "Yotam Ottolenghi and Sami Tamimi — Roast Chicken with Sumac, Za'atar and Lemon, via The Splendid Table",
+            url: "https://www.splendidtable.org/story/2013/12/05/roast-chicken-with-sumac-zaatar-and-lemon" },
+  vetting: "Ottolenghi is a named cook with a reputation to lose, and the dish has been picked up independently by The Splendid Table and cooked and written up by a string of unconnected home cooks over more than a decade. What I could not find was a body of failure reports, so this one clears the bar on two legs rather than three and I am saying so. Two changes come from a cook who actually made it: a deep tray keeps it juicier, and a few minutes under the broiler at the end is what gets the skin crisp. The stock goes in around the chicken rather than over it for the same reason."
 },
 
 /* --------------------------------------------------------------- turkish -- */
@@ -419,6 +553,77 @@ window.RECIPES = [
   vetting: "The off-the-heat flip is America's Test Kitchen's answer to the one thing everybody gets wrong with shrimp, and their pinch of sugar to help browning is in here too. Their size rule — sixteen to twenty count — is the other half of it: smaller shrimp overcook before the surface ever browns."
 },
 
+{
+  id: "amatriciana",
+  title: "Pasta all'Amatriciana",
+  subtitle: "Bacon, tomato and pecorino — the Roman one",
+  photo: "img/amatriciana.webp",
+  photoCredit: { by: "Popo le Chien", lic: "CC0",
+                  url: "https://commons.wikimedia.org/wiki/File:Bucatini_allamatriciana.jpg" },
+  cuisine: "other",
+  appliances: ["stove"],
+  minutes: 30,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1,
+  tags: ["quick", "weeknight", "comfort", "cheap"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "spaghetti", qty: 7, unit: "oz", aisle: "dry", scale: true,
+      sub: "bucatini if you can get it, rigatoni if you can't" },
+    /* Guanciale is the traditional cut and is hard to buy in Charleston, so the
+       recipe asks for the one he can actually find. */
+    { item: "pancetta", qty: 3, unit: "oz", aisle: "meat", scale: true,
+      note: "cut into short thick strips. Guanciale is the traditional one if you ever see it",
+      sub: "thick-cut bacon — it's smoked, so the dish comes out a little smoky. Still very good." },
+    { item: "canned tomatoes", qty: 14, unit: "oz", aisle: "canned", scale: true,
+      note: "whole, crushed by hand", sub: "passata, or crushed tomatoes from a can" },
+    { item: "pecorino romano", qty: 1.5, unit: "oz", aisle: "dairy", scale: true,
+      note: "finely grated, and grate it yourself",
+      sub: "parmesan — milder and less salty, so taste before you add more salt" },
+    { item: "chilli flakes", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "white wine", qty: 3, unit: "tbsp", aisle: "other", scale: true,
+      sub: "leave it out; the dish is fine without" },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true,
+      note: "for the pasta water, and plenty of it" },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Cut the guanciale into strips about as thick as your little finger.",
+    "Tip the tomatoes into a bowl and crush them with your hands. Pull out any hard white cores.",
+    "Grate the cheese finely and leave it in a bowl by the stove.",
+    "Put a big pot of water on to boil and salt it like the sea."
+  ],
+
+  steps: [
+    { text: "Put the guanciale in a cold, dry pan and only then turn the heat to medium.", minutes: null },
+    { text: "Let it cook for about six minutes, until the fat has run out and the meat is browned and crisp at the edges.", minutes: 6 },
+    { text: "Lift the meat out with a slotted spoon and put it on a plate.", minutes: null },
+    { text: "Pour the fat into a small bowl, wipe any burnt specks out of the pan, then pour the clean fat back in.", minutes: null },
+    { text: "Add the chilli flakes and let them sizzle in the fat for about thirty seconds.", minutes: null },
+    { text: "Pour in the wine and let it bubble away to almost nothing.", minutes: null },
+    { text: "Add the crushed tomatoes and simmer gently for about twelve minutes, until the sauce is thick and darker red.", minutes: 12 },
+    { text: "Meanwhile, boil the pasta one minute less than the packet says.", minutes: 9 },
+    { text: "Scoop out a mug of the pasta water before you drain anything.", minutes: null },
+    { text: "Drop the drained pasta straight into the sauce with a splash of the pasta water and toss it over medium heat for one minute.", minutes: 1 },
+    { text: "Now take the pan completely off the heat and count slowly to ten.", minutes: null },
+    { text: "Add the cheese a handful at a time, tossing the pan rather than stirring, until the sauce turns glossy and clings to the pasta.", minutes: null },
+    { text: "Loosen it with a little more pasta water if it looks tight, then fold the crisp meat back in and grind pepper over the top.", minutes: null }
+  ],
+
+  beginnerTip: "The cheese goes in off the heat, and that is not fussiness. Pecorino hitting a hot pan seizes into stringy knots instead of melting, and once it has done that you cannot bring it back. Take the pan off the stove, wait ten seconds, then add the cheese in handfuls and keep the pasta moving.",
+  makeItBetter: "Toss the pan instead of stirring it. Sliding the pasta up the side and back down is what whips the starchy water and the cheese fat into an actual sauce — stirring in circles just moves it around. Grate the cheese yourself too: the anti-caking powder on pre-grated cheese is exactly what makes a sauce go grainy.",
+  skills: ["rendering fat", "emulsifying a pan sauce", "using pasta water"],
+
+  source: { name: "Pasta all'Amatriciana — the Roman classic; technique cross-checked against Saveur, America's Test Kitchen's Cook's Country and several independent write-ups",
+            url: "https://www.americastestkitchen.com/cookscountry/recipes/14020-bucatini-all-amatriciana" },
+  vetting: "The dish clears on independence and on real discussion. It carries tested versions at Saveur and Cook's Country and turns up in a dozen unconnected kitchens, and the failure everybody reports is the same one: the pecorino seizes into strings instead of melting. Several unrelated sources — including a physics write-up on the sauce — land on the same fix, which is off the heat, cooler starchy water, and tossing rather than stirring. That fix is written into the steps. The cold-pan render and wiping the burnt fat out before the tomatoes go in come from cooks who found the sauce turned bitter otherwise. Guanciale is hard to buy in Charleston, so bacon is offered as a substitution with an honest note that it makes the dish smoky."
+},
+
 /* -------------------------------------------------------------- crockpot -- */
 {
   id: "crockpot-beef-stew",
@@ -486,6 +691,78 @@ window.RECIPES = [
   source: { name: "Budget Bytes — Crockpot Beef Stew",
             url: "https://www.budgetbytes.com/slow-cooker-beef-stew/" },
   vetting: "Budget Bytes tests in its own kitchen, and its comment section is full of cooks reporting back rather than saying it looks delicious. Their three recurring complaints are fixed here: broth raised from two cups to three because it cooks down too far, the brown sugar dropped because several people found it too sweet, and the vegetables cut to an inch after repeated reports of undercooked potato at eight hours."
+},
+
+{
+  id: "crockpot-tikka-masala",
+  title: "Slow Cooker Tikka Masala",
+  subtitle: "Chicken in a spiced tomato cream sauce",
+  photo: "img/crockpot-tikka-masala.webp",
+  photoCredit: { by: "Guilhem Vellut", lic: "CC BY 2.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Chicken_Tikka_Masala_@_Indian%27s_Food_@_Annecy_(38894403364).jpg" },
+  cuisine: "asian",
+  appliances: ["crockpot", "stove"],
+  minutes: 200,
+  activeMinutes: 20,
+  difficulty: "easy",
+  baseServings: 4,
+  scalable: [2, 8],
+  capacityQt: 2,
+  tags: ["set-and-forget", "leftovers", "spicy", "comfort"],
+  spiceLevel: 4,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 1.3, unit: "lb", aisle: "meat", scale: true,
+      note: "boneless and skinless for this one",
+      sub: "chicken breast, but pull it out an hour earlier or it goes stringy" },
+    { item: "garam masala", qty: 1, unit: "tbsp", aisle: "spices", scale: true,
+      note: "the backbone of the dish — use a jar you opened recently" },
+    { item: "cumin", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "turmeric", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "smoked paprika", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "cayenne pepper", qty: 0.5, unit: "tsp", aisle: "spices", scale: true,
+      note: "this is where the heat comes from — halve it if you want it gentle" },
+    { item: "onions", qty: 1, unit: "piece", aisle: "produce", scale: true, note: "diced" },
+    { item: "garlic", qty: 3, unit: "clove", aisle: "produce", scale: true },
+    { item: "ginger", qty: 1, unit: "tbsp", aisle: "produce", scale: true, note: "grated" },
+    { item: "canned tomatoes", qty: 10, unit: "oz", aisle: "canned", scale: true,
+      note: "crushed or blitzed smooth", sub: "tomato sauce or passata, the same amount" },
+    { item: "heavy cream", qty: 0.25, unit: "cup", aisle: "dairy", scale: true,
+      sub: "full-fat coconut milk; it changes the dish but it works" },
+    { item: "basmati rice", qty: 1, unit: "cup", aisle: "dry", scale: true, note: "to serve" },
+    { item: "fresh cilantro", qty: 2, unit: "tbsp", aisle: "produce", scale: false },
+    { item: "vegetable oil", qty: 1, unit: "tbsp", aisle: "canned", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Mix the garam masala, cumin, turmeric, smoked paprika, cayenne, a good half teaspoon of salt and plenty of pepper in a small bowl.",
+    "Dice the onion, chop the garlic, grate the ginger.",
+    "Pat the chicken thighs dry and toss them in the spice mix until they are properly coated."
+  ],
+
+  steps: [
+    { text: "Heat the oil in a wide pan over medium-high heat until it shimmers.", minutes: null },
+    { text: "Lay the chicken in and sear it for three minutes a side. You are browning it, not cooking it through.", minutes: 6 },
+    { text: "Move the chicken into the slow cooker.", minutes: null },
+    { text: "Put the onion into the same hot pan and cook it for about five minutes, until soft with brown edges.", minutes: 5 },
+    { text: "Tip the onion in with the chicken.", minutes: null },
+    { text: "Pour a splash of water into the empty pan and scrape every brown bit off the bottom, then pour that in too.", minutes: null },
+    { text: "Add the garlic, the ginger and the tomatoes to the pot and give it one stir.", minutes: null },
+    { text: "Put the lid on and cook on low for six hours, or on high for three.", minutes: null },
+    { text: "Lift the lid, break the chicken into big pieces with two forks, and stir the cream through.", minutes: null },
+    { text: "Taste it. It will almost certainly want more salt than you think.", minutes: null },
+    { text: "Serve it over the rice with the cilantro scattered on top.", minutes: null }
+  ],
+
+  beginnerTip: "Do not skip the searing to save a pan. Spice-coated chicken hitting a hot dry pan is where nearly all the flavour in this dish is made — the spices toast and the meat browns, and a slow cooker can do neither of those things. Three minutes a side, and don't move it while it browns.",
+  makeItBetter: "Two things, both straight from cooks who found it flat. Open your garam masala and smell it: if it doesn't hit you, it's old, and you want half as much again. And stir the cream in at the very end with the pot switched off — boiled cream goes thin and grainy, cream folded into a hot sauce off the heat stays silky.",
+  skills: ["searing", "toasting spices", "deglazing"],
+
+  source: { name: "Budget Bytes — Easy Slow Cooker Chicken Tikka Masala",
+            url: "https://www.budgetbytes.com/slow-cooker-chicken-tikka-masala/" },
+  vetting: "Budget Bytes took its own first version down, said publicly that it wasn't good enough, and retested it — which is exactly the kind of kitchen this collection is supposed to draw from. Two reader complaints drove that rewrite and both are handled here: it tasted too tomato-heavy, so the tomato is halved against the usual ratio, and it tasted flat, which cooks traced to tired garam masala rather than the recipe. America's Test Kitchen's Cook's Country runs an independent slow-cooker version of the same dish. The cayenne is doubled from the original, which had it as optional, because bland is not what Jerome asked for."
 },
 
 /* ------------------------------------------------------------ instantpot -- */
@@ -557,6 +834,72 @@ window.RECIPES = [
   vetting: "One of the most-cooked recipes on NYT Cooking, with something close to thirty-two thousand likes, and Sam Sifton has said it is the only recipe Melissa Clark follows to the letter every time. Written here for the Instant Pot; her stovetop version simmers about thirty minutes instead, and everything else is the same. The half-blend and the insistence on lemon are both hers."
 },
 
+/* ------------------------------------------------------------ ricecooker -- */
+{
+  id: "takikomi-gohan",
+  title: "Takikomi Gohan",
+  subtitle: "Japanese mixed rice — chicken and mushrooms, all in the rice cooker",
+  photo: "img/takikomi-gohan.webp",
+  photoCredit: { by: "pelican (Tokyo)", lic: "CC BY-SA 2.0",
+                  url: "https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg" },
+  cuisine: "asian",
+  appliances: ["ricecooker"],
+  minutes: 90,
+  activeMinutes: 15,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 0.75,
+  tags: ["one-pot", "set-and-forget", "cheap", "leftovers"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "short-grain rice", qty: 1, unit: "cup", aisle: "dry", scale: true,
+      note: "sushi rice is the same thing",
+      sub: "long-grain white rice works, but it comes out separate and fluffy instead of sticky — a different dish, still a good one" },
+    { item: "chicken thighs", qty: 5, unit: "oz", aisle: "meat", scale: true,
+      note: "boneless, cut into bite-sized pieces" },
+    { item: "mushrooms", qty: 3, unit: "oz", aisle: "produce", scale: true,
+      note: "shiitake if you can get them — far deeper flavour than button mushrooms" },
+    { item: "carrots", qty: 1, unit: "piece", aisle: "produce", scale: true,
+      note: "small, cut into matchsticks" },
+    { item: "soy sauce", qty: 1, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "mirin", qty: 1, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "a teaspoon of sugar stirred into a tablespoon of white wine" },
+    { item: "chicken stock", qty: 1, unit: "cup", aisle: "canned", scale: true,
+      note: "dashi is the real thing here if you have it" },
+    { item: "ginger", qty: 1, unit: "tsp", aisle: "produce", scale: true, note: "grated" },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: false,
+      note: "sliced thin, for the end" }
+  ],
+
+  misePlace: [
+    "Rinse the rice in cold water three or four times, until the water runs almost clear.",
+    "Cover the rice with plain water and leave it to soak for half an hour. Plain water only — no seasoning yet.",
+    "Drain it in a sieve and leave it there for a good fifteen minutes.",
+    "Meanwhile cut the chicken small, slice the mushrooms, and cut the carrot into matchsticks."
+  ],
+
+  steps: [
+    { text: "Tip the drained rice into the rice cooker pot.", minutes: null },
+    { text: "Add the soy sauce, the mirin and the grated ginger, then pour in the stock and stir it once so the seasoning is even.", minutes: null },
+    { text: "Lay the carrot over the rice, then the mushrooms, then the chicken on top.", minutes: null },
+    { text: "Do not stir anything in. Leave it all sitting on the surface.", minutes: null },
+    { text: "Close the lid and start it on the normal white rice setting, or the mixed rice setting if yours has one.", minutes: null },
+    { text: "When it clicks off, leave the lid shut for ten more minutes.", minutes: 10 },
+    { text: "Open it and fold everything together with a rice paddle, cutting down through the rice rather than stirring in circles.", minutes: null },
+    { text: "Scatter the scallions over the top and serve it straight from the pot.", minutes: null }
+  ],
+
+  beginnerTip: "Soak the rice in plain water, and season it only once it's drained. Soy sauce stops rice absorbing water, so rice left sitting in the seasoning arrives at the cooker still hard in the middle and stays that way. Plain water first, seasoning last, and the ingredients go on top without stirring so the heat can still move through the rice underneath.",
+  makeItBetter: "Keep the solid ingredients to about a quarter of the rice by volume. Piling in more looks generous and is the single fastest way to wreck it — everything you add drinks the liquid the rice needed, and you get a damp, half-cooked pot. If you want it to bite back, a shake of shichimi or a pinch of chilli flakes over each bowl at the table does it without touching the cooking.",
+  skills: ["rinsing and soaking rice", "layering a rice cooker", "seasoned rice"],
+
+  source: { name: "Namiko Chen — Takikomi Gohan, Just One Cookbook",
+            url: "https://www.justonecookbook.com/takikomi-gohan/" },
+  vetting: "Just One Cookbook is a named cook writing Japanese home cooking with a long record, and the same dish and the same rice-cooker method appear independently at Zojirushi and Tiger — the two firms that actually build these machines and test on them — and at Cooking with Dog. Three warnings come straight from that guidance and are written into the steps: never soak the rice in the seasoning, never stir the ingredients in before cooking, and keep the add-ins to roughly a quarter of the rice or they steal the liquid. Konnyaku, aburaage and burdock root are in the original and are dropped here because Jerome cannot reliably buy them in Charleston; what is left is chicken, mushroom and carrot, which is a normal everyday version of the dish rather than a compromise. His rice cooker is about one and a half quarts, so the app warns rather than pretends at four servings."
+},
+
 /* -------------------------------------------------------------- airfryer -- */
 {
   id: "airfryer-salmon",
@@ -577,7 +920,7 @@ window.RECIPES = [
   spiceLevel: 2,
 
   ingredients: [
-    { item: "salmon fillets", qty: 2, unit: "piece", aisle: "meat", scale: true,
+    { item: "salmon", qty: 2, unit: "piece", aisle: "meat", scale: true,
       note: "six ounces each, skin on",
       sub: "any thick fish fillet; thin ones cook far faster, so check early" },
     { item: "lemon", qty: 1, unit: "piece", aisle: "produce", scale: false },
@@ -636,7 +979,7 @@ window.RECIPES = [
       note: "fifteen ounces, drained" },
     { item: "ground cumin", qty: 1, unit: "tsp", aisle: "spices", scale: true },
     { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "cayenne", qty: 0.25, unit: "tsp", aisle: "spices", scale: true },
+    { item: "cayenne pepper", qty: 0.25, unit: "tsp", aisle: "spices", scale: true },
     { item: "sumac", qty: 0.5, unit: "tsp", aisle: "spices", scale: true,
       note: "goes on after cooking", sub: "a squeeze of lemon instead" },
     { item: "olive oil", qty: 1, unit: "tbsp", aisle: "other", scale: true, staple: true },

@@ -23,8 +23,12 @@ Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 | Red Lentil Soup with Lemon | E4024 | CC BY-SA 4.0 | [Red lentil soup from Turkey.jpg](https://commons.wikimedia.org/wiki/File:Red_lentil_soup_from_Turkey.jpg) |
 | Air Fryer Salmon | DanaTentis | CC0 | [Grilled plated salmon fillet.jpg](https://commons.wikimedia.org/wiki/File:Grilled_plated_salmon_fillet.jpg) |
 | Air Fryer Chicken Thighs | Willis Lam | CC BY-SA 2.0 | [Roast Chicken Legs and Thighs.jpg](https://commons.wikimedia.org/wiki/File:Roast_Chicken_Legs_and_Thighs_(31196736704).jpg) |
+| Gratin Dauphinois | Ludovic Péron | CC BY-SA 3.0 | [Gratin dauphinois.jpg](https://commons.wikimedia.org/wiki/File:Gratin_dauphinois.jpg) |
+| Pasta all'Amatriciana | Popo le Chien | CC0 | [Bucatini allamatriciana.jpg](https://commons.wikimedia.org/wiki/File:Bucatini_allamatriciana.jpg) |
+| Slow Cooker Tikka Masala | Guilhem Vellut | CC BY 2.0 | [Chicken Tikka Masala, Annecy.jpg](https://commons.wikimedia.org/wiki/File:Chicken_Tikka_Masala_@_Indian%27s_Food_@_Annecy_(38894403364).jpg) |
+| Takikomi Gohan | pelican (Tokyo) | CC BY-SA 2.0 | [Maitake rice.jpg](https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg) |
 
-## The one with no photo
+## The two with no photo
 
 **Crispy Air Fryer Chickpeas** keeps the drawn placeholder. Every freely-licensed
 candidate was one of three wrong things: a market stall selling raw chickpeas,
@@ -32,3 +36,9 @@ a bag of Turkish *leblebi* (dry-roasted, pale, nothing like the recipe), or an
 Indian *chana chilli* in sauce — a different dish altogether. A photo that
 misrepresents the food is worse than an honest blank, so it stays blank until a
 real one turns up.
+
+**Za'atar Roast Chicken** keeps it too. Seven searches turned up shawarma, a
+lahmacun stack, a shawarma shopfront, and several photos of *musakhan* — chicken
+served on taboon bread under a mound of sumac onions. Musakhan is a fine dish and
+a close cousin, but it is not a tray of roast chicken thighs, and using it would
+tell Jerome he was making something he isn't. Same call as the chickpeas.

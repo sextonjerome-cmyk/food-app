@@ -1,19 +1,23 @@
 /* Frigo service worker — offline-first.
    BUMP CACHE_VERSION ON EVERY DEPLOY or the phone keeps running old code. */
-const CACHE_VERSION = 'frigo-v11';
+const CACHE_VERSION = 'frigo-v12';
 
 /* Recipe photos are cached up front, not on demand. He opens the app in the
    kitchen; the Cook screen is all photos, and it cannot go and fetch them
-   then. About 450 KB for the lot. */
+   then. About 630 KB for the lot. */
 const PHOTOS = [
   './img/poulet-moutarde.webp',
+  './img/gratin-dauphinois.webp',
   './img/shakshuka.webp',
   './img/menemen.webp',
   './img/mapo-tofu.webp',
   './img/smash-burger.webp',
   './img/crevettes-ail-citron.webp',
+  './img/amatriciana.webp',
   './img/crockpot-beef-stew.webp',
+  './img/crockpot-tikka-masala.webp',
   './img/mercimek-lentil-soup.webp',
+  './img/takikomi-gohan.webp',
   './img/airfryer-salmon.webp',
   './img/airfryer-chicken-thighs.webp'
 ];

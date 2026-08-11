@@ -510,7 +510,10 @@ function screenCook(){
          what you've got.</p></div>` + ai;
   }
 
-  const cards = results.slice(0, 8).map(m => recipeCard(m)).join('');
+  /* This used to stop at eight cards while the line above it said "16 matches",
+     which meant half the collection simply could not be reached. They are ranked
+     best-first, so the ones he can actually cook are still at the top. */
+  const cards = results.map(m => recipeCard(m)).join('');
   return filters + `<div class="eyebrow">${results.length} match${results.length===1?'':'es'}</div>`
        + `<div class="section" style="gap:16px">${cards}</div>` + ai;
 }

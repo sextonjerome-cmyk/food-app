@@ -38,7 +38,7 @@ probe recipe, console clean, no sideways scroll, state surviving reload:
 - `manifest.json`, `sw.js`, `icons/` — installs and runs offline.
 - `style-picker.html` — the ten design directions, kept for reference.
 
-## The collection — 11 recipes, researched and in
+## The collection — 16 recipes, researched and in
 
 `recipes.js` is no longer empty. Every entry was researched against
 `.claude/rules/recipe-vetting.md` and carries a `vetting` line naming the actual
@@ -58,6 +58,37 @@ substitutions, attribution).
 | Air Fryer Salmon | airfryer | America's Test Kitchen |
 | Crispy Air Fryer Chickpeas | airfryer | ATK + Skinnytaste |
 | Air Fryer Chicken Thighs | airfryer | ATK method + Budget Bytes |
+| Za'atar Roast Chicken | oven | Ottolenghi & Tamimi, via The Splendid Table |
+| Pasta all'Amatriciana | stove | Saveur + Cook's Country, technique cross-checked |
+| Gratin Dauphinois | oven | Jacques Pépin, Essential Pépin (KQED) |
+| Slow Cooker Tikka Masala | crockpot | Budget Bytes (their own retested version) |
+| Takikomi Gohan | rice cooker | Namiko Chen, Just One Cookbook |
+
+**The five added 2026-08-10 were chosen by what the collection didn't have**, not
+by what sounded nice. Before them: nothing used the oven, nothing used the rice
+cooker at all, there was no pasta, only one French dish for a French cook, and
+one lonely crockpot recipe. Every appliance he owns is now used by something.
+
+- **Za'atar Roast Chicken** — one tray, chicken on top, everything else under it.
+- **Pasta all'Amatriciana** — the first pasta in the app. Cheese goes in off the
+  heat, which is the whole recipe.
+- **Gratin Dauphinois** — Pépin's, no cheese in it, and **every ingredient is
+  already on his shelf**. This is the one he can cook tonight without shopping.
+- **Slow Cooker Tikka Masala** — the second crockpot dish and the first that
+  isn't beef.
+- **Takikomi Gohan** — turns the 1.5 qt rice cooker into a one-pot dinner. The
+  app warns at four servings because that cooker genuinely won't hold it.
+
+**A recipe was rejected out loud:** French onion soup. Cook's Illustrated's
+method is three hours in the oven plus forty minutes of stovetop deglazing and
+wants a 7-quart Dutch oven. It fails the 45-minutes-active rule and it is not a
+beginner's first oven dish. Gratin Dauphinois took the French slot instead.
+
+**Reddit is blocked to the research tool now**, which matters because the vetting
+rule leans on it for "real humans discussing it". Substance came from forums,
+magazine test kitchens and comment sections instead. One recipe — the Ottolenghi
+chicken — clears the bar on two legs rather than three, and its `vetting` line
+says so rather than dressing it up.
 
 **One slot was deliberately left empty.** A second crockpot recipe (Moroccan
 chickpea stew) was researched and dropped — every result was blog-tier with no
@@ -99,7 +130,7 @@ Two routes, because the list lives in two places.
     `localStorage`, so the page only sees them when it's opened at the *same
     origin* he uses the app at. Editing them saves straight back to the app. A
     button moves them into the built-in list for good.
-  - **The built-in list** — all 144 rows from `ingredients.js`, each with its
+  - **The built-in list** — all 164 rows from `ingredients.js`, each with its
     name, aisle and staple toggle. It refuses to hand you a file with a
     duplicate or an empty name. **Download ingredients.js**, drop it in the
     folder; a round trip through it was verified byte-identical.
@@ -182,6 +213,16 @@ data via `window.FrigoTest`.
   as it carried a button beside the text, "Out of eggs" broke across two lines.
   Invisible while every toast was one short line. Both edges are pinned now and
   it centres by `margin-inline:auto`.
+- **The Cook screen only ever showed eight cards** while the line above them
+  said how many matched. With eleven recipes you barely noticed; at sixteen the
+  header read "16 matches" over eight cards and half the collection could not be
+  reached at all. The cap is gone — they're ranked best-first anyway, so what he
+  can actually cook is still at the top.
+- **Two ingredients could never match what was on his shelf.** A recipe asked for
+  `salmon fillets` while the list says `salmon`, and another for `cayenne` while
+  the list says `cayenne pepper` — near-misses the head-noun matcher won't bridge.
+  Both were silently counted as missing. Found by ticking every single item on the
+  master list and seeing what recipes still claimed to need.
 - **The ⊕ on an inventory row was a 34 px target** and the 44 px audit never saw
   it, because the audit only measured `button`, `input` and `.tab` — the ⊕ is a
   `span`. It's 44 px now, and the row height is unchanged because the padding
@@ -210,7 +251,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v11`** (eleven deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v12`** (twelve deploys). Bump it every time.
 
 ## Photos — done 2026-08-09
 
@@ -240,7 +281,7 @@ Two traps worth knowing:
 
 ## Then
 
-1. More recipes when wanted. Eleven is a real collection, not a demo; the
+1. More recipes when wanted. Sixteen covers every appliance he owns; the
    `add-recipe` skill does one start to finish.
 2. A photo for the chickpeas if a properly-licensed one ever turns up.
 3. ~~Publish.~~ **Done 2026-08-09.**
@@ -257,7 +298,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v11`.
+Currently `frigo-v12`.
 
 ## How to look at it
 
