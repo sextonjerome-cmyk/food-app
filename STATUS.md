@@ -255,6 +255,20 @@ data via `window.FrigoTest`.
   opened the repo page, read the feature list — Cook, Fridge, List, Plan — and
   thought that was the app. The two URLs differ by four characters. The live link
   is now the first line on the page.
+- **A recipe contradicted itself out loud.** Amatriciana's ingredient list was
+  changed from guanciale to pancetta (guanciale is not buyable in Charleston) but
+  the mise en place and step one still said guanciale — so the shopping list said
+  one thing and **cook-along literally read "cut the guanciale" aloud**. Renaming
+  an ingredient means grepping the prose, not just the `ingredients` array.
+- **Two recipes listed an ingredient the method never used.** Shakshuka had you
+  buy crusty bread and never mentioned it again; Garlic Lemon Shrimp listed red
+  pepper flakes and used them nowhere — in a dish sold on its kick. Both
+  pre-existing, both found by a script that checks every non-staple ingredient is
+  named somewhere in the mise or the steps. **Worth re-running after any recipe
+  edit**; it is about fifteen lines of node.
+- **`.btn.sm` was 40 px** — the Cook and Add-to-list buttons on the Plan screen.
+  The 44 px audit had only ever measured the bottom nav, the filter chips and the
+  ⊕, so a whole button class slipped through. The audit now sweeps every screen.
 - **The app quoted the wrong price for an AI recipe** — twice, in the settings
   hint and in the sheet that opens when you tap Invent with no key. Both said
   "a fraction of a penny". Opus 5 is $5 in and $25 out per million tokens, so a
@@ -300,7 +314,7 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v16`** (sixteen deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v17`** (seventeen deploys). Bump it every time.
 
 ## Photos — all 16, last worked 2026-08-10
 
@@ -357,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v16`.
+Currently `frigo-v17`.
 
 ## How to look at it
 

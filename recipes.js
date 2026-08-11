@@ -198,7 +198,8 @@ window.RECIPES = [
     { text: "Make four shallow wells in the sauce with the back of a spoon and slide one egg into each.", minutes: null },
     { text: "Spoon a little sauce over the egg whites but leave the yolks bare.", minutes: null },
     { text: "Cover the pan and cook for about eight minutes, until the whites are set and the yolks still wobble when you shake the pan.", minutes: 8 },
-    { text: "Scatter the feta and the cilantro over the top and bring the pan to the table.", minutes: null }
+    { text: "Scatter the feta and the cilantro over the top.", minutes: null },
+    { text: "Bring the pan straight to the table with the bread, and scoop it out with a torn piece rather than a spoon.", minutes: null }
   ],
 
   beginnerTip: "The yolks keep cooking after the pan leaves the heat. Pull it while they still jiggle in the middle — if they look perfect in the pan they will be hard by the time you sit down.",
@@ -536,7 +537,7 @@ window.RECIPES = [
     "Dry the shrimp thoroughly on paper towel, then toss them with salt, pepper and the sugar.",
     "Mince the garlic and chop the parsley.",
     "Zest the lemon, then cut it in half.",
-    "Soften the butter in a small bowl and mash the garlic, zest and parsley into it."
+    "Soften the butter in a small bowl and mash the garlic, the zest, the parsley and the red pepper flakes into it."
   ],
 
   steps: [
@@ -599,14 +600,14 @@ window.RECIPES = [
   ],
 
   misePlace: [
-    "Cut the guanciale into strips about as thick as your little finger.",
+    "Cut the pancetta into strips about as thick as your little finger.",
     "Tip the tomatoes into a bowl and crush them with your hands. Pull out any hard white cores.",
     "Grate the cheese finely and leave it in a bowl by the stove.",
     "Put a big pot of water on to boil and salt it like the sea."
   ],
 
   steps: [
-    { text: "Put the guanciale in a cold, dry pan and only then turn the heat to medium.", minutes: null },
+    { text: "Put the pancetta in a cold, dry pan and only then turn the heat to medium.", minutes: null },
     { text: "Let it cook for about six minutes, until the fat has run out and the meat is browned and crisp at the edges.", minutes: 6 },
     { text: "Lift the meat out with a slotted spoon and put it on a plate.", minutes: null },
     { text: "Pour the fat into a small bowl, wipe any burnt specks out of the pan, then pour the clean fat back in.", minutes: null },
@@ -627,7 +628,7 @@ window.RECIPES = [
 
   source: { name: "Pasta all'Amatriciana — the Roman classic; technique cross-checked against Saveur, America's Test Kitchen's Cook's Country and several independent write-ups",
             url: "https://www.americastestkitchen.com/cookscountry/recipes/14020-bucatini-all-amatriciana" },
-  vetting: "The dish clears on independence and on real discussion. It carries tested versions at Saveur and Cook's Country and turns up in a dozen unconnected kitchens, and the failure everybody reports is the same one: the pecorino seizes into strings instead of melting. Several unrelated sources — including a physics write-up on the sauce — land on the same fix, which is off the heat, cooler starchy water, and tossing rather than stirring. That fix is written into the steps. The cold-pan render and wiping the burnt fat out before the tomatoes go in come from cooks who found the sauce turned bitter otherwise. Guanciale is hard to buy in Charleston, so bacon is offered as a substitution with an honest note that it makes the dish smoky."
+  vetting: "The dish clears on independence and on real discussion. It carries tested versions at Saveur and Cook's Country and turns up in a dozen unconnected kitchens, and the failure everybody reports is the same one: the pecorino seizes into strings instead of melting. Several unrelated sources — including a physics write-up on the sauce — land on the same fix, which is off the heat, cooler starchy water, and tossing rather than stirring. That fix is written into the steps. The cold-pan render and wiping the burnt fat out before the tomatoes go in come from cooks who found the sauce turned bitter otherwise. Guanciale is the traditional cut and is hard to buy in Charleston, so the recipe asks for pancetta and offers thick-cut bacon after that, with an honest note that bacon makes the dish smoky."
 },
 
 /* -------------------------------------------------------------- crockpot -- */
