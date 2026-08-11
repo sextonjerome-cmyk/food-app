@@ -942,11 +942,14 @@ function screenSettings(){
   <div class="section"><h2>Talking to Claude by voice</h2>
     <button class="btn ghost" data-act="claude-kitchen">${svg('i-speak')} Send my kitchen to Claude</button>
     <button class="btn ghost" data-act="claude-standing">${svg('i-sparkle')} Copy my standing cook&rsquo;s prompt</button>
+    <button class="btn ghost" data-act="claude-file">${svg('i-list')} Save my kitchen as a file</button>
     <p class="hint">Frigo hands the text to your phone and you pick Claude from the share list.
-       It lands as your first message &mdash; then tap the <b>microphone</b> and talk.
-       The standing prompt is the one to keep: in the Claude app make a <b>Project</b> called
-       Cooking, paste it into the instructions, and every chat you start in there already
-       knows your gear and reads you one step at a time.</p>
+       It lands as your first message &mdash; then tap the <b>microphone</b> and talk.</p>
+    <p class="hint">Set it up once: in the Claude app make a <b>Project</b> called Cooking,
+       paste the standing prompt into its instructions, and upload the file. After that every
+       chat in there already knows your gear, your shelves and the recipes you own.
+       The file is a <b>snapshot</b> &mdash; save it again when your kitchen has really
+       changed. For tonight, the buttons above are always live.</p>
   </div>
 
   <div class="section"><h2>Invent-a-recipe</h2>
@@ -1540,6 +1543,15 @@ document.addEventListener('click', e => {
       sendToClaude(promptWhatToCook(), 'What should I cook?'); break;
     case 'claude-standing':
       sendToClaude(promptStanding(), 'My cooking coach'); break;
+    case 'claude-file': {
+      const blob = new Blob([kitchenFile()], { type:'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'my-kitchen.txt';
+      a.click(); URL.revokeObjectURL(a.href);
+      toast('Saved as my-kitchen.txt');
+      break;
+    }
   }
 });
 
@@ -1648,6 +1660,66 @@ Whenever I ask you for something to cook, ask me what I have before you suggest 
 ${COACH_RULES}`;
 }
 
+/* The whole kitchen as one file, for uploading into a Claude Project so every
+   chat starts already knowing it. A snapshot, not a link — it is right on the
+   day it is saved and drifts after that, which the Settings note says plainly. */
+function kitchenFile(){
+  const label = { fridge:'FRIDGE', freezer:'FREEZER', pantry:'PANTRY', spices:'SPICE RACK' };
+  const have = [], low = [], always = [], rest = [];
+  TABS.forEach(tab => {
+    itemsFor(tab).forEach(it => {
+      const s = state.inventory[tab][it.name] || {};
+      /* Same assumption the matcher makes: with staples on, salt and oil count
+         as present. Without this the file tells Claude he owns no butter. */
+      const assumed = it.staple && state.prefs.staplesOn;
+      if (s.always) always.push(it.name);
+      else if (s.have && s.low) low.push(it.name);
+      else if (s.have || assumed) have.push(label[tab] + ': ' + it.name);
+      else rest.push(it.name);
+    });
+  });
+  const byTab = {};
+  have.forEach(h => {
+    const [k, v] = h.split(': ');
+    (byTab[k] = byTab[k] || []).push(v);
+  });
+  const stock = Object.keys(byTab).map(k => k + '\n  ' + byTab[k].join(', ')).join('\n\n');
+
+  const recipes = recipePool().map(r =>
+    `${r.title}${r.subtitle ? ' (' + r.subtitle + ')' : ''} — ${cuisineLabel(r.cuisine)}, ${r.minutes} minutes\n  ` +
+    (r.ingredients || []).map(i => i.item).join(', ')).join('\n\n');
+
+  return `MY KITCHEN — saved from Frigo on ${isoPlus(0)}
+
+I am Jerome, a beginner cook in Charleston who wants to get good. I like French,
+American comfort, Middle Eastern, Turkish and simple Asian food, and I would
+always rather food had a kick than be bland. I usually cook for ${state.prefs.servings}, and my
+spice tolerance is ${state.prefs.spice} out of five.
+
+MY GEAR
+  ${gearList()}
+
+WHAT I HAVE RIGHT NOW
+${stock || '  (nothing ticked yet)'}
+
+ALWAYS IN STOCK, ASSUME I HAVE THESE
+  ${always.join(', ') || '(none set)'}
+
+RUNNING LOW, DO NOT BUILD A DISH AROUND THESE
+  ${low.join(', ') || '(none)'}
+
+THINGS I BUY BUT DO NOT HAVE TODAY
+  ${rest.join(', ') || '(none)'}
+
+RECIPES ALREADY IN MY APP — suggest these before inventing something new
+${recipes}
+
+${COACH_RULES}
+
+This file is a snapshot of the day it says at the top. If I tell you something
+different about what is in my kitchen, believe me over this file.`;
+}
+
 /* share first, clipboard second, show-me-the-text last */
 async function sendToClaude(text, title){
   if (navigator.share){
@@ -1736,6 +1808,7 @@ window.addEventListener('keydown', e => {
 /* The one door into the closure, so the check-phone harness can test the
    name matching against real recipe data instead of me eyeballing it.
    Read-only helpers; nothing here changes state. */
-window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList, view, state };
+window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList,
+                     kitchenFile, promptCookThis, promptWhatToCook, promptStanding, view, state };
 
 })();

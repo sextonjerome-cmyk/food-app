@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v18`.
+Currently `frigo-v19`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -396,6 +396,14 @@ Three hand-offs, all offline (a string given to the OS, no network):
 
 Fallback chain: `navigator.share` → `clipboard.writeText` + toast → a sheet with the
 text in a selectable box. Verified all three paths.
+
+**Save my kitchen as a file** (Settings) downloads `my-kitchen.txt` — who he is,
+his gear, what is on each shelf, what is running low, what he buys but hasn't got,
+and every recipe in the app with its ingredients. Roughly 7 KB. It goes into a
+Claude **Project** once, so every chat there starts knowing the kitchen. Staples
+count as present in it when "Assume staples" is on, matching the matcher — otherwise
+the file claims he owns no butter. It is a snapshot and says so at the top, with a
+line telling Claude to believe him over the file.
 
 **Also fixed:** `qtyLabel()` was printing the unit `piece`, so the app said
 "4 piece eggs" on the recipe screen and the shopping list. Counted things now take
