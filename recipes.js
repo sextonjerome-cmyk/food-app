@@ -214,7 +214,13 @@ window.RECIPES = [
   id: "poulet-zaatar",
   title: "Za'atar Roast Chicken",
   subtitle: "Chicken, red onion and lemon, all in one tray",
-  photo: null,
+  /* Not a free licence, unlike every other photo here. Jerome asked for a
+     picture on every recipe and four passes over Commons and Openverse never
+     found one, so this is the blog's own shot of the same dish, credited and
+     linked. See CREDITS.md. */
+  photo: "img/poulet-zaatar.webp",
+  photoCredit: { by: "Lisa Goldfinger, Panning the Globe", lic: "used with credit",
+                  url: "https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/" },
   cuisine: "middle-eastern",
   /* His kitchen has one appliance called "Stove & Oven", id `stove`. There is no
      separate `oven` id, so tagging it that way would drop it out of the filter

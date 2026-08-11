@@ -1,9 +1,12 @@
 # Photo credits
 
-Every photo in `img/` is a freely-licensed still from [Wikimedia
-Commons](https://commons.wikimedia.org), resized to 720 × 540 and re-encoded as
-WebP. Nothing else was changed. The credit also shows inside the app, at the
-bottom of each recipe.
+Photos in `img/` are resized to 720 × 540 and re-encoded as WebP. Nothing else
+was changed. The credit also shows inside the app, at the bottom of each recipe.
+
+**Fifteen of the sixteen are freely licensed** — from [Wikimedia
+Commons](https://commons.wikimedia.org) and, in one case, Flickr via
+[Openverse](https://openverse.org). **One is not**, and is called out at the
+bottom of this page.
 
 Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) ·
@@ -28,19 +31,31 @@ Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 | Slow Cooker Tikka Masala | Guilhem Vellut | CC BY 2.0 | [Chicken Tikka Masala, Annecy.jpg](https://commons.wikimedia.org/wiki/File:Chicken_Tikka_Masala_@_Indian%27s_Food_@_Annecy_(38894403364).jpg) |
 | Takikomi Gohan | pelican (Tokyo) | CC BY-SA 2.0 | [Maitake rice.jpg](https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg) |
 | Crispy Air Fryer Chickpeas | ella.o | CC BY 2.0 | [Popcorn Chickpeas (Flickr)](https://www.flickr.com/photos/155807330@N05/45508607031) |
+| Za'atar Roast Chicken | Lisa Goldfinger, Panning the Globe | **not a free licence — see below** | [Ottolenghi's Roast Chicken](https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/) |
 
 Not every photo comes from Wikimedia now. **Crispy Air Fryer Chickpeas** came
 from Flickr via [Openverse](https://openverse.org), which aggregates Flickr,
 Wikimedia, Nappy and Rawpixel and can filter to licences that allow reuse. That
 is a far bigger pool than Commons alone, and it is where to look first next time.
 
-## The one with no photo
+## The one that is not freely licensed
 
-**Za'atar Roast Chicken** keeps the drawn placeholder. Three separate search passes across
-Wikimedia and Openverse, about forty candidates looked at one by one: shawarma, a
-lahmacun stack, a shawarma shopfront, restaurant plates, a raw chicken, and
-several photos of *musakhan* — chicken served on taboon bread under a mound of
-sumac onions. Musakhan is a fine dish and a close cousin, but it is not a tray of
-roast chicken thighs, and using it would tell Jerome he was making something he
-isn't. Jerome has asked for a photo on everything, and this is the one I could
-not honestly get.
+**Za'atar Roast Chicken** uses [Panning the Globe's own photo](https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/)
+by Lisa Goldfinger. **This one is not under a free licence** and is used with
+credit rather than permission.
+
+That was Jerome's call, made after being told the risk: the repo is public and
+under his name, and republishing someone's photo without a licence can draw a
+takedown or a complaint. He chose the picture over the blank.
+
+It got here because free sources genuinely came up empty. Four passes across
+Wikimedia Commons and Openverse, around seventy candidates looked at one by one:
+shawarma, a lahmacun stack, a shopfront, restaurant plates, a raw chicken, a
+catering tray of chicken breast, and a lot of *musakhan* — chicken on taboon
+bread under sumac onions, a close cousin but a different dish.
+
+The photo used is the blog's shot of the exact Ottolenghi recipe this entry is
+adapted from, so at least the picture and the method come from the same kitchen.
+**If Panning the Globe ever object, delete `img/poulet-zaatar.webp` and set
+`photo: null` on that recipe** — the app draws a placeholder and nothing breaks.
+

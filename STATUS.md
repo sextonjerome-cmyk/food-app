@@ -284,32 +284,36 @@ recipes loaded:
   and the say-your-kitchen sheet, all confirmed by finger at real coordinates.
 - **Every touch target measured ≥ 44 px.** Chips and bar buttons were 40, steppers
   38 — all raised.
-- `sw.js` `CACHE_VERSION` is at **`frigo-v14`** (fourteen deploys). Bump it every time.
+- `sw.js` `CACHE_VERSION` is at **`frigo-v15`** (fifteen deploys). Bump it every time.
 
-## Photos — 15 of 16, last worked 2026-08-10
+## Photos — all 16, last worked 2026-08-10
 
-**Fifteen of the sixteen recipes have a real photo.** 720 × 540 WebP, 34–55 KB
-each, **704 KB for the lot**. Every one is under a licence that permits
-redistribution (CC0 · CC BY · CC BY-SA). Credits are in `CREDITS.md` and on
-screen at the bottom of each recipe. `sw.js` precaches all of them, so the Cook
-screen is complete offline instead of trying to fetch in the kitchen.
+**Every recipe has a photo.** 720 × 540 WebP, 34–82 KB each, **788 KB for the
+lot**. Credits are in `CREDITS.md` and on screen at the bottom of each recipe.
+`sw.js` precaches all of them, so the Cook screen is complete offline.
 
-**Look wider than Wikimedia.** Fourteen came from Commons; the fifteenth came
-from Flickr through **[Openverse](https://api.openverse.org)**, which aggregates
-Flickr, Commons, Nappy and Rawpixel behind one API and filters by licence. No
-key needed. Commons alone had nothing usable for crispy chickpeas across two
-passes; Openverse found it on the first. **Start there next time.**
+**Fifteen are freely licensed. One is not, and that was Jerome's decision.**
+Za'atar Roast Chicken uses Panning the Globe's own photo, credited and linked
+but without a licence. He was told plainly that the repo is public, under his
+name, and that this can draw a takedown; he chose the picture over the blank.
+`CREDITS.md` records it and says exactly how to reverse it — delete the file,
+set `photo: null`, the placeholder comes back and nothing breaks.
 
-**Za'atar Roast Chicken is the one still without.** Three passes, two sources,
-about forty candidates looked at individually: shawarma, a lahmacun stack, a
-shopfront, restaurant plates, a raw chicken, and a lot of *musakhan* — chicken
-on taboon bread under sumac onions, a close cousin but a different dish.
-**Jerome asked for a photo on everything**, so this is a known gap rather than a
-decision, and it stays blank only until a real one turns up.
+**Look wider than Wikimedia.** Fourteen came from Commons; one from Flickr via
+**[Openverse](https://api.openverse.org)**, which aggregates Flickr, Commons,
+Nappy and Rawpixel behind one API, filters by licence, and needs no key.
+Commons alone came up dry twice for crispy chickpeas; Openverse found it first
+try. **Start there next time.**
+
+**When free sources genuinely fail**, the trick that worked was going to the
+blogs that cooked the exact recipe and reading their `og:image` — the photo then
+matches the method, because it came from the same kitchen. That is how the
+chicken was solved, and it is the last resort, not the first.
 
 How it is done: search by licence, then build **contact sheets and actually look
 at them**. A filename is not evidence the photo shows the dish — roughly half of
-every plausible-looking title turned out to be the wrong food.
+every plausible title turned out to be the wrong food, and one "roast chicken
+tray" was a catering pan of chicken breast in bell peppers.
 
 Two traps worth knowing:
 - **Python can't reach Commons here** — its cert bundle has expired
@@ -322,8 +326,7 @@ Two traps worth knowing:
 
 1. More recipes when wanted. Sixteen covers every appliance he owns; the
    `add-recipe` skill does one start to finish.
-2. A photo for Za'atar Roast Chicken — the last one without. Try Openverse
-   with new search terms; Commons and Openverse are both dry so far.
+2. ~~A photo for every recipe.~~ **Done 2026-08-10** — all sixteen.
 3. ~~Publish.~~ **Done 2026-08-09.**
 
 ## It's live
@@ -338,7 +341,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v14`.
+Currently `frigo-v15`.
 
 ## How to look at it
 
