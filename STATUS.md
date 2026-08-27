@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v22`.
+Currently `frigo-v23`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -488,6 +488,39 @@ reads as missing — is worth re-running whenever recipes are added.**
 Twelve more shelf rows went in for this batch: cabbage, cauliflower, broccoli,
 gochujang, miso paste, thai curry paste, ramen noodles, grits, pecans, crispy fried
 onions, biscuit dough, cajun seasoning. The shelf list is now 180 items.
+
+## Saying your fridge out loud: three matching bugs (2026-08-27)
+
+Jerome asked whether he could just tell Claude what is in his fridge and get
+recipes back. Testing that workflow with a realistically messy dictated list
+("I've got eggs, some milk, 2 boxes of chicken thighs, dijon, a bunch of
+scallions…") found three faults, all now fixed:
+
+1. **Accents were never stripped.** `norm()` lowercased but left diacritics, so
+   the shelf item `crème fraîche` and a typed `creme fraiche` were two different
+   ingredients that could never match. Same for `gruyère`. This matters more here
+   than in most apps — Jerome is French and dictates, and a phone keyboard gives
+   the unaccented form.
+2. **Short names failed.** Saying "dijon", "soy" or "mayo" created a new custom
+   item instead of finding the mustard, the soy sauce or the mayonnaise. There is
+   now a `SHORTHAND` table, applied only on an exact whole-string match so
+   "dijon mustard" is left alone. It also carries the French singles he actually
+   says: citron, crevettes, champignons, pommes de terre, miel.
+3. **A vague name matched a specific one too eagerly.** The matcher deliberately
+   lets "stock" find chicken stock and "flour" find all-purpose — but the same
+   rule meant **sweet potatoes satisfied a recipe asking for potatoes**, milk
+   counted as coconut milk, and crispy fried onions counted as onions. A
+   `DISTINCT` set of modifiers now blocks exactly those.
+
+`singular()` also now handles `oes` so potatoes and tomatoes stop stemming to
+"potatoe" and "tomatoe".
+
+**The tap-to-tick link works and is the answer to his question.** The app already
+reads `…/food-app/#have=eggs, harissa, chicken thighs` and ticks the lot,
+handling quantities and the word "and". Tested with a 300-character dictated
+sentence: 21 items ticked correctly. So the workflow is — he says what he has,
+Claude builds that link, he taps it once on the phone, and the Cook screen is
+populated. Nothing leaves the phone, and no typing.
 
 ## How to look at it
 

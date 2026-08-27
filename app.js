@@ -102,7 +102,11 @@ const view = {
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const norm = s => String(s).toLowerCase().trim().replace(/\s+/g,' ');
+/* Accents are stripped before anything is compared. Jerome dictates, and a
+   phone keyboard gives "creme fraiche" for a shelf that says "crème fraîche";
+   without this they are two different ingredients and neither ever matches. */
+const norm = s => String(s).toLowerCase().trim().replace(/\s+/g,' ')
+  .normalize('NFD').replace(/[̀-ͯ]/g, '');
 const svg = (id, cls) => `<svg class="${cls||'icon'}" aria-hidden="true"><use href="#${id}"></use></svg>`;
 
 /* A toast can carry one button. Unticking the last of something should offer
@@ -219,6 +223,19 @@ const SAME_PHRASE = [
   [/\bred\s+pepper\s+flakes?\b/g, 'chilli flake'],
   [/\bstock\s+cubes?\b/g, 'stock']
 ];
+/* Things said as a short name, matched only when that IS the whole name — so
+   "dijon" finds the mustard, but "dijon mustard" is left alone. */
+const SHORTHAND = {
+  dijon:'dijon mustard', soy:'soy sauce', mayo:'mayonnaise', parm:'parmesan',
+  worcestershire:'worcestershire sauce', balsamic:'balsamic vinegar',
+  'pomme de terre':'potato', 'pommes de terre':'potato',
+  lait:'milk', sel:'salt', poivre:'black pepper', sucre:'sugar',
+  farine:'all purpose flour', riz:'white rice', crevette:'shrimp',
+  crevettes:'shrimp', champignon:'mushroom', champignons:'mushroom',
+  epinards:'spinach', carotte:'carrot', carottes:'carrot', tomate:'tomato',
+  tomates:'tomato', fromage:'cheese', jambon:'ham', miel:'honey'
+};
+
 const SAME_WORD = {
   coriandre:'cilantro', coriander:'cilantro',
   persil:'parsley', ail:'garlic', oignon:'onion', oignons:'onion',
@@ -242,12 +259,13 @@ const FILLER = new Set(['fresh','raw','whole','large','small','medium','ripe','p
   'grated','of','a','the','good','quality','some','my','skin','on','bone','in','and',
   'piece','pieces','pack','packet','tub','jar','tin','can','bunch','clove','cloves']);
 
-const singular = w => w.length > 3 ? w.replace(/ies$/,'y').replace(/(ses|xes|zes|ches|shes)$/,m=>m.slice(0,-2)).replace(/s$/,'') : w;
+const singular = w => w.length > 3 ? w.replace(/ies$/,'y').replace(/oes$/,'o').replace(/(ses|xes|zes|ches|shes)$/,m=>m.slice(0,-2)).replace(/s$/,'') : w;
 
 /* Break a name into the thing itself plus the words that qualify it.
    "extra virgin olive oil" -> head "oil", mods {olive}. */
 function itemParts(name){
   let s = norm(name).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g,' ').trim();
+  if (SHORTHAND[s]) s = SHORTHAND[s];
   SAME_PHRASE.forEach(([re, to]) => { s = s.replace(re, to); });
   const words = s.split(' ')
     .map(w => SAME_WORD[w] || w)
@@ -262,9 +280,17 @@ function itemParts(name){
 /* Two names mean the same thing when they're the same thing (same head noun)
    and nothing about them disagrees. "chicken stock" matches "chicken broth"
    but not "beef stock"; "black pepper" never matches "red bell pepper". */
+/* A vaguer name normally matches a more specific one — "stock" finds chicken
+   stock, "flour" finds all-purpose. These words are the exception: they change
+   what the ingredient IS, so a sweet potato must never satisfy a recipe asking
+   for potatoes, and having milk must never mean having coconut milk. */
+const DISTINCT = new Set(['sweet','coconut','sour','fried','crispy','brown',
+  'condensed','evaporated','almond','oat','soy','powdered','icing']);
+
 function sameItem(a, b){
   const x = itemParts(a), y = itemParts(b);
   if (!x || !y || x.head !== y.head) return false;
+  for (const m of DISTINCT) if (x.mods.has(m) !== y.mods.has(m)) return false;
   const smaller = x.mods.size <= y.mods.size ? x.mods : y.mods;
   const bigger  = smaller === x.mods ? y.mods : x.mods;
   for (const m of smaller) if (!bigger.has(m)) return false;
