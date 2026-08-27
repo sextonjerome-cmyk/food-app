@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v23`.
+Currently `frigo-v24`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -521,6 +521,34 @@ handling quantities and the word "and". Tested with a 300-character dictated
 sentence: 21 items ticked correctly. So the workflow is — he says what he has,
 Claude builds that link, he taps it once on the phone, and the Cook screen is
 populated. Nothing leaves the phone, and no typing.
+
+## Substitutions: the third state (2026-08-27)
+
+Jerome's idea, and a better one than what was there. Blocking sweet potato from
+counting as potato was correct but unhelpful — what he wanted was for the app to
+**say so**: "you have not got sweet potatoes, but your potatoes will do."
+
+So an ingredient is now one of **three** things, not two:
+
+- **have it** — a star, as before
+- **swap** — amber, with the specific line: *"Use your sour cream — stir it in off
+  the heat or it will split"*
+- **buy it** — red, as before
+
+A recipe whose only gaps are swappable counts as cookable and lands in **Cook this
+now**, with the swap named on the card. Perfect matches still rank above swapped
+ones, so nothing is hidden.
+
+`SUBSTITUTES` holds around eighty real swaps, best option first, each with a note
+saying **what changes** — because "it works" and "it is identical" are different
+claims and he is learning to cook. Three were written and then cut for being a
+stretch: ginger to garlic, carrot to sweet potato, cucumber to celery. Leaving a
+gap honest beats a swap that ruins the dish.
+
+**Knock-on fix:** the "what did you use up?" sheet listed the recipe's ingredient,
+so after cooking a gratin with sweet potatoes it offered to untick *potatoes* —
+something he never had, so it did nothing. It now names the stand-in he actually
+used.
 
 ## How to look at it
 

@@ -297,6 +297,145 @@ function sameItem(a, b){
   return true;
 }
 
+/* ------------------------------------------------------- substitutions
+
+   Real swaps a cook would actually make, best option first. This is not a
+   thesaurus: every line is something that genuinely works in these recipes,
+   and the note says what changes, because "it works" and "it is identical"
+   are different claims and Jerome is learning.
+
+   Keys and values are matched with sameItem(), so plurals and loose naming
+   sort themselves out. */
+const SUBSTITUTES = {
+  /* produce */
+  'sweet potatoes':  [['potatoes', 'less sweet, and they take a few minutes longer to soften']],
+  'potatoes':        [['sweet potatoes', 'sweeter and softer, so watch them near the end']],
+  'shallots':        [['onions', 'use half a small one; sharper, so cook it a minute longer']],
+  'limes':           [['lemons', 'less floral, but the acid does the same job']],
+  'lemons':          [['limes', 'sharper and more perfumed']],
+  'fresh cilantro':  [['fresh parsley', 'a different herb, but it keeps the fresh green finish']],
+  'fresh parsley':   [['fresh cilantro', 'stronger and more citrussy']],
+  'fresh thyme':     [['dried thyme', 'use a third as much, and add it earlier'],
+                      ['herbes de provence', 'carries thyme plus rosemary and savoury']],
+  'jalapenos':       [['chilli flakes', 'half a teaspoon; you lose the green freshness'],
+                      ['harissa', 'a teaspoon, and it brings smoke with it']],
+  'green peppers':   [['bell peppers', 'sweeter and thicker-walled']],
+  'bell peppers':    [['green peppers', 'thinner and a little more bitter']],
+  'cauliflower':     [['broccoli', 'roasts the same way, cooks a touch faster'],
+                      ['frozen broccoli', 'roast it straight from frozen, no thawing']],
+  'broccoli':        [['frozen broccoli', 'roast from frozen and give it five more minutes'],
+                      ['cauliflower', 'milder, browns beautifully']],
+  'green beans':     [['frozen green beans', 'straight from the bag, no thawing']],
+  'cabbage':         [['spinach', 'wilts instead of charring, so add it at the very end']],
+  'garlic':          [['garlic powder', 'half a teaspoon per clove, added later so it does not burn']],
+  'tomatoes':        [['canned tomatoes', 'drain them well or the pan goes watery']],
+
+  /* dairy and eggs */
+  'heavy cream':     [['crème fraîche', 'tangier, and far less likely to split'],
+                      ['sour cream', 'stir it in off the heat or it will split'],
+                      ['milk', 'much thinner — reduce it longer']],
+  'sour cream':      [['plain yogurt', 'thinner and sharper; drain it if you can'],
+                      ['crème fraîche', 'richer and more stable in heat'],
+                      ['mayonnaise', 'for a cold sauce only']],
+  'crème fraîche':   [['sour cream', 'sharper; keep it off the heat'],
+                      ['heavy cream', 'richer, less tang']],
+  'parmesan':        [['pecorino romano', 'saltier and sharper, so use a little less']],
+  'pecorino romano': [['parmesan', 'nuttier and milder']],
+  'gruyère':         [['cheddar', 'sharper and it goes oilier when it melts'],
+                      ['mozzarella', 'milder, and it stretches rather than browns']],
+  'feta':            [['mozzarella', 'much milder — add salt to make up for it']],
+  'cheddar':         [['gruyère', 'nuttier and it melts more smoothly'],
+                      ['mozzarella', 'milder and stringier']],
+  'milk':            [['heavy cream', 'thin it with water, half and half']],
+  'plain yogurt':    [['sour cream', 'richer and less sharp']],
+
+  /* meat and fish */
+  'chicken thighs':  [['chicken breast', 'leaner, so take it off the heat sooner or it dries'],
+                      ['frozen chicken thighs', 'thaw them properly first']],
+  'chicken breast':  [['chicken thighs', 'more forgiving and more flavourful; a little longer to cook']],
+  'ground beef':     [['ground pork', 'sweeter and fattier'],
+                      ['frozen ground beef', 'thaw it fully or it steams in the pan']],
+  'ground pork':     [['ground beef', 'less sweet, a bit firmer']],
+  'bacon':           [['pancetta', 'unsmoked, so you lose the smoke but keep the fat'],
+                      ['sausage', 'crumble it and brown it hard']],
+  'pancetta':        [['bacon', 'smoked, which changes the dish but works']],
+  'shrimp':          [['frozen shrimp', 'thaw under cold water and dry them very well']],
+  'salmon':          [['frozen fish fillets', 'thaw and dry them thoroughly']],
+
+  /* dry goods */
+  'basmati rice':    [['white rice', 'a touch stickier'], ['jasmine rice', 'softer and more fragrant']],
+  'jasmine rice':    [['white rice', 'less fragrant, otherwise the same'], ['basmati rice', 'drier and separate']],
+  'white rice':      [['basmati rice', 'drier and more separate'], ['jasmine rice', 'softer and fragrant']],
+  'short-grain rice':[['white rice', 'less sticky, so it will not clump the same way']],
+  'panko':           [['breadcrumbs', 'finer, so the crust is denser and less crunchy']],
+  'breadcrumbs':     [['panko', 'coarser and much crunchier']],
+  'couscous':        [['bulgur', 'nuttier and it needs real simmering']],
+  'bulgur':          [['couscous', 'quicker — just soak it off the heat'], ['quinoa', 'nuttier, and it needs rinsing']],
+  'ramen noodles':   [['egg noodles', 'softer'], ['spaghetti', 'break it in half and cook it a minute short']],
+  'egg noodles':     [['spaghetti', 'firmer'], ['ramen noodles', 'springier']],
+  'spaghetti':       [['penne', 'holds sauce differently but works']],
+  'penne':           [['spaghetti', 'less good at catching a chunky sauce']],
+  'chicken stock':   [['vegetable stock', 'lighter'], ['beef broth', 'much darker and stronger — use less']],
+  'beef broth':      [['chicken stock', 'lighter, so season a little harder']],
+  'vegetable stock': [['chicken stock', 'richer']],
+  'red wine vinegar':[['white wine vinegar', 'lighter'], ['balsamic vinegar', 'sweeter — use less']],
+  'white wine vinegar':[['red wine vinegar', 'fruitier and a shade stronger']],
+  'balsamic vinegar':[['red wine vinegar', 'add a little honey to make up the sweetness']],
+  'honey':           [['brown sugar', 'no floral note; dissolve it in the liquid'],
+                      ['sugar', 'plain sweetness only']],
+  'brown sugar':     [['sugar', 'add a spoon of honey for the caramel note']],
+  'sriracha':        [['hot sauce', 'sharper and thinner'], ['harissa', 'smokier and less sweet']],
+  'hot sauce':       [['sriracha', 'thicker, sweeter, more garlic'], ['harissa', 'smoky and much thicker']],
+  'harissa':         [['sriracha', 'sweeter; add smoked paprika for the smoke']],
+  'gochujang':       [['sriracha', 'add a teaspoon of miso paste for the depth'],
+                      ['harissa', 'wrong country, right heat and thickness']],
+  'miso paste':      [['soy sauce', 'thinner and saltier — use half']],
+  'thai curry paste':[['curry powder', 'two teaspoons plus chilli flakes; fry it in oil the same way'],
+                      ['harissa', 'not Thai, but it fries and blooms the same way']],
+  'tahini':          [['peanut butter', 'sweeter and heavier — thin it hard with lemon and water']],
+  'canned black beans':[['canned white beans', 'softer and paler'], ['canned chickpeas', 'firmer, holds shape better']],
+  'canned chickpeas':[['canned white beans', 'creamier, will not crisp as well']],
+  'canned coconut milk':[['heavy cream', 'no coconut flavour at all, but the body is right']],
+  'tortillas':       [['pita bread', 'thicker; cut it into wedges']],
+  'pita bread':      [['tortillas', 'thinner, warm them briefly'], ['bread', 'toast it instead']],
+  'biscuit dough':   [['puff pastry', 'flakier and it browns faster'], ['pie crust', 'less rise, still good']],
+  'crispy fried onions':[['panko', 'mix in onion powder; less sweet but it still crunches']],
+  'mirin':           [['white wine', 'add half a teaspoon of sugar per spoon']],
+  'grits':           [['rolled oats', 'a different grain entirely, but the same creamy bowl']],
+
+  /* spices */
+  'aleppo pepper':   [['pul biber', 'the same thing under another name'],
+                      ['chilli flakes', 'half as much, and add a pinch of sweet paprika']],
+  'chilli flakes':   [['cayenne pepper', 'a third as much — it is much hotter'],
+                      ['aleppo pepper', 'twice as much; fruitier and gentler']],
+  'cayenne pepper':  [['chilli flakes', 'three times as much']],
+  'smoked paprika':  [['sweet paprika', 'you lose the smoke, which is most of the point']],
+  'sweet paprika':   [['smoked paprika', 'adds smoke, which changes the dish']],
+  'cajun seasoning': [['smoked paprika', 'add garlic powder, cayenne and dried thyme in equal parts']],
+  'dried thyme':     [['fresh thyme', 'use three times as much, added later'],
+                      ['herbes de provence', 'thyme plus rosemary and savoury']],
+  'dried oregano':   [['herbes de provence', 'broader, more floral'], ['dried thyme', 'earthier']],
+  'sumac':           [['lemons', 'a squeeze at the end gives the same sourness, not the colour']],
+  'ras el hanout':   [['baharat', 'close cousin'], ['garam masala', 'warmer and sweeter']],
+  'baharat':         [['ras el hanout', 'more floral'], ['garam masala', 'sweeter']],
+  'garam masala':    [['curry powder', 'add a pinch of cinnamon'], ['baharat', 'peppery rather than sweet']],
+  'curry powder':    [['garam masala', 'warmer; add turmeric for the colour']],
+  'turmeric':        [['curry powder', 'mostly for colour, and it brings other spices with it']],
+  'white pepper':    [['black pepper', 'sharper, and you will see the specks']],
+  'sesame oil':      [['vegetable oil', 'no nuttiness — add sesame seeds if you have them']],
+  'sesame seeds':    [['pine nuts', 'toast them; different, but the same crunch on top']]
+};
+
+/* The best stand-in he actually owns, or null. */
+function findSubstitute(name){
+  const key = Object.keys(SUBSTITUTES).find(k => norm(k) === norm(name) || sameItem(k, name));
+  if (!key) return null;
+  for (const [alt, note] of SUBSTITUTES[key]){
+    if (inventoryHas(alt)) return { item: alt, note };
+  }
+  return null;
+}
+
 /* Do we have this ingredient? */
 function inventoryHas(name){
   for (const tab of TABS){
@@ -377,11 +516,15 @@ function recipePool(){
 }
 function analyse(recipe, servings){
   const factor = servings / (recipe.baseServings || 2);
-  const missing = [], have = [];
+  const missing = [], have = [], swaps = [];
   (recipe.ingredients || []).forEach(ing => {
     const isStaple = ing.staple && state.prefs.staplesOn;
-    if (inventoryHas(ing.item) || isStaple) have.push(ing);
-    else missing.push(ing);
+    if (inventoryHas(ing.item) || isStaple){ have.push(ing); return; }
+    /* Not in the kitchen, but something on his shelves will do the job. That
+       counts as cookable — it just has to be said out loud, not hidden. */
+    const swap = findSubstitute(ing.item);
+    if (swap){ have.push(ing); swaps.push({ ing, swap }); return; }
+    missing.push(ing);
   });
   const usesLow = (recipe.ingredients||[]).some(i => inventoryLow(i.item));
   let capacityWarning = null;
@@ -391,7 +534,7 @@ function analyse(recipe, servings){
     if (needed > app.qt * 0.62)
       capacityWarning = `Tight fit in your ${app.qt} qt ${app.name.toLowerCase()} at ${servings} servings — cook it in two batches.`;
   }
-  return { factor, missing, have, usesLow, capacityWarning };
+  return { factor, missing, have, swaps, usesLow, capacityWarning };
 }
 function matchRecipes(){
   const f = view.filters, servings = state.prefs.servings;
@@ -406,6 +549,7 @@ function matchRecipes(){
   });
   out.sort((x, y) => {
     if (x.missing.length !== y.missing.length) return x.missing.length - y.missing.length;
+    if (x.swaps.length !== y.swaps.length) return x.swaps.length - y.swaps.length;
     const rx = state.ratings[x.r.id] || 0, ry = state.ratings[y.r.id] || 0;
     if (rx !== ry) return ry - rx;
     if (x.usesLow !== y.usesLow) return x.usesLow ? -1 : 1;
@@ -613,10 +757,19 @@ function screenCook(){
 function recipeCard(m){
   const r = m.r, rating = state.ratings[r.id] || 0;
   const missing = m.missing.length;
+  const swaps = (m.swaps || []).length;
+  const swapLine = swaps === 1
+    ? `<span class="swap">Use your ${esc(m.swaps[0].swap.item)} instead of ${esc(m.swaps[0].ing.item)}.</span>`
+    : swaps > 1
+      ? `<span class="swap">${swaps} swaps from your shelves: ${m.swaps.slice(0,2).map(s => esc(s.swap.item)).join(', ')}${swaps>2?' and more':''}.</span>`
+      : '';
   const matchLine = missing === 0
-    ? `<span class="ok">You have everything.</span>`
+    ? (swaps
+        ? `<span class="ok">You can cook this.</span> ${swapLine}`
+        : `<span class="ok">You have everything.</span>`)
     : `You have <b>${r.ingredients.length - missing} of ${r.ingredients.length}</b> —
-       still need ${m.missing.slice(0,3).map(i => esc(i.item)).join(', ')}${missing>3?` and ${missing-3} more`:''}.`;
+       still need ${m.missing.slice(0,3).map(i => esc(i.item)).join(', ')}${missing>3?` and ${missing-3} more`:''}.
+       ${swapLine}`;
   return `<button class="rcard" data-open="${esc(r.id)}">
     <span class="photo">${photoHTML(r)}${rating ? `<span class="stars">${svg('i-star','icon-sm')}${rating}</span>` : ''}</span>
     <span class="rcard-body">
@@ -810,13 +963,17 @@ function screenRecipe(){
 
   const ings = r.ingredients.map((ing, i) => {
     const missing = a.missing.includes(ing);
-    return `<div class="ing ${missing?'missing':''}">
+    const swapped = (a.swaps || []).find(s => s.ing === ing);
+    return `<div class="ing ${missing?'missing':''}${swapped?' swapped':''}">
       <span class="q">${esc(qtyLabel(ing, a.factor))}</span>
       <span class="n">${esc(ing.item)}${ing.note ? `<small>${esc(ing.note)}</small>` : ''}${
+        swapped ? `<small class="swapnote">Use your <b>${esc(swapped.swap.item)}</b> — ${esc(swapped.swap.note)}</small>` : ''}${
         missing && ing.sub ? `<small>Or: ${esc(ing.sub)}</small>` : ''}</span>
       ${missing
         ? `<button class="add" data-buy="${i}">Buy</button>`
-        : `<span class="have">${svg('i-star','icon-sm')}</span>`}
+        : swapped
+          ? `<span class="sub-badge">swap</span>`
+          : `<span class="have">${svg('i-star','icon-sm')}</span>`}
     </div>`;
   }).join('');
 
@@ -1464,9 +1621,15 @@ document.addEventListener('click', e => {
     case 'used-up': {
       const r = findRecipe(view.recipeId);
       const a = analyse(r, state.prefs.servings);
-      const rows = a.have.filter(i => !i.staple && !isAlways(i.item)).map((ing, i) =>
-        `<button class="item" data-usedup="${esc(ing.item)}"><span class="box"></span>
-          <span class="name">${esc(ing.item)}</span></button>`).join('');
+      /* If he cooked it with a stand-in, the stand-in is what got used up —
+         offering the ingredient he never had would untick nothing. */
+      const usedName = ing => {
+        const sw = (a.swaps || []).find(s => s.ing === ing);
+        return sw ? sw.swap.item : ing.item;
+      };
+      const rows = a.have.filter(i => !i.staple && !isAlways(usedName(i))).map(ing =>
+        `<button class="item" data-usedup="${esc(usedName(ing))}"><span class="box"></span>
+          <span class="name">${esc(usedName(ing))}</span></button>`).join('');
       openSheet(`<h2>What did you finish?</h2>
         <p class="hint">Tick anything you used up. It comes out of your kitchen and goes
            straight onto the shopping list.</p>
@@ -1844,6 +2007,7 @@ window.addEventListener('keydown', e => {
    name matching against real recipe data instead of me eyeballing it.
    Read-only helpers; nothing here changes state. */
 window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList,
+                     analyse, findSubstitute, matchRecipes,
                      kitchenFile, promptCookThis, promptWhatToCook, promptStanding, view, state };
 
 })();
