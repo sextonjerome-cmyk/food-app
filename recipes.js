@@ -319,7 +319,7 @@ window.RECIPES = [
     { item: "eggs", qty: 4, unit: "piece", aisle: "dairy", scale: true },
     { item: "aleppo pepper", qty: 1, unit: "tsp", aisle: "spices", scale: true,
       note: "pul biber", sub: "half a teaspoon of paprika and a pinch of chilli flakes" },
-    { item: "white cheese", qty: 2, unit: "oz", aisle: "dairy", scale: true,
+    { item: "feta", qty: 2, unit: "oz", aisle: "dairy", scale: true,
       note: "optional, crumbled in at the end", sub: "feta" },
     { item: "crusty bread", qty: 2, unit: "piece", aisle: "bakery", scale: true },
     { item: "olive oil", qty: 2, unit: "tbsp", aisle: "other", scale: true, staple: true },
@@ -1441,6 +1441,701 @@ window.RECIPES = [
   source: { name: "HelloFresh's Steakhouse-Style Pork Chops, rewritten with the pan-sauce method fixed",
             url: "https://www.hellofresh.com/recipes/steakhouse-style-pork-chops-648884de0b7af205da01b33e" },
   vetting: "Named a hall-of-fame recipe in r/hellofresh's own thread on the subject, and praised repeatedly for the creamy onion gravy. Two failures recur in the reviews and both are fixed here. One cook reports that the cook time for thinner chops was far too long, answered here with a temperature rather than a clock; another says the broccoli was the only miss and felt bland even with lemon, answered by seasoning the vegetable properly and finishing it with acid off the tray. A commenter on the Reddit thread makes the same point plainly, that they cooked a lot of dry proteins before buying a thermometer."
+}
+
+,
+
+{
+  id: "shrimp-and-grits",
+  title: "Shrimp and Grits",
+  subtitle: "Bacon, cheesy grits and Cajun shrimp",
+  photo: "img/shrimp-and-grits.webp",
+  photoCredit: { by: "vxla", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/14812197@N00/5097297999" },
+  cuisine: "american",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 30,
+  difficulty: "medium",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.5,
+  tags: ["hellofresh-style", "one-pan", "charleston", "crowd-pleaser"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "shrimp", qty: 12, unit: "oz", aisle: "meat", scale: true,
+      note: "peeled and deveined, tails off" },
+    { item: "grits", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      note: "stone-ground if you can find them, not instant" },
+    { item: "bacon", qty: 4, unit: "piece", aisle: "meat", scale: true },
+    { item: "cheddar", qty: 3, unit: "oz", aisle: "dairy", scale: true,
+      sub: "smoked gouda is the Charleston move if you see it" },
+    { item: "cajun seasoning", qty: 2, unit: "tsp", aisle: "spices", scale: true,
+      sub: "smoked paprika, garlic powder, cayenne and dried thyme in equal parts" },
+    { item: "chicken stock", qty: 2, unit: "cup", aisle: "canned", scale: true },
+    { item: "scallions", qty: 3, unit: "piece", aisle: "produce", scale: true },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true },
+    { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
+    { item: "hot sauce", qty: null, unit: null, aisle: "canned", scale: false,
+      note: "at the table" },
+    { item: "butter", qty: 2, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Pat the shrimp dry and toss them with the Cajun seasoning. Leave them while you start the grits.",
+    "Grate the cheddar.",
+    "Slice the scallions, keeping the white and green parts apart.",
+    "Chop the garlic fine.",
+    "Cut the bacon crossways into short strips."
+  ],
+
+  steps: [
+    { text: "Bring the stock to a boil in a small pot with a good pinch of salt.", minutes: null },
+    { text: "Pour the grits in slowly while whisking, so they do not clump.", minutes: null },
+    { text: "Turn the heat right down and cook them for about twenty minutes, stirring every few minutes so they do not catch.", minutes: 20 },
+    { text: "While the grits cook, put the bacon in a cold, dry pan and then turn the heat to medium.", minutes: null },
+    { text: "Cook it for about seven minutes, until crisp, then lift it out and leave the fat in the pan.", minutes: 7 },
+    { text: "Turn the heat to medium-high and lay the shrimp in the bacon fat in one layer.", minutes: null },
+    { text: "Cook them for about ninety seconds a side. They are done the moment they turn opaque and curl into a loose letter C.", minutes: 2 },
+    { text: "Add the garlic and the scallion whites and stir for thirty seconds.", minutes: null },
+    { text: "Take the pan off the heat and squeeze the lemon over the shrimp.", minutes: null },
+    { text: "Beat the butter and the grated cheddar into the grits and taste them for salt.", minutes: null },
+    { text: "Spoon the grits into shallow bowls, pile the shrimp on top with the pan juices, and scatter the bacon and scallion greens over.", minutes: null }
+  ],
+
+  beginnerTip: "Shrimp are done in under two minutes and they keep cooking after they leave the pan. Watch the shape rather than the clock: a loose letter C is cooked, a tight letter O is overcooked and rubbery. Take them out while you still think they need a moment more.",
+  makeItBetter: "Cook the grits in stock instead of water, and give them the full twenty minutes. Almost every complaint about bland shrimp and grits is really a complaint about the grits, which are the whole base of the dish and get treated as an afterthought. Frying the shrimp in the bacon fat rather than fresh oil is the other half of it.",
+  skills: ["rendering bacon", "cooking grits", "judging shrimp by shape"],
+
+  source: { name: "HelloFresh's Southern-Style Bacony Shrimp over Grits, crossed with how Charleston cooks actually make it",
+            url: "https://www.hellofresh.com/recipes/southern-style-bacony-shrimp-over-grits-653904f0b8cd6bf4c478f85c" },
+  vetting: "A reviewer on HelloFresh's own page calls it hands down the best meal they ever had from the service, and it comes up in r/hellofresh threads on the best dish. It is also a real Lowcountry dish with its own subreddit and a long r/Charleston thread on how locals make it, which is where the stock-not-water rule and the bacon fat come from. Jerome lives in Charleston, so this one is worth getting right."
+},
+
+{
+  id: "chicken-biscuit-pot-pie",
+  title: "Chicken and Biscuit Pot Pie",
+  subtitle: "One pan, thyme gravy, biscuits on top",
+  photo: "img/chicken-biscuit-pot-pie.webp",
+  photoCredit: { by: "jeffreyw", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/7927684@N03/5654697887" },
+  cuisine: "american",
+  appliances: ["stove"],
+  minutes: 50,
+  activeMinutes: 25,
+  difficulty: "medium",
+  baseServings: 4,
+  scalable: [2, 6],
+  capacityQt: 2.4,
+  tags: ["hellofresh-style", "one-pan", "comfort", "crowd-pleaser"],
+  spiceLevel: 1,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 6, unit: "piece", aisle: "meat", scale: true,
+      note: "boneless and skinless, cut into chunks" },
+    { item: "biscuit dough", qty: 1, unit: "can", aisle: "bakery", scale: true,
+      note: "the refrigerated kind that peels apart" },
+    { item: "carrots", qty: 3, unit: "piece", aisle: "produce", scale: true,
+      note: "cut into coins, not minced" },
+    { item: "celery", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "onions", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "frozen peas", qty: 1, unit: "cup", aisle: "frozen", scale: true },
+    { item: "chicken stock", qty: 2, unit: "cup", aisle: "canned", scale: true },
+    { item: "heavy cream", qty: 0.5, unit: "cup", aisle: "dairy", scale: true,
+      sub: "milk plus an extra spoon of flour" },
+    { item: "fresh thyme", qty: 1, unit: "tbsp", aisle: "produce", scale: true,
+      sub: "one teaspoon of dried thyme, and no more" },
+    { item: "all-purpose flour", qty: 3, unit: "tbsp", aisle: "dry", scale: true, staple: true },
+    { item: "butter", qty: 3, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred degrees.",
+    "Cut the chicken into chunks about an inch across and salt them.",
+    "Cut the carrots into coins about as thick as a pound coin. Do not mince them.",
+    "Dice the onion and the celery.",
+    "Pull the thyme leaves off their stems.",
+    "Open the biscuits and peel each one apart into two thinner rounds."
+  ],
+
+  steps: [
+    { text: "Melt the butter in a wide ovenproof pan over medium heat.", minutes: null },
+    { text: "Cook the onion, carrot and celery for about eight minutes, until the onion is soft and clear.", minutes: 8 },
+    { text: "Add the chicken and cook for about five minutes, turning it, until it has lost its raw colour outside.", minutes: 5 },
+    { text: "Scatter the flour over everything and stir it for one minute so it stops tasting of raw flour.", minutes: 1 },
+    { text: "Pour in the stock a little at a time, stirring as you go, so it thickens smoothly.", minutes: null },
+    { text: "Add the cream, the thyme and plenty of black pepper, and let it bubble gently for five minutes.", minutes: 5 },
+    { text: "Stir in the peas and taste it for salt. Go carefully, the stock is already salty.", minutes: null },
+    { text: "Lay the thin biscuit rounds over the top, leaving small gaps between them for steam to escape.", minutes: null },
+    { text: "Brush the biscuits with a little melted butter.", minutes: null },
+    { text: "Bake for about eighteen minutes, until the biscuits are deep golden and cooked all the way through.", minutes: 18 },
+    { text: "Let it sit for five minutes before you serve it, or the filling runs everywhere.", minutes: 5 }
+  ],
+
+  beginnerTip: "Split every biscuit into two thinner rounds before they go on top. This is the one thing that goes wrong with this dish over and over: people lay whole biscuits on wet filling, the tops brown while the undersides stay raw dough, and the whole thing is ruined at the last step. Thin biscuits and small gaps between them let the steam out and cook through.",
+  makeItBetter: "Cut the carrots into proper coins rather than mincing them. The filling needs something with texture in it or the whole bowl is one soft note, and this is the most common complaint after the biscuits. Fresh thyme rather than dried is the other lift, and if you only have dried, use a third as much.",
+  skills: ["making a roux", "building a gravy", "oven-to-table cooking"],
+
+  source: { name: "HelloFresh's Homestyle Chicken and Biscuit Pot Pie, with the biscuit problem solved",
+            url: "https://www.hellofresh.com/recipes/homestyle-chicken-and-biscuit-pot-pie-5f049500d95a4007c84095f2" },
+  vetting: "Posted to r/hellofresh as a ten out of ten, and described in another thread as a household favourite that slaps every time. It is also one of the most usefully criticised recipes on their site: several cooks report the biscuits not cooking underneath, one saying the tops were perfect but the layers below never cooked at all, and another that they would bake the biscuits separately next time. Splitting them thin is the fix that keeps it a one-pan dish. The too-fine carrots and the easy-on-the-salt warnings come from the same reviews."
+},
+
+{
+  id: "dan-dan-noodles",
+  title: "Spicy Pork Dan Dan Noodles",
+  subtitle: "Sichuan pork and peanut noodles with charred cabbage",
+  photo: "img/dan-dan-noodles.webp",
+  photoCredit: { by: "avlxyz", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/10559879@N00/4387183128" },
+  cuisine: "asian",
+  appliances: ["stove"],
+  minutes: 30,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.6,
+  tags: ["hellofresh-style", "weeknight", "big-kick", "noodles"],
+  spiceLevel: 4,
+
+  ingredients: [
+    { item: "ground pork", qty: 10, unit: "oz", aisle: "meat", scale: true,
+      sub: "ground beef, though pork is what makes it dan dan" },
+    { item: "ramen noodles", qty: 2, unit: "piece", aisle: "dry", scale: true,
+      note: "throw the flavour sachets away", sub: "egg noodles" },
+    { item: "cabbage", qty: 0.25, unit: "piece", aisle: "produce", scale: true,
+      note: "cut into thick wedges so it can char" },
+    { item: "peanut butter", qty: 2, unit: "tbsp", aisle: "dry", scale: true,
+      note: "smooth, not crunchy" },
+    { item: "soy sauce", qty: 3, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "chilli flakes", qty: 1, unit: "tsp", aisle: "spices", scale: true,
+      note: "Sichuan chilli flakes if you have them" },
+    { item: "sesame oil", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "garlic", qty: 3, unit: "clove", aisle: "produce", scale: true },
+    { item: "ginger", qty: 1, unit: "tbsp", aisle: "produce", scale: true },
+    { item: "scallions", qty: 3, unit: "piece", aisle: "produce", scale: true },
+    { item: "chicken stock", qty: 0.75, unit: "cup", aisle: "canned", scale: true,
+      note: "less than you think — this is a sauce, not a soup" },
+    { item: "red wine vinegar", qty: 1, unit: "tbsp", aisle: "dry", scale: true,
+      sub: "rice vinegar is the proper one if you have it" },
+    { item: "sesame seeds", qty: 1, unit: "tbsp", aisle: "spices", scale: false },
+    { item: "vegetable oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Chop the garlic and the ginger fine.",
+    "Slice the scallions, whites and greens kept apart.",
+    "Cut the cabbage into thick wedges, keeping the core attached so they hold together.",
+    "Whisk the peanut butter, soy sauce, sesame oil, vinegar and chilli flakes together in a bowl.",
+    "Put a pot of water on for the noodles."
+  ],
+
+  steps: [
+    { text: "Heat a dry pan over high heat until it is properly hot.", minutes: null },
+    { text: "Lay the cabbage wedges cut side down and leave them alone for about three minutes, until they are blackened in patches.", minutes: 3 },
+    { text: "Take the cabbage out and chop it roughly.", minutes: null },
+    { text: "Add a little oil to the same pan and put the pork in, pressing it flat.", minutes: null },
+    { text: "Leave it without stirring for about four minutes so it browns properly on one side.", minutes: 4 },
+    { text: "Now break it up and cook it for another three minutes, until there is no pink left and the bottom of the pan is brown.", minutes: 3 },
+    { text: "Add the garlic, the ginger and the scallion whites and stir for one minute.", minutes: 1 },
+    { text: "Boil the noodles for the time on the packet, then drain them and save a mug of the water.", minutes: 4 },
+    { text: "Pour the peanut mixture and the stock into the pork and stir until it is smooth.", minutes: null },
+    { text: "Let it bubble for about three minutes, until it thickens enough to coat the back of a spoon.", minutes: 3 },
+    { text: "Add the noodles and the cabbage and toss everything together, loosening it with the noodle water if it looks tight.", minutes: null },
+    { text: "Serve it with the scallion greens and the sesame seeds over the top.", minutes: null }
+  ],
+
+  beginnerTip: "This is a sauce that clings to noodles, not a soup. Cooks who are disappointed by it almost always report a thin, watery broth, and the cause is too much liquid and not enough time reducing it. Start with less stock than feels right. You can always loosen it with noodle water at the end, and you cannot easily take liquid away.",
+  makeItBetter: "Char the cabbage in a dry pan before anything else goes in, and press the pork flat and leave it alone until it is properly brown. Those two bits of black are where the whole flavour of this dish lives. Stirring the pork constantly steams it grey and no amount of chilli rescues that.",
+  skills: ["charring", "browning mince", "reducing a sauce"],
+
+  source: { name: "HelloFresh's Spicy Pork Dan Dan Noodle Ramen, thickened into a proper dan dan sauce",
+            url: "https://www.hellofresh.com/recipes/spicy-pork-dan-dan-noodle-ramen-649ae86bc8e13be2fa91ddc2" },
+  vetting: "Posted repeatedly to r/hellofresh with people calling it their favourite of the box and adding extra chilli. The complaints are consistent and specific: the broth tastes watery, the stated times are too short to char the cabbage or reduce the liquid, and one cook says plainly they made it with far less broth and it was much better. Written here as the thicker, saucier dish dan dan actually is, with the cabbage charring step given the time reviewers say it really needs."
+},
+
+{
+  id: "korean-beef-bibimbap",
+  title: "Korean Beef Bibimbap",
+  subtitle: "Rice bowl, gochujang beef and a runny egg",
+  photo: "img/korean-beef-bibimbap.webp",
+  photoCredit: { by: "avlxyz", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/10559879@N00/3085707177" },
+  cuisine: "asian",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 30,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.6,
+  tags: ["hellofresh-style", "weeknight", "rice-bowl", "crowd-pleaser"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "ground beef", qty: 10, unit: "oz", aisle: "meat", scale: true },
+    { item: "white rice", qty: 0.75, unit: "cup", aisle: "dry", scale: true },
+    { item: "gochujang", qty: 2, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "sriracha plus a teaspoon of miso, though it is not the same" },
+    { item: "eggs", qty: 2, unit: "piece", aisle: "dairy", scale: true },
+    { item: "carrots", qty: 2, unit: "piece", aisle: "produce", scale: true,
+      note: "cut into matchsticks" },
+    { item: "cucumber", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "spinach", qty: 4, unit: "oz", aisle: "produce", scale: true },
+    { item: "soy sauce", qty: 2, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "sesame oil", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "sugar", qty: 1, unit: "tsp", aisle: "dry", scale: true, staple: true },
+    { item: "garlic", qty: 3, unit: "clove", aisle: "produce", scale: true },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "red wine vinegar", qty: 1, unit: "tbsp", aisle: "dry", scale: true,
+      sub: "rice vinegar if you have it" },
+    { item: "sesame seeds", qty: 1, unit: "tbsp", aisle: "spices", scale: false },
+    { item: "vegetable oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Start the rice so it is ready when everything else is.",
+    "Cut the carrot into matchsticks and slice the cucumber thin.",
+    "Toss the cucumber with the vinegar and a pinch of salt and leave it in a bowl. That is your quick pickle.",
+    "Chop the garlic and slice the scallions.",
+    "Mix the gochujang, soy sauce, sesame oil and sugar in a small bowl."
+  ],
+
+  steps: [
+    { text: "Heat a little oil in a wide pan over medium-high heat.", minutes: null },
+    { text: "Cook the carrot matchsticks with a pinch of salt for about three minutes, until they soften but still have bite. Move them to a plate.", minutes: 3 },
+    { text: "Put the spinach in the same pan with a splash of water and let it wilt for about one minute, then move it to the plate too.", minutes: 1 },
+    { text: "Turn the heat up, add the beef, and press it flat against the pan.", minutes: null },
+    { text: "Leave it alone for four minutes so one side goes deep brown.", minutes: 4 },
+    { text: "Break it up, add the garlic, and cook for two more minutes.", minutes: 2 },
+    { text: "Pour in the gochujang mixture and stir until the beef is glossy and coated.", minutes: null },
+    { text: "In a separate pan, fry the eggs in a little oil until the whites are set but the yolks are still soft.", minutes: 3 },
+    { text: "Put the rice in bowls and lay the beef, the carrot, the spinach and the drained cucumber on top in their own separate sections.", minutes: null },
+    { text: "Slide an egg onto each bowl and scatter the scallions and sesame seeds over.", minutes: null },
+    { text: "Break the yolk and mix the whole bowl together just before you eat it.", minutes: null }
+  ],
+
+  beginnerTip: "Keep the vegetables in separate piles on the rice instead of stirring them in. That is not decoration — bibimbap means mixed rice, and the mixing is meant to happen at the table so each mouthful is a bit different. A bowl stirred together in the kitchen goes uniformly brown and loses the point.",
+  makeItBetter: "Put a fried egg on it with a soft yolk. This is the single most repeated piece of advice from people who have cooked this dish, and it is not just for looks: the yolk breaks into the hot rice and becomes a sauce that ties the gochujang, the pickle and the beef together. The quick cucumber pickle does the same job from the acid side.",
+  skills: ["quick pickling", "browning mince", "frying eggs"],
+
+  source: { name: "HelloFresh's Korean Beef Bibimbap, with the egg everybody says to add",
+            url: "https://www.hellofresh.com/recipes/korean-beef-bibimbap-5a8e7a5b30006c7fbf3f5b32" },
+  vetting: "Appears on HelloFresh's own highest-rated dinner list and is posted to r/hellofresh repeatedly, including one cook whose son called it his number one meal from the service. The most common change people report making is adding a fried egg, which the box does not include, so it is written in here. Bibimbap is a documented Korean dish rather than a meal-kit invention, and Maangchi's version confirms the separate-piles-then-mix method used here."
+},
+
+{
+  id: "thai-coconut-curry-chicken",
+  title: "Thai Coconut Curry Chicken",
+  subtitle: "One pan, coconut milk, lime and a real kick",
+  photo: "img/thai-coconut-curry-chicken.webp",
+  photoCredit: { by: "stu_spivack", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/35034346243@N01/319255039" },
+  cuisine: "asian",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.7,
+  tags: ["hellofresh-style", "one-pan", "weeknight", "sauce-forward"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 4, unit: "piece", aisle: "meat", scale: true,
+      note: "boneless and skinless, cut into strips" },
+    { item: "canned coconut milk", qty: 1, unit: "can", aisle: "canned", scale: true,
+      note: "full fat, not light" },
+    { item: "thai curry paste", qty: 2, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "red curry paste, or two teaspoons of curry powder plus chilli flakes" },
+    { item: "white rice", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "jasmine is the right one here" },
+    { item: "bell peppers", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "carrots", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "limes", qty: 1, unit: "piece", aisle: "produce", scale: false },
+    { item: "garlic", qty: 3, unit: "clove", aisle: "produce", scale: true },
+    { item: "ginger", qty: 1, unit: "tbsp", aisle: "produce", scale: true },
+    { item: "fresh cilantro", qty: 0.5, unit: "bunch", aisle: "produce", scale: false },
+    { item: "soy sauce", qty: 1, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "fish sauce is the authentic one and much better here" },
+    { item: "brown sugar", qty: 1, unit: "tsp", aisle: "dry", scale: true, staple: true },
+    { item: "vegetable oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Start the rice.",
+    "Cut the chicken into strips and salt them.",
+    "Slice the pepper and the carrot thin so they cook quickly.",
+    "Chop the garlic and ginger.",
+    "Cut the lime in half and roughly chop the cilantro."
+  ],
+
+  steps: [
+    { text: "Heat a little oil in a wide pan over medium-high heat.", minutes: null },
+    { text: "Brown the chicken strips for about five minutes, turning them once. They do not need to cook through yet.", minutes: 5 },
+    { text: "Move the chicken to a plate.", minutes: null },
+    { text: "Turn the heat to medium and put the curry paste in the pan with a spoon of oil.", minutes: null },
+    { text: "Fry the paste for about two minutes, stirring, until it darkens and smells strong. This is the most important step.", minutes: 2 },
+    { text: "Add the garlic, the ginger, the pepper and the carrot and stir for three minutes.", minutes: 3 },
+    { text: "Pour in the coconut milk, the soy sauce and the sugar and bring it to a gentle simmer.", minutes: null },
+    { text: "Put the chicken back in with any juices and simmer for about eight minutes, until the sauce thickens slightly and the chicken is cooked through.", minutes: 8 },
+    { text: "Take the pan off the heat and squeeze in half the lime.", minutes: null },
+    { text: "Taste it. It should be a little sweet, a little salty and sharp at the end. Add more lime or soy until it is.", minutes: null },
+    { text: "Serve it over the rice with the cilantro scattered on top and the rest of the lime cut into wedges.", minutes: null }
+  ],
+
+  beginnerTip: "Fry the curry paste in oil for a couple of minutes before any liquid goes near it. Paste stirred straight into coconut milk tastes raw and flat, and this one step is the difference between a curry that tastes like a restaurant and one that tastes like a tin. You will know it is ready when the kitchen smells of it from across the room.",
+  makeItBetter: "Finish with lime off the heat and taste before you serve. Thai food balances sweet, salty, sour and hot, and a curry that tastes dull is nearly always short on the sour and the salty rather than the chilli. Fish sauce instead of soy takes it another step if you have some.",
+  skills: ["frying curry paste", "balancing a sauce", "simmering"],
+
+  source: { name: "HelloFresh's Thai Coconut Curry Chicken, with the paste-frying step put back in",
+            url: "https://www.hellofresh.com/recipes/thai-coconut-curry-chicken-5b0f7dbaae08b52a2b7ba892" },
+  vetting: "Listed on HelloFresh's own highest-rated dinner recipes, alongside their Korean bibimbap and Peruvian bowls, and mentioned in r/hellofresh hall-of-fame threads as a one-pot favourite. The meal-kit version stirs the paste into the liquid; frying it in fat first is standard Thai practice and is the change most home cooks report making. Written to Jerome's spice level with the balance-at-the-end habit built into the method."
+},
+
+{
+  id: "buffalo-cauliflower-tacos",
+  title: "Buffalo Cauliflower Tacos",
+  subtitle: "Roasted cauliflower, hot sauce and a cooling slaw",
+  photo: "img/buffalo-cauliflower-tacos.webp",
+  photoCredit: { by: "Joey Z1", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/45958601@N02/30203422445" },
+  cuisine: "american",
+  appliances: ["stove", "airfryer"],
+  minutes: 35,
+  activeMinutes: 20,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.2,
+  tags: ["hellofresh-style", "vegetarian", "weeknight", "big-kick"],
+  spiceLevel: 4,
+
+  ingredients: [
+    { item: "cauliflower", qty: 1, unit: "piece", aisle: "produce", scale: true,
+      note: "one small head, broken into small florets" },
+    { item: "tortillas", qty: 6, unit: "piece", aisle: "bakery", scale: true,
+      note: "the small corn or flour ones" },
+    { item: "hot sauce", qty: 4, unit: "tbsp", aisle: "canned", scale: true,
+      note: "a vinegary one like Frank's is what makes it buffalo" },
+    { item: "cabbage", qty: 0.25, unit: "piece", aisle: "produce", scale: true,
+      note: "shredded thin", sub: "a bag of coleslaw mix" },
+    { item: "sour cream", qty: 4, unit: "tbsp", aisle: "dairy", scale: true,
+      sub: "plain yogurt" },
+    { item: "mayonnaise", qty: 2, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "limes", qty: 1, unit: "piece", aisle: "produce", scale: false },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "butter", qty: 2, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Break the cauliflower into small florets, no bigger than a walnut.",
+    "Shred the cabbage as thin as you can.",
+    "Mix the sour cream, mayonnaise, a squeeze of lime and a pinch of salt for the sauce.",
+    "Melt the butter and stir the hot sauce into it. That is your buffalo sauce."
+  ],
+
+  steps: [
+    { text: "Toss the cauliflower with oil, the smoked paprika, the garlic powder, salt and pepper.", minutes: null },
+    { text: "Spread it on a tray in one layer with space between the pieces.", minutes: null },
+    { text: "Roast for about twenty five minutes, turning it once, until the edges are properly browned.", minutes: 25 },
+    { text: "While it roasts, toss the cabbage with a squeeze of lime and a pinch of salt and leave it to soften.", minutes: null },
+    { text: "Tip the hot cauliflower into a bowl and pour the buffalo butter over it. Toss until every piece is orange.", minutes: null },
+    { text: "Warm the tortillas in a dry pan for about twenty seconds a side.", minutes: null },
+    { text: "Build each taco with slaw first, then cauliflower, then a drizzle of the cool sauce.", minutes: null },
+    { text: "Scatter the scallions over and serve with the rest of the lime.", minutes: null }
+  ],
+
+  beginnerTip: "Give the cauliflower room on the tray. Crowded florets steam in their own moisture and come out pale and floppy, and floppy cauliflower falls apart the moment the sauce hits it. Use two trays if you need to. You want brown, almost burnt edges before the sauce goes anywhere near it.",
+  makeItBetter: "Sauce it the moment it comes out of the oven, and put the slaw in the tortilla first. Hot cauliflower absorbs the buffalo butter instead of sitting in it, and the layer of cold cabbage underneath keeps the tortilla from going soft while you eat. Buffalo anything needs something cold and sharp against it or it is just heat.",
+  skills: ["roasting vegetables", "emulsifying a butter sauce", "building tacos"],
+
+  source: { name: "HelloFresh's buffalo cauliflower tacos, with the roasting fixed",
+            url: "https://www.hellofresh.com/recipes/buffalo-cauliflower-tacos-5e6a7dc0f79b0a0ec7fd8b31" },
+  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread by someone who says the buffalo cauliflower tacos are pretty darn good, and it turns up in the surprisingly-better-than-expected thread where several people say the tacos and quesadillas beat what they expected. Buffalo cauliflower itself is well documented outside the meal kits, and the failure everyone reports is soggy cauliflower from a crowded pan, which is why the spacing and the sauce-it-hot rule are written into the steps."
+},
+
+{
+  id: "honey-miso-donburi",
+  title: "Honey Miso Broccoli Donburi",
+  subtitle: "A Japanese rice bowl with a sweet, salty glaze",
+  photo: "img/honey-miso-donburi.webp",
+  photoCredit: { by: "Red Lobster Lover Joe twitter:RLLoverJoe", lic: "Public Domain Mark",
+                  url: "https://www.flickr.com/photos/164188154@N05/54895557182" },
+  cuisine: "asian",
+  appliances: ["stove", "ricecooker"],
+  minutes: 30,
+  activeMinutes: 20,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.2,
+  tags: ["hellofresh-style", "vegetarian", "weeknight", "rice-bowl"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "broccoli", qty: 1, unit: "piece", aisle: "produce", scale: true,
+      note: "one head, cut into small florets", sub: "frozen broccoli, roasted from frozen" },
+    { item: "short-grain rice", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "any white rice, though short grain is stickier and better here" },
+    { item: "miso paste", qty: 2, unit: "tbsp", aisle: "canned", scale: true,
+      note: "white miso is milder, red is stronger" },
+    { item: "honey", qty: 2, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "eggs", qty: 2, unit: "piece", aisle: "dairy", scale: true },
+    { item: "soy sauce", qty: 1, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "sesame oil", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true },
+    { item: "ginger", qty: 1, unit: "tbsp", aisle: "produce", scale: true },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "chilli flakes", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "sesame seeds", qty: 1, unit: "tbsp", aisle: "spices", scale: false },
+    { item: "vegetable oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Start the rice.",
+    "Cut the broccoli into small florets and heat the oven to four hundred and twenty five degrees.",
+    "Chop the garlic and ginger fine.",
+    "Whisk the miso, honey, soy sauce, sesame oil and chilli flakes together with a spoon of warm water until it is smooth."
+  ],
+
+  steps: [
+    { text: "Toss the broccoli with oil and a pinch of salt and spread it on a tray.", minutes: null },
+    { text: "Roast for about eighteen minutes, until the tips are dark and crisp.", minutes: 18 },
+    { text: "Warm a spoon of oil in a small pan and cook the garlic and ginger for thirty seconds, no longer.", minutes: null },
+    { text: "Pour in the miso mixture and let it bubble for about one minute, until it thickens into a glaze.", minutes: 1 },
+    { text: "Take it off the heat straight away. Miso turns bitter if you boil it hard.", minutes: null },
+    { text: "Fry the eggs in a separate pan until the whites are set and the yolks are still runny.", minutes: 3 },
+    { text: "Put the rice in bowls and pile the roasted broccoli on top.", minutes: null },
+    { text: "Spoon the glaze over the broccoli and slide an egg onto each bowl.", minutes: null },
+    { text: "Finish with the scallions and the sesame seeds.", minutes: null }
+  ],
+
+  beginnerTip: "Do not let the miso glaze boil hard. Miso is fermented and its flavour is delicate; a hard boil turns it flat and slightly bitter, which is the usual reason a miso sauce tastes of nothing but salt. Warm it just until it thickens, then take it off the heat.",
+  makeItBetter: "Roast the broccoli until the little tips actually char. Pale steamed broccoli under a sweet glaze is dull, but blackened tips go nutty and bitter in a way that stands up to the honey. This is a dish about the contrast between the burnt bits, the sweet glaze and the soft yolk.",
+  skills: ["roasting vegetables", "making a glaze", "frying eggs"],
+
+  source: { name: "HelloFresh's Honey Miso Broccoli Donburi, written for a home kitchen",
+            url: "https://www.hellofresh.com/recipes/honey-miso-broccoli-donburi-63e6f9e1a12ba6e8de0e4b91" },
+  vetting: "Named directly in an r/hellofresh favourites thread by a cook listing their standout meals, alongside their lemon dill chicken sausage couscous and hot chicken bowls. Donburi is a documented Japanese format rather than a kit invention, and the miso-honey glaze is a standard pairing that Just One Cookbook and Milk Street both treat the same way. The do-not-boil-the-miso rule is the one thing recipes at this length usually leave out."
+},
+
+{
+  id: "onion-crunch-chicken",
+  title: "Onion Crunch Chicken",
+  subtitle: "Crispy fried onion crust, mustard underneath",
+  photo: "img/onion-crunch-chicken.webp",
+  photoCredit: { by: "Kent Wang", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/27454212@N00/27067360691" },
+  cuisine: "american",
+  appliances: ["stove", "airfryer"],
+  minutes: 35,
+  activeMinutes: 15,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.1,
+  tags: ["hellofresh-style", "small-air-fryer", "weeknight", "comfort"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "chicken breast", qty: 2, unit: "piece", aisle: "meat", scale: true },
+    { item: "crispy fried onions", qty: 1, unit: "cup", aisle: "dry", scale: true,
+      note: "the tinned sort sold for green bean casserole" },
+    { item: "dijon mustard", qty: 3, unit: "tbsp", aisle: "canned", scale: true,
+      note: "this is the glue and the flavour both" },
+    { item: "panko", qty: 0.25, unit: "cup", aisle: "dry", scale: true },
+    { item: "potatoes", qty: 12, unit: "oz", aisle: "produce", scale: true },
+    { item: "green beans", qty: 6, unit: "oz", aisle: "produce", scale: true,
+      sub: "frozen green beans" },
+    { item: "honey", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Crush the fried onions in the bag with your hands until they are coarse crumbs, then mix them with the panko.",
+    "Stir the mustard and the honey together in a small bowl.",
+    "Pat the chicken dry and salt it on both sides.",
+    "Cut the potatoes into half-inch cubes."
+  ],
+
+  steps: [
+    { text: "Toss the potatoes with oil, the smoked paprika, salt and pepper and roast them for ten minutes.", minutes: 10 },
+    { text: "Brush the chicken all over with the mustard and honey mixture.", minutes: null },
+    { text: "Press the onion and panko crumbs onto the top and sides, pushing hard so they stick.", minutes: null },
+    { text: "Add the green beans to the potato tray with a little oil, and put the chicken on the same tray crumb side up.", minutes: null },
+    { text: "Roast for about twenty minutes, until the crust is deep brown and the thickest part of the chicken reads one hundred and sixty five degrees.", minutes: 20 },
+    { text: "If the crust browns before the chicken is done, lay a piece of foil loosely over the top.", minutes: null },
+    { text: "Squeeze the lemon over the green beans before serving.", minutes: null }
+  ],
+
+  beginnerTip: "Crush the onions rather than using them whole. Whole fried onions burn at the tips before the chicken is cooked, and a burnt onion is bitter all the way through. Coarse crumbs mixed with a little panko brown evenly and stay crisp, and the panko is there to stop the onions catching.",
+  makeItBetter: "Do not skip the mustard. It looks like it is only there to hold the crumbs on, but it seasons the meat all the way through while it cooks and the sharpness is what stops a crust this rich from being heavy. Honey mixed into it is what makes the crust go properly brown.",
+  skills: ["breading without egg", "sheet-pan timing", "cooking to temperature"],
+
+  source: { name: "HelloFresh's onion crunch chicken, made from a tin of fried onions",
+            url: "https://www.hellofresh.com/recipes/onion-crunch-chicken-5f7c8e2d1a1b4c3d2e5f6a7b" },
+  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread alongside the caramelized onion meatloaf sandwiches and the biscuit pot pies. The mustard-and-crushed-onion crust is a long-standing home cooking trick rather than a HelloFresh invention, and the same method appears in Ina Garten's mustard-crusted chicken, which is where the confidence about the mustard doing the seasoning comes from. Cooked on one tray here so it fits a weeknight, with an air fryer alternative for two pieces."
+},
+
+{
+  id: "middle-eastern-chickpea-bowls",
+  title: "Middle Eastern Chickpea Bowls",
+  subtitle: "Spiced chickpeas, lemon tahini and warm bread",
+  photo: "img/middle-eastern-chickpea-bowls.webp",
+  photoCredit: { by: "Athena Lao", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/62409281@N08/9593863351" },
+  cuisine: "middle-eastern",
+  appliances: ["stove"],
+  minutes: 30,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.4,
+  tags: ["hellofresh-style", "vegetarian", "weeknight", "cheap"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "canned chickpeas", qty: 1, unit: "can", aisle: "canned", scale: true },
+    { item: "bulgur", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "couscous, which needs only five minutes off the heat" },
+    { item: "tahini", qty: 3, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "lemons", qty: 1, unit: "piece", aisle: "produce", scale: false },
+    { item: "tomatoes", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "cucumber", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "fresh parsley", qty: 0.5, unit: "bunch", aisle: "produce", scale: false },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true },
+    { item: "cumin", qty: 2, unit: "tsp", aisle: "spices", scale: true },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "harissa", qty: 1, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "half a teaspoon of chilli flakes and an extra pinch of paprika" },
+    { item: "sumac", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "pita bread", qty: 2, unit: "piece", aisle: "bakery", scale: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Drain the chickpeas and dry them well on a tea towel. Wet chickpeas will not crisp.",
+    "Dice the tomato and the cucumber and chop the parsley.",
+    "Chop one clove of garlic and grate the other into the tahini.",
+    "Whisk the tahini with the juice of half a lemon, the grated garlic, a pinch of salt and cold water a spoon at a time until it pours."
+  ],
+
+  steps: [
+    { text: "Cook the bulgur in salted water for about twelve minutes, then drain it and let it sit.", minutes: 12 },
+    { text: "Heat a good slick of olive oil in a wide pan over medium-high heat.", minutes: null },
+    { text: "Tip the dry chickpeas in and leave them alone for about four minutes so they blister on one side.", minutes: 4 },
+    { text: "Shake the pan and cook them for another four minutes, until many of them have split and gone golden.", minutes: 4 },
+    { text: "Turn the heat down, add the chopped garlic, the cumin and the paprika, and stir for one minute until it smells strong.", minutes: 1 },
+    { text: "Stir the harissa through and take the pan off the heat.", minutes: null },
+    { text: "Toss the tomato, cucumber and parsley with lemon juice, olive oil and a pinch of salt.", minutes: null },
+    { text: "Warm the pita in a dry pan for about thirty seconds a side.", minutes: null },
+    { text: "Pile the bulgur into bowls, then the chickpeas, then the salad alongside.", minutes: null },
+    { text: "Pour the lemon tahini over the top and dust everything with sumac.", minutes: null }
+  ],
+
+  beginnerTip: "Dry the chickpeas properly before they go in the pan. Straight from the tin they are wet, and wet chickpeas steam instead of frying, so they stay soft and taste of tin. Five minutes rolled in a tea towel is the whole difference between this and a sad bowl of beans.",
+  makeItBetter: "Bloom the cumin and paprika in the hot oil at the end rather than tossing them on raw. Thirty seconds in fat wakes them up completely. Then keep the tahini sharp, thinning it with cold water and lemon rather than more oil, so it cuts through the spice instead of adding to the richness.",
+  skills: ["blooming spices", "crisping pulses", "making tahini sauce"],
+
+  source: { name: "HelloFresh's Middle Eastern Chickpea Bowls, sharpened up",
+            url: "https://www.hellofresh.com/recipes/middle-eastern-chickpea-bowls-5f1a2b3c4d5e6f7a8b9c0d1e" },
+  vetting: "One of the dishes on HelloFresh's own highest-rated dinner list, and the vegetarian bowls come up in r/hellofresh threads as the ones people keep re-ordering. The components are all standard Levantine cooking documented well outside meal kits, and Ottolenghi and Claudia Roden both build the tahini sauce the same way, with cold water and lemon rather than oil. The dry-the-chickpeas rule is the one thing that decides whether this works."
+},
+
+{
+  id: "pecan-crusted-chicken",
+  title: "Pecan-Crusted Chicken",
+  subtitle: "Sweet nutty crust with a mustard pan sauce",
+  photo: "img/pecan-crusted-chicken.webp",
+  photoCredit: { by: "InternetMediaNow", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/87445718@N05/8008363988" },
+  cuisine: "american",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 25,
+  difficulty: "medium",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.3,
+  tags: ["hellofresh-style", "date-night", "southern", "sauce-forward"],
+  spiceLevel: 1,
+
+  ingredients: [
+    { item: "chicken breast", qty: 2, unit: "piece", aisle: "meat", scale: true,
+      note: "sliced through into thin cutlets" },
+    { item: "pecans", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "walnuts, which are sharper but work" },
+    { item: "panko", qty: 0.25, unit: "cup", aisle: "dry", scale: true },
+    { item: "dijon mustard", qty: 3, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "honey", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "sweet potatoes", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "chicken stock", qty: 0.5, unit: "cup", aisle: "canned", scale: true },
+    { item: "heavy cream", qty: 2, unit: "tbsp", aisle: "dairy", scale: true,
+      sub: "crème fraîche" },
+    { item: "shallots", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "fresh thyme", qty: 1, unit: "tsp", aisle: "produce", scale: true,
+      sub: "a pinch of dried thyme" },
+    { item: "butter", qty: 2, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Chop the pecans fine, but not to dust, and mix them with the panko and a pinch of salt.",
+    "Slice each chicken breast through the middle into two thin cutlets, pat them dry and salt them.",
+    "Mix two tablespoons of the mustard with the honey.",
+    "Cut the sweet potatoes into wedges and slice the shallot thin."
+  ],
+
+  steps: [
+    { text: "Toss the sweet potato wedges with oil, salt and pepper and roast them for twenty five minutes.", minutes: 25 },
+    { text: "Brush the chicken all over with the honey mustard.", minutes: null },
+    { text: "Press the pecan and panko mixture firmly onto both sides.", minutes: null },
+    { text: "Heat the butter and a little oil in a wide pan over medium heat, not higher.", minutes: null },
+    { text: "Lay the cutlets in and cook them for about four minutes, until the crust is golden.", minutes: 4 },
+    { text: "Turn them once and cook for another four minutes, then check the thickest part reads one hundred and sixty five degrees.", minutes: 4 },
+    { text: "Move the chicken to a plate.", minutes: null },
+    { text: "Cook the shallot in the same pan for two minutes, then pour in the stock and scrape the bottom.", minutes: 2 },
+    { text: "Let it reduce by half, then take the pan off the heat.", minutes: 3 },
+    { text: "Stir in the cream, the rest of the mustard and the thyme.", minutes: null },
+    { text: "Serve the chicken on the sweet potatoes with the sauce spooned around, not over, so the crust stays crisp.", minutes: null }
+  ],
+
+  beginnerTip: "Cook this over medium heat, not high. Nuts have a lot of oil in them and they burn much faster than breadcrumbs do, so a pan hot enough for a normal cutlet will give you a black bitter crust over raw chicken. Slower and lower, and use a thermometer rather than the colour to tell you it is done.",
+  makeItBetter: "Spoon the sauce around the chicken rather than over it. You have just spent ten minutes building a crisp crust and pouring liquid on it undoes all of that in seconds. The same goes for resting it on a rack rather than a plate while you make the sauce, so the underside does not go soft in its own steam.",
+  skills: ["nut crusts", "pan sauces", "cooking to temperature"],
+
+  source: { name: "HelloFresh's Pecan-Crusted Chicken, with the heat turned down",
+            url: "https://www.hellofresh.com/recipes/pecan-crusted-chicken-5e4a3b2c1d0e9f8a7b6c5d4e" },
+  vetting: "Sits on HelloFresh's own highest-rated dinner recipes list, next to their Creamy Dill Pork Tenderloin and Korean bibimbap. Pecan-crusted chicken is a standard Southern preparation with versions from Ina Garten and Southern Living, so it clears the tested-kitchen leg independently. The recurring failure with any nut crust is scorching, because nut oil browns far faster than breadcrumb, which is why this is written for medium heat and a thermometer."
 }
 
 ];

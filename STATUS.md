@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v21`.
+Currently `frigo-v22`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -413,7 +413,7 @@ the quantity as a **frozen string** at the moment they are added, so any row
 already on his phone still said "4 piece eggs". `load()` now strips the unit from
 saved rows.
 
-## Five HelloFresh favourites, vetted through Reddit (2026-08-27)
+## Fifteen HelloFresh favourites, vetted through Reddit (2026-08-27)
 
 Jerome pointed at an r/hellofresh search for "10" and asked for the dishes people
 actually rate nine or ten out of ten, linked to what is in his fridge.
@@ -452,6 +452,42 @@ four of the five recorded authors then described a different photograph. Each
 shipped image was re-matched against a fresh search and only credited on an exact
 fingerprint match. **If a photo catalogue is written by two jobs at once, do not
 trust it — verify by pixels before crediting anyone.**
+
+
+**Ten more went in the same day**, after Jerome pointed out — correctly — that far
+more than five are rated ten out of ten in those threads. The collection is now
+**31 recipes**.
+
+| Recipe | Why it earned a place |
+|---|---|
+| Shrimp and Grits | Called the best meal they ever had on HelloFresh's own page; a real Charleston dish with an r/Charleston thread behind it |
+| Chicken and Biscuit Pot Pie | Posted as a ten out of ten, and "slaps every time" in another thread |
+| Spicy Pork Dan Dan Noodles | Repeatedly a favourite of the box; complaints are all about watery broth |
+| Korean Beef Bibimbap | On HelloFresh's own highest-rated list; one cook's son called it his number one |
+| Thai Coconut Curry Chicken | HelloFresh's highest-rated list, and a hall-of-fame thread mention |
+| Buffalo Cauliflower Tacos | Named in the best-meal-ever thread |
+| Honey Miso Broccoli Donburi | Named in a favourites thread; documented Japanese format |
+| Onion Crunch Chicken | Named in the best-meal-ever thread |
+| Middle Eastern Chickpea Bowls | HelloFresh's highest-rated list |
+| Pecan-Crusted Chicken | HelloFresh's highest-rated list; a standard Southern preparation |
+
+Each one again folds in the failure people actually report: the pot pie biscuits are
+split thin because cooks keep reporting raw dough underneath, the dan dan starts with
+less stock because everyone says the broth comes out watery, the pecan crust is
+cooked at medium because nut oil scorches, and the bibimbap gets the fried egg that
+is the single most repeated addition.
+
+**A real bug fell out of this.** Ticking the entire shelf list and asking the app what
+it still could not match showed that **menemen and mapo tofu could never reach "Cook
+this now"** — six ingredients (green peppers, and mapo tofu's four Sichuan specialty
+items) existed in no shelf row, so those two recipes were permanently unreachable no
+matter what Jerome owned. Both are fixed; menemen's "white cheese" is now "feta",
+which is what he actually has. **That check — tick everything, then see what still
+reads as missing — is worth re-running whenever recipes are added.**
+
+Twelve more shelf rows went in for this batch: cabbage, cauliflower, broccoli,
+gochujang, miso paste, thai curry paste, ramen noodles, grits, pecans, crispy fried
+onions, biscuit dough, cajun seasoning. The shelf list is now 180 items.
 
 ## How to look at it
 

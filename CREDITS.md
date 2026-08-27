@@ -37,16 +37,31 @@ Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 | Peruvian Chicken with Green Sauce | France1978 | CC BY SA 2.0 | [Dining Out - Take-Out From Sardi's Pollo A La Brasa ](https://www.flickr.com/photos/51764518@N02/52484972938) |
 | Hot Honey Chicken | goodiesfirst | CC BY 2.0 | [eurotrip chicken schnitzel](https://www.flickr.com/photos/49215102@N00/3223295808) |
 | Steakhouse Pork Chops | patrickkuhl | CC BY 2.0 | [Pork-chops and Pepper Kebabs](https://www.flickr.com/photos/33398244@N00/13226310563) |
+| Shrimp and Grits | vxla | CC BY 2.0 | [Shrimp and Grits at Lüke Restaurant](https://www.flickr.com/photos/14812197@N00/5097297999) |
+| Chicken and Biscuit Pot Pie | jeffreyw | CC BY 2.0 | [Mmm... chicken pot pie](https://www.flickr.com/photos/7927684@N03/5654697887) |
+| Spicy Pork Dan Dan Noodles | avlxyz | CC BY SA 2.0 | [Dan Dan Noodle - Charming Spice AUD7.80](https://www.flickr.com/photos/10559879@N00/4387183128) |
+| Korean Beef Bibimbap | avlxyz | CC BY SA 2.0 | [Stone pot Bibimbap - Hello Cook AUD9.50](https://www.flickr.com/photos/10559879@N00/3085707177) |
+| Thai Coconut Curry Chicken | stu_spivack | CC BY SA 2.0 | [Red curry chicken](https://www.flickr.com/photos/35034346243@N01/319255039) |
+| Buffalo Cauliflower Tacos | Joey Z1 | CC BY 2.0 | [Roasted Cauliflower Taco with Fly](https://www.flickr.com/photos/45958601@N02/30203422445) |
+| Honey Miso Broccoli Donburi | Red Lobster Lover Joe twitter:RLLoverJoe | Public Domain Mark | [Broccoli & Rice](https://www.flickr.com/photos/164188154@N05/54895557182) |
+| Onion Crunch Chicken | Kent Wang | CC BY SA 2.0 | [Pork schnitzel, potato salad](https://www.flickr.com/photos/27454212@N00/27067360691) |
+| Middle Eastern Chickpea Bowls | Athena Lao | CC BY 2.0 | [IMG_7660](https://www.flickr.com/photos/62409281@N08/9593863351) |
+| Pecan-Crusted Chicken | InternetMediaNow | CC BY 2.0 | [Lauren's salad with Pecan Chicken](https://www.flickr.com/photos/87445718@N05/8008363988) |
 
-## The five HelloFresh-inspired additions (2026-08-27)
+## The fifteen HelloFresh-inspired additions (2026-08-27)
 
-All five came through [Openverse](https://openverse.org), filtered to licences
+All fifteen came through [Openverse](https://openverse.org), filtered to licences
 that allow commercial use and modification, and every one was **verified by
 fingerprint** before being credited. That check matters: a background job
 overwrote the candidate catalogue mid-run, and four of the five attributions it
 held afterwards turned out to describe a different photograph. Each shipped
 image was re-matched against a fresh search and only credited on an exact pixel
 match, so no one here is credited for someone else's picture.
+
+Three of the second batch needed a second and third search pass because the first
+returned the wrong food entirely — clams and a chocolate pudding for the onion
+crunch chicken. The donburi shot is cropped left on purpose: the original frames
+rice and broccoli beside a piece of salmon, and this recipe has no fish in it.
 
 Not every photo comes from Wikimedia now. **Crispy Air Fryer Chickpeas** came
 from Flickr via [Openverse](https://openverse.org), which aggregates Flickr,
