@@ -436,6 +436,76 @@ function findSubstitute(name){
   return null;
 }
 
+/* ---------------------------------------------------------- make it
+
+   Things worth making rather than buying, when the parts are already on his
+   shelves. This beats a substitution where it applies: it produces the actual
+   ingredient instead of something near it. Quantities are written out because
+   a ratio he has to look up somewhere else is no use with greasy hands. */
+const MAKE_IT = {
+  'heavy cream': { from: ['milk', 'butter'],
+    how: 'Melt a quarter cup of butter, let it cool for a minute, then whisk it slowly into three quarters of a cup of whole milk. Fine for cooking and sauces. It will not whip.' },
+  'sour cream': { from: ['heavy cream', 'lemons'],
+    how: 'Stir a tablespoon of lemon juice into a cup of cream and leave it somewhere warm for about twenty minutes until it thickens.' },
+  'crème fraîche': { from: ['heavy cream', 'plain yogurt'],
+    how: 'Stir two tablespoons of yogurt into a cup of cream, cover it loosely and leave it out overnight, then chill it. Thicker and far less likely to split than cream.' },
+  'buttermilk': { from: ['milk', 'lemons'],
+    how: 'A tablespoon of lemon juice in a cup of milk. Leave it ten minutes until it curdles slightly.' },
+
+  'cajun seasoning': { from: ['smoked paprika', 'garlic powder', 'onion powder', 'cayenne pepper', 'dried thyme'],
+    how: 'Two teaspoons smoked paprika, one each of garlic powder, onion powder and dried thyme, half a teaspoon of cayenne, plus black pepper and salt.' },
+  'harissa': { from: ['smoked paprika', 'cayenne pepper', 'cumin', 'garlic', 'olive oil'],
+    how: 'Two teaspoons smoked paprika, one of cumin, half of cayenne, a crushed clove of garlic, and enough olive oil to make a loose paste.' },
+  'ras el hanout': { from: ['cumin', 'coriander', 'cinnamon', 'turmeric', 'black pepper'],
+    how: 'Equal parts cumin and coriander, half as much cinnamon and turmeric, and a good grind of black pepper.' },
+  'baharat': { from: ['black pepper', 'cumin', 'coriander', 'cinnamon', 'cloves'],
+    how: 'Two parts black pepper and cumin, one part coriander and cinnamon, and a pinch of ground cloves.' },
+  'garam masala': { from: ['cumin', 'coriander', 'cinnamon', 'cardamom', 'black pepper'],
+    how: 'Two teaspoons cumin, two of coriander, one of cinnamon, half of cardamom, and plenty of black pepper. Warm them in a dry pan first.' },
+  'curry powder': { from: ['turmeric', 'cumin', 'coriander', 'chilli powder'],
+    how: 'Two teaspoons turmeric, two of cumin, two of coriander and half a teaspoon of chilli powder.' },
+  'herbes de provence': { from: ['dried thyme', 'dried oregano', 'dried rosemary'],
+    how: 'Equal parts dried thyme, oregano and rosemary, crushed together between your palms.' },
+  'aleppo pepper': { from: ['chilli flakes', 'sweet paprika'],
+    how: 'One part chilli flakes to two parts sweet paprika, with a pinch of salt. Close on heat and colour, gentler than plain flakes.' },
+  'thai curry paste': { from: ['curry powder', 'chilli flakes', 'garlic', 'ginger', 'tomato paste'],
+    how: 'Two teaspoons curry powder, a teaspoon of chilli flakes, a clove of garlic, a thumb of ginger and a spoon of tomato paste, mashed to a paste. Fry it in oil like the real thing.' },
+  'gochujang': { from: ['miso paste', 'sriracha', 'honey'],
+    how: 'A tablespoon of miso, a tablespoon of sriracha and a teaspoon of honey. Not authentic, but it behaves the same way in the pan.' },
+  'hot sauce': { from: ['cayenne pepper', 'white wine vinegar', 'garlic'],
+    how: 'A teaspoon of cayenne, three tablespoons of vinegar, a crushed clove of garlic and a good pinch of salt. Shake it and leave it an hour.' },
+
+  'brown sugar': { from: ['sugar', 'honey'],
+    how: 'Rub a tablespoon of honey into a cup of white sugar with your fingers until it clumps and darkens.' },
+  'breadcrumbs': { from: ['bread'],
+    how: 'Tear up stale bread and blitz or grate it, then dry it in a low oven for ten minutes.' },
+  'panko': { from: ['bread'],
+    how: 'Grate stale bread on the coarse side of a box grater, crusts off, then dry it in a low oven without letting it colour. Coarser than breadcrumbs, which is the whole point.' },
+  'crispy fried onions': { from: ['onions', 'all-purpose flour', 'vegetable oil'],
+    how: 'Slice an onion paper thin, toss it in flour, and fry it in a shallow layer of oil until deep gold. Drain it on paper.' },
+  'mayonnaise': { from: ['eggs', 'vegetable oil', 'dijon mustard', 'lemons'],
+    how: 'One yolk, a teaspoon of mustard and a squeeze of lemon whisked together, then add oil drop by drop at first and in a thin stream once it thickens.' },
+  'balsamic vinegar': { from: ['red wine vinegar', 'brown sugar'],
+    how: 'Simmer half a cup of red wine vinegar with two tablespoons of brown sugar until it thickens slightly. Sweeter and thinner than the real thing.' },
+  'mirin': { from: ['white wine', 'sugar'],
+    how: 'Two tablespoons of white wine with a teaspoon of sugar dissolved in it.' },
+  'tahini': { from: ['sesame seeds', 'olive oil'],
+    how: 'Toast a cup of sesame seeds until they smell nutty, then blend them with three tablespoons of oil until it pours. It takes longer than you expect.' },
+  'biscuit dough': { from: ['all-purpose flour', 'baking powder', 'butter', 'milk'],
+    how: 'Two cups flour, a tablespoon of baking powder, a teaspoon of salt. Rub in half a stick of cold butter, stir in three quarters of a cup of milk, and pat it out thick.' },
+  'tortillas': { from: ['all-purpose flour', 'vegetable oil'],
+    how: 'Two cups flour, three tablespoons oil, a teaspoon of salt and three quarters of a cup of warm water. Rest it, roll it thin, and cook them in a dry pan.' }
+};
+
+/* Can he make this from what is already on the shelves? */
+function findMakeIt(name){
+  const key = Object.keys(MAKE_IT).find(k => norm(k) === norm(name) || sameItem(k, name));
+  if (!key) return null;
+  const rec = MAKE_IT[key];
+  if (!rec.from.every(part => inventoryHas(part))) return null;
+  return { how: rec.how, from: rec.from };
+}
+
 /* Do we have this ingredient? */
 function inventoryHas(name){
   for (const tab of TABS){
@@ -516,12 +586,15 @@ function recipePool(){
 }
 function analyse(recipe, servings){
   const factor = servings / (recipe.baseServings || 2);
-  const missing = [], have = [], swaps = [];
+  const missing = [], have = [], swaps = [], makes = [];
   (recipe.ingredients || []).forEach(ing => {
     const isStaple = ing.staple && state.prefs.staplesOn;
     if (inventoryHas(ing.item) || isStaple){ have.push(ing); return; }
-    /* Not in the kitchen, but something on his shelves will do the job. That
-       counts as cookable — it just has to be said out loud, not hidden. */
+    /* Not in the kitchen, but he can get there from what he owns. Making the
+       real thing beats approximating it, so that is checked first. Either way
+       it counts as cookable — it just has to be said out loud, not hidden. */
+    const make = findMakeIt(ing.item);
+    if (make){ have.push(ing); makes.push({ ing, make }); return; }
     const swap = findSubstitute(ing.item);
     if (swap){ have.push(ing); swaps.push({ ing, swap }); return; }
     missing.push(ing);
@@ -534,7 +607,7 @@ function analyse(recipe, servings){
     if (needed > app.qt * 0.62)
       capacityWarning = `Tight fit in your ${app.qt} qt ${app.name.toLowerCase()} at ${servings} servings — cook it in two batches.`;
   }
-  return { factor, missing, have, swaps, usesLow, capacityWarning };
+  return { factor, missing, have, swaps, makes, usesLow, capacityWarning };
 }
 function matchRecipes(){
   const f = view.filters, servings = state.prefs.servings;
@@ -549,7 +622,8 @@ function matchRecipes(){
   });
   out.sort((x, y) => {
     if (x.missing.length !== y.missing.length) return x.missing.length - y.missing.length;
-    if (x.swaps.length !== y.swaps.length) return x.swaps.length - y.swaps.length;
+    const wx = x.swaps.length + x.makes.length, wy = y.swaps.length + y.makes.length;
+    if (wx !== wy) return wx - wy;
     const rx = state.ratings[x.r.id] || 0, ry = state.ratings[y.r.id] || 0;
     if (rx !== ry) return ry - rx;
     if (x.usesLow !== y.usesLow) return x.usesLow ? -1 : 1;
@@ -757,12 +831,14 @@ function screenCook(){
 function recipeCard(m){
   const r = m.r, rating = state.ratings[r.id] || 0;
   const missing = m.missing.length;
-  const swaps = (m.swaps || []).length;
-  const swapLine = swaps === 1
-    ? `<span class="swap">Use your ${esc(m.swaps[0].swap.item)} instead of ${esc(m.swaps[0].ing.item)}.</span>`
-    : swaps > 1
-      ? `<span class="swap">${swaps} swaps from your shelves: ${m.swaps.slice(0,2).map(s => esc(s.swap.item)).join(', ')}${swaps>2?' and more':''}.</span>`
-      : '';
+  const swaps = (m.swaps || []).length, makes = (m.makes || []).length;
+  const bits = [];
+  if (makes === 1) bits.push(`make your own ${esc(m.makes[0].ing.item)}`);
+  else if (makes > 1) bits.push(`make ${makes} things yourself`);
+  if (swaps === 1) bits.push(`use your ${esc(m.swaps[0].swap.item)} instead of ${esc(m.swaps[0].ing.item)}`);
+  else if (swaps > 1) bits.push(`${swaps} swaps from your shelves`);
+  const swapLine = bits.length
+    ? `<span class="swap">You'd ${bits.join(', and ')}.</span>` : '';
   const matchLine = missing === 0
     ? (swaps
         ? `<span class="ok">You can cook this.</span> ${swapLine}`
@@ -964,16 +1040,20 @@ function screenRecipe(){
   const ings = r.ingredients.map((ing, i) => {
     const missing = a.missing.includes(ing);
     const swapped = (a.swaps || []).find(s => s.ing === ing);
-    return `<div class="ing ${missing?'missing':''}${swapped?' swapped':''}">
+    const madeable = (a.makes || []).find(s => s.ing === ing);
+    return `<div class="ing ${missing?'missing':''}${(swapped||madeable)?' swapped':''}">
       <span class="q">${esc(qtyLabel(ing, a.factor))}</span>
       <span class="n">${esc(ing.item)}${ing.note ? `<small>${esc(ing.note)}</small>` : ''}${
+        madeable ? `<small class="swapnote"><b>Make it:</b> ${esc(madeable.make.how)}</small>` : ''}${
         swapped ? `<small class="swapnote">Use your <b>${esc(swapped.swap.item)}</b> — ${esc(swapped.swap.note)}</small>` : ''}${
         missing && ing.sub ? `<small>Or: ${esc(ing.sub)}</small>` : ''}</span>
       ${missing
         ? `<button class="add" data-buy="${i}">Buy</button>`
-        : swapped
-          ? `<span class="sub-badge">swap</span>`
-          : `<span class="have">${svg('i-star','icon-sm')}</span>`}
+        : madeable
+          ? `<span class="sub-badge">make</span>`
+          : swapped
+            ? `<span class="sub-badge">swap</span>`
+            : `<span class="have">${svg('i-star','icon-sm')}</span>`}
     </div>`;
   }).join('');
 
@@ -1623,13 +1703,17 @@ document.addEventListener('click', e => {
       const a = analyse(r, state.prefs.servings);
       /* If he cooked it with a stand-in, the stand-in is what got used up —
          offering the ingredient he never had would untick nothing. */
-      const usedName = ing => {
+      const usedNames = ing => {
+        const mk = (a.makes || []).find(s => s.ing === ing);
+        if (mk) return mk.make.from;
         const sw = (a.swaps || []).find(s => s.ing === ing);
-        return sw ? sw.swap.item : ing.item;
+        return [sw ? sw.swap.item : ing.item];
       };
-      const rows = a.have.filter(i => !i.staple && !isAlways(usedName(i))).map(ing =>
-        `<button class="item" data-usedup="${esc(usedName(ing))}"><span class="box"></span>
-          <span class="name">${esc(usedName(ing))}</span></button>`).join('');
+      const seen = new Set();
+      const rows = a.have.filter(i => !i.staple).flatMap(usedNames)
+        .filter(n => !isAlways(n) && !seen.has(norm(n)) && seen.add(norm(n)))
+        .map(n => `<button class="item" data-usedup="${esc(n)}"><span class="box"></span>
+          <span class="name">${esc(n)}</span></button>`).join('');
       openSheet(`<h2>What did you finish?</h2>
         <p class="hint">Tick anything you used up. It comes out of your kitchen and goes
            straight onto the shopping list.</p>
@@ -2007,7 +2091,7 @@ window.addEventListener('keydown', e => {
    name matching against real recipe data instead of me eyeballing it.
    Read-only helpers; nothing here changes state. */
 window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList,
-                     analyse, findSubstitute, matchRecipes,
+                     analyse, findSubstitute, findMakeIt, matchRecipes,
                      kitchenFile, promptCookThis, promptWhatToCook, promptStanding, view, state };
 
 })();

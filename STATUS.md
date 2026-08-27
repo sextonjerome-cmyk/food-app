@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v24`.
+Currently `frigo-v25`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -549,6 +549,37 @@ gap honest beats a swap that ruins the dish.
 so after cooking a gratin with sweet potatoes it offered to untick *potatoes* —
 something he never had, so it did nothing. It now names the stand-in he actually
 used.
+
+## Make it instead of buying it (2026-08-27)
+
+Jerome again, and again a better idea than what was there: *"let's say I don't
+have heavy cream — it's written how to make it, stuff that I can make, instead of
+buying it. There's a lot of stuff that I would have the ingredients to make."*
+
+So there is now a **fourth state**, and it is checked **before** substitution,
+because making the real thing beats approximating it:
+
+- **have it** — star
+- **make it** — amber, with the actual quantities: *"Melt a quarter cup of butter,
+  let it cool for a minute, then whisk it slowly into three quarters of a cup of
+  whole milk. Fine for cooking and sauces. It will not whip."*
+- **swap** — amber, the stand-in he owns
+- **buy it** — red
+
+`MAKE_IT` holds twenty-five of them, offered only when he already owns **every**
+part. Creams (heavy cream, sour cream, crème fraîche, buttermilk), the spice
+blends that are just other spices in a ratio (cajun, harissa, ras el hanout,
+baharat, garam masala, curry powder, herbes de provence, aleppo pepper, thai curry
+paste, gochujang), and the pantry things worth making (breadcrumbs, panko, crispy
+fried onions, mayonnaise, brown sugar, balsamic, mirin, tahini, biscuit dough,
+tortillas).
+
+Quantities are written into the note on purpose. A ratio he has to go and look up
+somewhere else is no use with greasy hands.
+
+**Knock-on fix, again in the "what did you use up?" sheet:** a made ingredient
+consumes its parts, not itself. Cook the gratin having made the cream, and it now
+offers to use up **milk and butter** — not the heavy cream he never had.
 
 ## How to look at it
 
