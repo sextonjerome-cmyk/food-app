@@ -32,6 +32,21 @@ Licence links: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ·
 | Takikomi Gohan | pelican (Tokyo) | CC BY-SA 2.0 | [Maitake rice.jpg](https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg) |
 | Crispy Air Fryer Chickpeas | ella.o | CC BY 2.0 | [Popcorn Chickpeas (Flickr)](https://www.flickr.com/photos/155807330@N05/45508607031) |
 | Za'atar Roast Chicken | Lisa Goldfinger, Panning the Globe | **not a free licence — see below** | [Ottolenghi's Roast Chicken](https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/) |
+| Firecracker Meatballs | avlxyz | CC BY SA 2.0 | [Baked Lamb Meatballs with Kaffir Lime, Lemongrass, C](https://www.flickr.com/photos/10559879@N00/5096521676) |
+| Street Cart Chicken Bowl | Namillionairee | CC BY 2.0 | [Chicken Rice Plate](https://www.flickr.com/photos/12695016@N04/40793732112) |
+| Peruvian Chicken with Green Sauce | France1978 | CC BY SA 2.0 | [Dining Out - Take-Out From Sardi's Pollo A La Brasa ](https://www.flickr.com/photos/51764518@N02/52484972938) |
+| Hot Honey Chicken | goodiesfirst | CC BY 2.0 | [eurotrip chicken schnitzel](https://www.flickr.com/photos/49215102@N00/3223295808) |
+| Steakhouse Pork Chops | patrickkuhl | CC BY 2.0 | [Pork-chops and Pepper Kebabs](https://www.flickr.com/photos/33398244@N00/13226310563) |
+
+## The five HelloFresh-inspired additions (2026-08-27)
+
+All five came through [Openverse](https://openverse.org), filtered to licences
+that allow commercial use and modification, and every one was **verified by
+fingerprint** before being credited. That check matters: a background job
+overwrote the candidate catalogue mid-run, and four of the five attributions it
+held afterwards turned out to describe a different photograph. Each shipped
+image was re-matched against a fresh search and only credited on an exact pixel
+match, so no one here is credited for someone else's picture.
 
 Not every photo comes from Wikimedia now. **Crispy Air Fryer Chickpeas** came
 from Flickr via [Openverse](https://openverse.org), which aggregates Flickr,

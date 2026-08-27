@@ -371,7 +371,7 @@ included.
 **Add to Home Screen**. After that, every `git push` updates his phone.
 
 **Bump `CACHE_VERSION` in `sw.js` on every deploy** or his phone runs old code.
-Currently `frigo-v20`.
+Currently `frigo-v21`.
 
 ## Talking to Claude by voice (2026-08-11)
 
@@ -412,6 +412,46 @@ it obvious. The audit afterwards found the other half of it: shopping rows store
 the quantity as a **frozen string** at the moment they are added, so any row
 already on his phone still said "4 piece eggs". `load()` now strips the unit from
 saved rows.
+
+## Five HelloFresh favourites, vetted through Reddit (2026-08-27)
+
+Jerome pointed at an r/hellofresh search for "10" and asked for the dishes people
+actually rate nine or ten out of ten, linked to what is in his fridge.
+
+**Reddit is still blocked to WebSearch, but Tavily reaches it.** That is the
+workaround worth remembering — `tavily_search` with `include_domains: reddit.com`
+returns the threads; `tavily_extract` on individual threads is flaky, and plain
+curl to reddit.com or old.reddit.com is a hard 403.
+
+Five cleared the vetting bar and went in, taking the collection from 16 to 21:
+
+| Recipe | Why it earned a place |
+|---|---|
+| Firecracker Meatballs | Named a ten out of ten in several threads |
+| Street Cart Chicken Bowl | Top meal in multiple threads; a home halal-cart dish Serious Eats documents |
+| Peruvian Chicken with Green Sauce | Serious Eats' own recipe, so it clears the tested-kitchen leg alone |
+| Hot Honey Chicken | Reviews describe crust and honey separately; rebuilt for the 2 qt air fryer |
+| Steakhouse Pork Chops | Named in r/hellofresh's hall-of-fame thread |
+
+Every one folds in the failure people actually report, which is the point of the
+vetting rule: no added salt in the meatballs (reviewers say the soy plus salt
+makes them inedible), a temperature instead of a clock on the pork (thin chops
+were being cooked for the time a thick one needs), and the Peruvian chicken
+seared rather than roasted (their own top review asks for it).
+
+**Linking to the fridge** — six rows added to `ingredients.js` so nothing in the
+new recipes is unmatchable: sriracha, jasmine rice, green beans, jalapenos,
+canned black beans, pork chops. Verified programmatically that every ingredient
+in all five resolves against the shelf list. The rice was deliberately written as
+generic `white rice` rather than `jasmine rice`, because the matcher does not read
+the `sub` field and would have called the dish three short for a man who owns rice.
+
+**Photos** — all five from Openverse under CC BY or CC BY-SA. Attribution was
+nearly wrong: a background Wikimedia job overwrote the candidate catalogue, and
+four of the five recorded authors then described a different photograph. Each
+shipped image was re-matched against a fresh search and only credited on an exact
+fingerprint match. **If a photo catalogue is written by two jobs at once, do not
+trust it — verify by pixels before crediting anyone.**
 
 ## How to look at it
 

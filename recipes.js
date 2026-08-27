@@ -1080,4 +1080,367 @@ window.RECIPES = [
   vetting: "America's Test Kitchen's air-fryer thigh method needs nothing but chicken and salt, and its distinctive step is poking holes in the skin so the fat can render out. Budget Bytes arrives at the same hot-then-lower temperature ladder independently, and both say to rest the thighs before serving because the skin firms up as they sit. Capped at two thighs because that is what a two quart basket actually holds with air moving around them."
 }
 
+,
+
+{
+  id: "firecracker-meatballs",
+  title: "Firecracker Meatballs",
+  subtitle: "Beef meatballs in a sweet, creamy, hot sauce",
+  photo: "img/firecracker-meatballs.webp",
+  photoCredit: { by: "avlxyz", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/10559879@N00/5096521676" },
+  cuisine: "asian",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.6,
+  tags: ["hellofresh-style", "weeknight", "sheet-pan", "crowd-pleaser"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "ground beef", qty: 10, unit: "oz", aisle: "meat", scale: true,
+      note: "eighty percent lean. Leaner than that and they go dry." },
+    { item: "panko", qty: 0.25, unit: "cup", aisle: "dry", scale: true,
+      sub: "breadcrumbs, but use a little less" },
+    { item: "ginger", qty: 1, unit: "tbsp", aisle: "produce", scale: true,
+      note: "fresh, grated fine" },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "soy sauce", qty: 2, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "mayonnaise", qty: 3, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "sour cream", qty: 2, unit: "tbsp", aisle: "dairy", scale: true,
+      sub: "plain yogurt works, but it is thinner" },
+    { item: "honey", qty: 2, unit: "tsp", aisle: "dry", scale: true },
+    { item: "sriracha", qty: 2, unit: "tsp", aisle: "canned", scale: true,
+      sub: "any hot sauce, or harissa for something smokier" },
+    { item: "limes", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
+    { item: "white rice", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      note: "jasmine if you have it, but any long grain white rice works" },
+    { item: "green beans", qty: 6, unit: "oz", aisle: "produce", scale: true,
+      sub: "frozen green beans, straight from the bag" },
+    { item: "sesame seeds", qty: 1, unit: "tbsp", aisle: "spices", scale: false },
+    { item: "vegetable oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Grate the ginger and slice the scallions thin, keeping the white parts and the green parts in separate piles.",
+    "Mix the mayonnaise, sour cream, honey, sriracha and one tablespoon of the soy sauce in a small bowl. That is the firecracker sauce.",
+    "Squeeze half a lime into the sauce and stir it through.",
+    "Trim the green beans."
+  ],
+
+  steps: [
+    { text: "Start the rice however you normally cook it. It wants about eighteen minutes and it can sit covered once it is done.", minutes: 18 },
+    { text: "Put the beef in a bowl with the panko, the ginger, the scallion whites, the rest of the soy sauce and a good grind of black pepper.", minutes: null },
+    { text: "Mix it with your hands until it just comes together, then stop. Do not add salt.", minutes: null },
+    { text: "Roll it into about ten meatballs, each one roughly the size of a golf ball.", minutes: null },
+    { text: "Oil a baking sheet and put the meatballs on one half of it.", minutes: null },
+    { text: "Toss the green beans with a little oil and pepper and spread them on the other half.", minutes: null },
+    { text: "Roast everything on the top shelf for fifteen minutes.", minutes: 15 },
+    { text: "The meatballs are done when they are firm and browned on top and the beans have dark blistered edges.", minutes: null },
+    { text: "Tip the hot meatballs straight into the bowl of firecracker sauce and turn them over until every one is coated.", minutes: null },
+    { text: "Serve them on the rice with the beans alongside, and scatter the scallion greens and sesame seeds over the top.", minutes: null }
+  ],
+
+  beginnerTip: "Do not salt the meat. There is already two tablespoons of soy sauce going in, and the single most common complaint about this dish is that the meatballs come out far too salty because people season them as well. The sauce is salty too. Trust it.",
+  makeItBetter: "Toss the meatballs in the sauce while they are still hot from the oven, not after they have cooled on the tray. Hot meat drinks the sauce in instead of wearing it, and that is the difference between a coated meatball and a soggy one. A squeeze of lime in the sauce keeps all that honey and mayonnaise from tasting flat.",
+  skills: ["mixing meatballs", "sheet-pan roasting", "balancing sweet and heat"],
+
+  source: { name: "HelloFresh's Firecracker Meatballs, rewritten with the fix from their own reviewers",
+            url: "https://www.hellofresh.com/recipes/firecracker-meatballs-645120e55e9ec97492046b1c" },
+  vetting: "Repeatedly named on r/hellofresh as a ten out of ten, including a first-box review that singled it out. The version here fixes the failure people actually report on HelloFresh's own review page, where a cook writes that the recipe calls for soy sauce to be added to the meat AND salt, which makes the meatballs far too salty. The added salt is dropped entirely. The Endless Meal's independent copycat arrives at the same sauce and adds an acid to balance it, which is why the lime is here."
+},
+
+{
+  id: "street-cart-chicken",
+  title: "Street Cart Chicken Bowl",
+  subtitle: "Halal-cart chicken, yellow rice and the white sauce",
+  photo: "img/street-cart-chicken.webp",
+  photoCredit: { by: "Namillionairee", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/12695016@N04/40793732112" },
+  cuisine: "middle-eastern",
+  appliances: ["stove"],
+  minutes: 30,
+  activeMinutes: 25,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 6],
+  capacityQt: 1.8,
+  tags: ["hellofresh-style", "one-pan", "weeknight", "crowd-pleaser"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 4, unit: "piece", aisle: "meat", scale: true,
+      note: "boneless and skinless, cut into bite-sized pieces" },
+    { item: "basmati rice", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "any long grain white rice" },
+    { item: "chicken stock", qty: 1.5, unit: "cup", aisle: "canned", scale: true,
+      sub: "water and a stock cube" },
+    { item: "turmeric", qty: 0.5, unit: "tsp", aisle: "spices", scale: true,
+      note: "this is what makes the rice yellow" },
+    { item: "cumin", qty: 2, unit: "tsp", aisle: "spices", scale: true },
+    { item: "coriander", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "mayonnaise", qty: 4, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "sour cream", qty: 3, unit: "tbsp", aisle: "dairy", scale: true,
+      sub: "plain yogurt, which is closer to what the carts actually use" },
+    { item: "lemons", qty: 1, unit: "piece", aisle: "produce", scale: false },
+    { item: "tomatoes", qty: 1, unit: "piece", aisle: "produce", scale: true },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "pita bread", qty: 2, unit: "piece", aisle: "bakery", scale: true },
+    { item: "hot sauce", qty: null, unit: null, aisle: "canned", scale: false,
+      note: "to taste, at the table" },
+    { item: "butter", qty: 1, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Cut the chicken into bite-sized pieces and pat them dry.",
+    "Mix the cumin, coriander, smoked paprika and half the garlic powder in a small bowl. That is your shawarma spice.",
+    "Stir the mayonnaise, sour cream, the rest of the garlic powder and a good squeeze of lemon together for the white sauce, then thin it with a teaspoon of water at a time until it pours.",
+    "Dice the tomato and slice the scallions, keeping the whites and greens apart."
+  ],
+
+  steps: [
+    { text: "Melt the butter in a small pot and stir in the turmeric until it smells warm and looks bright.", minutes: null },
+    { text: "Add the rice and stir it around for a minute so every grain gets coated.", minutes: 1 },
+    { text: "Pour in the stock, add a pinch of salt, and bring it to a boil.", minutes: null },
+    { text: "Cover it, turn the heat right down, and leave it for fifteen minutes without lifting the lid.", minutes: 15 },
+    { text: "While the rice cooks, toss the chicken with the spice mix, a big pinch of salt and some pepper.", minutes: null },
+    { text: "Heat a slick of olive oil in a wide pan over medium-high heat until it shimmers.", minutes: null },
+    { text: "Lay the chicken in one layer and leave it alone for four minutes so it browns instead of steaming.", minutes: 4 },
+    { text: "Add the scallion whites and stir everything for another three minutes, until the chicken is cooked through.", minutes: 3 },
+    { text: "Warm the pita in a dry pan for about thirty seconds a side, then cut each one into quarters.", minutes: null },
+    { text: "Fluff the rice with a fork and pile it into bowls.", minutes: null },
+    { text: "Top with the chicken and the tomato in their own separate patches, not mixed together.", minutes: null },
+    { text: "Drizzle the white sauce over everything, add hot sauce to taste, and scatter the scallion greens on top.", minutes: null }
+  ],
+
+  beginnerTip: "Give the chicken room. If you crowd the pan the pieces release water, sit in it and turn grey instead of brown, and the whole bowl tastes flat. Cook it in two batches if your pan is small. It takes four extra minutes and it is the difference between this tasting like a street cart and tasting like boiled chicken.",
+  makeItBetter: "Bloom the turmeric in the butter before the rice goes in. Ground spices are fat-soluble, so thirty seconds in hot butter pulls out flavour that plain water never will, and it is why cart rice tastes of something instead of just looking yellow. Do the same with the cumin if you want to go further.",
+  skills: ["blooming spices", "browning in batches", "pilaf rice"],
+
+  source: { name: "HelloFresh's Street Cart-Style Chicken Bowls, rewritten from the halal-cart original",
+            url: "https://www.hellofresh.com/recipes/street-cart-style-chicken-bowls-63ecaed802dfc404e006c190" },
+  vetting: "One of the most consistently praised meals in r/hellofresh, named as a top meal in several separate threads with the white sauce singled out every time. One reviewer says plainly that they make extra garlic white sauce because it is so good. The dish is a home version of New York halal-cart chicken, which Serious Eats documents independently, so the format is not a marketing invention. Written for a pan rather than a packet, with the spice blend built from jars Jerome already owns."
+},
+
+{
+  id: "peruvian-aji-verde-chicken",
+  title: "Peruvian Chicken with Green Sauce",
+  subtitle: "Seared chicken under a cold, sharp, herby aji verde",
+  photo: "img/peruvian-aji-verde-chicken.webp",
+  photoCredit: { by: "France1978", lic: "CC BY SA 2.0",
+                  url: "https://www.flickr.com/photos/51764518@N02/52484972938" },
+  cuisine: "other",
+  appliances: ["stove"],
+  minutes: 40,
+  activeMinutes: 30,
+  difficulty: "medium",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.5,
+  tags: ["hellofresh-style", "sauce-forward", "needs-a-blender"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "chicken thighs", qty: 4, unit: "piece", aisle: "meat", scale: true,
+      note: "boneless and skinless" },
+    { item: "sweet potatoes", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "canned black beans", qty: 1, unit: "can", aisle: "canned", scale: true,
+      sub: "canned white beans, though the colour is less pretty" },
+    { item: "fresh cilantro", qty: 1, unit: "bunch", aisle: "produce", scale: false,
+      note: "stems and all, because the stems carry most of the flavour" },
+    { item: "jalapenos", qty: 1, unit: "piece", aisle: "produce", scale: false,
+      sub: "half a teaspoon of chilli flakes, though you lose the green freshness" },
+    { item: "limes", qty: 1, unit: "piece", aisle: "produce", scale: false },
+    { item: "mayonnaise", qty: 4, unit: "tbsp", aisle: "canned", scale: true },
+    { item: "garlic", qty: 2, unit: "clove", aisle: "produce", scale: true },
+    { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
+    { item: "cumin", qty: 2, unit: "tsp", aisle: "spices", scale: true },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Cut the sweet potatoes into pieces about an inch across. Leave the skin on.",
+    "Pat the chicken dry and salt it on both sides.",
+    "Cut the stem off the jalapeno. Leave the seeds in for the full kick, scrape them out if you would rather not.",
+    "Drain and rinse the black beans."
+  ],
+
+  steps: [
+    { text: "Toss the sweet potatoes with oil, salt and half the cumin, spread them on a tray, and roast for twenty five minutes.", minutes: 25 },
+    { text: "Put the cilantro, the jalapeno, the scallions, the garlic, the mayonnaise, the juice of the whole lime and a good pinch of salt into a blender.", minutes: null },
+    { text: "Add a tablespoon of olive oil and a tablespoon of water, then blend for a full minute until it is completely smooth and bright green.", minutes: 1 },
+    { text: "Taste it. It should be sharp enough to make you blink. Add more lime or salt until it does.", minutes: null },
+    { text: "Put the sauce in the fridge. It wants to be cold when it meets the hot chicken.", minutes: null },
+    { text: "Rub the chicken with the rest of the cumin, the smoked paprika and some black pepper.", minutes: null },
+    { text: "Heat a heavy pan over medium-high until a drop of water skitters across it.", minutes: null },
+    { text: "Lay the chicken in and leave it completely alone for six minutes.", minutes: 6 },
+    { text: "Turn it once and cook for another five minutes, until the thickest part reads one hundred and sixty five degrees.", minutes: 5 },
+    { text: "Move the chicken to a board and let it rest for five minutes.", minutes: 5 },
+    { text: "Warm the black beans in the same pan with a splash of water, scraping up the brown bits stuck to the bottom.", minutes: 3 },
+    { text: "Slice the chicken thick, put it on the beans and sweet potatoes, and spoon the cold green sauce over the top.", minutes: null }
+  ],
+
+  beginnerTip: "You need a blender or a small food processor for the green sauce. Chopping it by hand gives you salsa, not sauce, because it never goes creamy. If you do not have one, chop everything as fine as you possibly can and stir it into the mayonnaise. It will still taste good, it just will not pour.",
+  makeItBetter: "Sear the chicken in a pan rather than roasting it on the tray with the potatoes. HelloFresh's own cooks say the same thing, and their most detailed review of this dish says the chicken was the weakest part and should have been pan seared. A hard sear gives you a brown crust, and the brown crust is what the cold sauce plays against. Roasted chicken under green sauce is soft on soft.",
+  skills: ["searing", "blender sauces", "seasoning to taste"],
+
+  source: { name: "Serious Eats' Peruvian chicken with aji verde, in the bowl format HelloFresh popularised",
+            url: "https://www.seriouseats.com/peruvian-style-roast-chicken-with-green-sauce-recipe" },
+  vetting: "The green sauce is a genuine Peruvian preparation documented by Serious Eats, so this clears the tested-kitchen leg on its own. HelloFresh's bowl version is separately well-liked on r/hellofresh, and the r/seriouseats thread on the original is full of cooks reporting what they changed, including marinating thighs overnight instead of using a whole bird. The criticism that recurs is the chicken being roasted rather than seared, which is fixed here."
+},
+
+{
+  id: "hot-honey-chicken",
+  title: "Hot Honey Chicken",
+  subtitle: "Crunchy panko chicken with sweet, burning honey",
+  photo: "img/hot-honey-chicken.webp",
+  photoCredit: { by: "goodiesfirst", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/49215102@N00/3223295808" },
+  cuisine: "american",
+  appliances: ["airfryer", "stove"],
+  minutes: 35,
+  activeMinutes: 20,
+  difficulty: "easy",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.1,
+  tags: ["hellofresh-style", "small-air-fryer", "weeknight", "crowd-pleaser"],
+  spiceLevel: 3,
+
+  ingredients: [
+    { item: "chicken breast", qty: 2, unit: "piece", aisle: "meat", scale: true,
+      note: "sliced through the middle into thin cutlets" },
+    { item: "panko", qty: 0.75, unit: "cup", aisle: "dry", scale: true,
+      sub: "breadcrumbs, though panko is much crunchier" },
+    { item: "mayonnaise", qty: 3, unit: "tbsp", aisle: "canned", scale: true,
+      note: "this is the glue that holds the crust on" },
+    { item: "honey", qty: 3, unit: "tbsp", aisle: "dry", scale: true },
+    { item: "hot sauce", qty: 1, unit: "tbsp", aisle: "canned", scale: true,
+      sub: "sriracha, or harissa for something smokier" },
+    { item: "chilli flakes", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "potatoes", qty: 12, unit: "oz", aisle: "produce", scale: true,
+      note: "cut into half-inch cubes" },
+    { item: "butter", qty: 1, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Lay each chicken breast flat and slice it through the middle so you have two thin pieces. Pat them dry and salt them.",
+    "Mix the panko with the smoked paprika, the garlic powder, salt and pepper on a plate.",
+    "Warm the honey, the hot sauce and the chilli flakes together in a small pan until it is just runny, then take it straight off the heat.",
+    "Cut the potatoes into half-inch cubes."
+  ],
+
+  steps: [
+    { text: "Toss the potatoes with oil, salt and pepper and cook them in the air fryer at four hundred degrees for eighteen minutes, shaking the basket twice.", minutes: 18 },
+    { text: "While they cook, brush both sides of each chicken cutlet with a thin coat of mayonnaise.", minutes: null },
+    { text: "Press each one into the seasoned panko, both sides, pushing hard so the crumbs stick.", minutes: null },
+    { text: "Take the potatoes out and keep them somewhere warm.", minutes: null },
+    { text: "Lay one or two cutlets in the basket, not touching, and brush them lightly with oil.", minutes: null },
+    { text: "Cook at three hundred and eighty degrees for twelve minutes, turning them once halfway.", minutes: 12 },
+    { text: "They are done when the crust is deep golden and the thickest part reads one hundred and sixty five degrees.", minutes: null },
+    { text: "Toss the warm potatoes with the butter and a pinch of salt.", minutes: null },
+    { text: "Put the chicken on the plates and spoon the hot honey over it right at the table.", minutes: null }
+  ],
+
+  beginnerTip: "The mayonnaise is not a mistake. It is doing the job an egg wash usually does, and it works better here because it is thick enough to hold panko without sliding off, and it browns. Use a thin coat. A thick one steams the crust from underneath and you lose the crunch.",
+  makeItBetter: "Pour the hot honey on at the table, not in the kitchen. The moment it lands the crust starts going soft, so every minute between the spoon and the fork costs you crunch. Warming the honey with the chilli in it matters too. Cold honey sits on top in a lump, warm honey runs into every crevice.",
+  skills: ["breading", "air frying", "cooking to temperature"],
+
+  source: { name: "HelloFresh's Hot Honey Chicken, rebuilt for a small air fryer",
+            url: "https://www.hellofresh.com/recipes/hot-honey-chicken-5f999485d31ec3541e04fe18" },
+  vetting: "HelloFresh's own review page is unusually specific about this one. Cooks describe the crust and the honey separately and report exactly how much honey turns out to be enough, which is the sort of comment only somebody who actually cooked it writes. Adapted here for a two quart air fryer, which means one or two cutlets at a time and no more, and the capacity figure assumes that. The mayonnaise-instead-of-egg breading is the same trick Kenji uses for oven-fried chicken."
+},
+
+{
+  id: "steakhouse-pork-chops",
+  title: "Steakhouse Pork Chops",
+  subtitle: "Peppery chops with a creamy shallot pan sauce",
+  photo: "img/steakhouse-pork-chops.webp",
+  photoCredit: { by: "patrickkuhl", lic: "CC BY 2.0",
+                  url: "https://www.flickr.com/photos/33398244@N00/13226310563" },
+  cuisine: "american",
+  appliances: ["stove"],
+  minutes: 35,
+  activeMinutes: 25,
+  difficulty: "medium",
+  baseServings: 2,
+  scalable: [1, 4],
+  capacityQt: 1.4,
+  tags: ["hellofresh-style", "one-pan", "sauce-forward", "date-night"],
+  spiceLevel: 2,
+
+  ingredients: [
+    { item: "pork chops", qty: 2, unit: "piece", aisle: "meat", scale: true,
+      note: "bone-in if you can, and at least an inch thick" },
+    { item: "potatoes", qty: 12, unit: "oz", aisle: "produce", scale: true },
+    { item: "green beans", qty: 6, unit: "oz", aisle: "produce", scale: true,
+      sub: "frozen green beans, or broccoli" },
+    { item: "shallots", qty: 1, unit: "piece", aisle: "produce", scale: true,
+      sub: "half a small onion" },
+    { item: "beef broth", qty: 0.5, unit: "cup", aisle: "canned", scale: true,
+      sub: "chicken stock, which is milder but fine" },
+    { item: "sour cream", qty: 2, unit: "tbsp", aisle: "dairy", scale: true,
+      sub: "crème fraîche, which is less likely to split" },
+    { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
+    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "onion powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "dried thyme", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
+    { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
+    { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
+    { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
+  ],
+
+  misePlace: [
+    "Take the chops out of the fridge twenty minutes before you cook and salt them on both sides.",
+    "Heat the oven to four hundred and twenty five degrees.",
+    "Cut the potatoes into half-inch pieces.",
+    "Mix the smoked paprika, garlic powder, onion powder, dried thyme and a heavy grind of black pepper. That is the steak spice.",
+    "Slice the shallot as thin as you can."
+  ],
+
+  steps: [
+    { text: "Toss the potatoes with oil, salt and pepper and roast them for ten minutes.", minutes: 10 },
+    { text: "Add the green beans to the same tray with a little oil and roast for another fifteen minutes.", minutes: 15 },
+    { text: "Pat the chops dry again and press the steak spice onto both sides.", minutes: null },
+    { text: "Heat oil in a heavy pan over medium-high until it just begins to smoke.", minutes: null },
+    { text: "Lay the chops in and do not move them for four minutes.", minutes: 4 },
+    { text: "Turn them over and cook for another three or four minutes.", minutes: 4 },
+    { text: "Take them out at one hundred and forty five degrees in the thickest part. With no thermometer, press one with your finger. It should feel springy, not soft and not firm.", minutes: null },
+    { text: "Put the chops on a board and let them rest while you make the sauce. Do not skip this.", minutes: 5 },
+    { text: "Turn the heat to medium and cook the shallot in the same pan for three minutes, until it is soft and golden.", minutes: 3 },
+    { text: "Pour in the beef broth and scrape every brown bit off the bottom of the pan.", minutes: null },
+    { text: "Let it bubble down by about half, which takes two or three minutes.", minutes: 3 },
+    { text: "Take the pan off the heat completely, then stir in the sour cream.", minutes: null },
+    { text: "Squeeze the lemon over the green beans and serve everything with the sauce spooned over the chops.", minutes: null }
+  ],
+
+  beginnerTip: "Pork chops go from juicy to dry in about ninety seconds, and time is a bad guide because chops vary so much in thickness. The single most useful thing here is a thermometer. Pull them at one hundred and forty five degrees and they stay faintly pink and tender in the middle, which is safe and correct for pork. Cooks who report dry chops from this dish are almost always cooking a thin chop for the time a thick one needs.",
+  makeItBetter: "Take the pan off the heat before the sour cream goes in. Dairy splits when it boils, and a split pan sauce turns grainy and looks broken no matter how good it tastes. The lemon on the beans matters more than it sounds too. Reviewers who called the vegetable side bland were eating it with no acid on it at all.",
+  skills: ["searing", "deglazing", "pan sauces", "cooking to temperature"],
+
+  source: { name: "HelloFresh's Steakhouse-Style Pork Chops, rewritten with the pan-sauce method fixed",
+            url: "https://www.hellofresh.com/recipes/steakhouse-style-pork-chops-648884de0b7af205da01b33e" },
+  vetting: "Named a hall-of-fame recipe in r/hellofresh's own thread on the subject, and praised repeatedly for the creamy onion gravy. Two failures recur in the reviews and both are fixed here. One cook reports that the cook time for thinner chops was far too long, answered here with a temperature rather than a clock; another says the broccoli was the only miss and felt bland even with lemon, answered by seasoning the vegetable properly and finishing it with acid off the tray. A commenter on the Reddit thread makes the same point plainly, that they cooked a lot of dry proteins before buying a thermometer."
+}
+
 ];
