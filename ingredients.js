@@ -206,7 +206,23 @@ window.FRIGO_INGREDIENTS = {
     ['white pepper',        'spices'],
     ['saffron',             'spices'],
     ['vanilla extract',     'spices'],
-    ['sesame seeds',        'spices']
+    ['sesame seeds',        'spices'],
+    ['dried basil',         'spices'],
+    ['dried parsley',       'spices'],
+    ['ground allspice',     'spices'],
+
+    /* The HelloFresh sachets. Each one is also in the make-it-yourself table,
+       so an unticked box here is not a shopping trip — it is five spices and
+       a spoon. Tick one only if you actually own the jar. */
+    ['fry seasoning',           'spices'],
+    ['tuscan heat spice',       'spices'],
+    ['southwest spice blend',   'spices'],
+    ['shawarma spice blend',    'spices'],
+    ['turkish spice blend',     'spices'],
+    ['mediterranean spice blend','spices'],
+    ['blackening spice',        'spices'],
+    ['mexican spice blend',     'spices'],
+    ['italian seasoning',       'spices']
   ]
 
 };

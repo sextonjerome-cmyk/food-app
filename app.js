@@ -484,6 +484,31 @@ const MAKE_IT = {
   'buttermilk': { from: ['milk', 'lemons'],
     how: 'A tablespoon of lemon juice in a cup of milk. Leave it ten minutes until it curdles slightly.' },
 
+  /* ---- the HelloFresh sachets -------------------------------------------
+     Half the recipes in here are written HelloFresh-style, and a HelloFresh
+     card leans on a named blend rather than a row of separate spices. The
+     ratios below are the ones that turn up in more than one place: HelloFresh
+     published Tuscan Heat themselves in 2019, and the rest match across the
+     Joe's Daily compendium, My Sweet Precision and Fork To Spoon. Where the
+     copies disagree, the note says which way this one goes and why. */
+  'fry seasoning': { from: ['sweet paprika', 'garlic powder', 'onion powder'],
+    how: 'Two teaspoons sweet paprika, one of garlic powder, one of onion powder and half a teaspoon of salt. Most copies online are equal parts with no salt at all, and they taste flat next to the sachet — it is paprika-forward and it is salted.' },
+  'tuscan heat spice': { from: ['dried basil', 'dried rosemary', 'dried oregano', 'garlic powder', 'cayenne pepper', 'fennel seeds'],
+    how: 'Four teaspoons dried basil, two each of rosemary, oregano and garlic powder, one of cayenne and one of fennel seeds ground fine. This is HelloFresh\u2019s own published ratio.' },
+  'southwest spice blend': { from: ['garlic powder', 'cumin', 'chilli powder'],
+    how: 'Four teaspoons garlic powder, two of cumin, two of chilli powder.' },
+  'shawarma spice blend': { from: ['turmeric', 'cumin', 'coriander', 'garlic powder', 'sweet paprika', 'ground allspice'],
+    how: 'Two teaspoons each of turmeric and cumin, one each of coriander, garlic powder and paprika, and half a teaspoon each of allspice and black pepper.' },
+  'turkish spice blend': { from: ['cumin', 'garlic powder', 'coriander', 'ground allspice', 'chilli flakes'],
+    how: 'Two teaspoons each of cumin and garlic powder, one of coriander, and a quarter teaspoon each of allspice and chilli flakes.' },
+  'mediterranean spice blend': { from: ['dried oregano', 'dried mint', 'sumac', 'coriander'],
+    how: 'Two teaspoons dried oregano, one each of dried mint, sumac and ground coriander.' },
+  'blackening spice': { from: ['smoked paprika', 'garlic powder', 'white pepper', 'dried thyme', 'dried oregano', 'cayenne pepper'],
+    how: 'Three teaspoons smoked paprika, one and a half of garlic powder, half a teaspoon each of white pepper and black pepper, a quarter each of thyme and oregano, and a pinch of cayenne.' },
+  'mexican spice blend': { from: ['chilli powder', 'dried oregano', 'smoked paprika', 'cumin'],
+    how: 'Two teaspoons chilli powder, one each of dried oregano, smoked paprika and cumin.' },
+  'italian seasoning': { from: ['garlic powder', 'dried oregano', 'dried basil', 'dried parsley'],
+    how: 'Equal parts garlic powder, oregano, basil, parsley and black pepper — a teaspoon of each.' },
   'cajun seasoning': { from: ['smoked paprika', 'garlic powder', 'onion powder', 'cayenne pepper', 'dried thyme'],
     how: 'Two teaspoons smoked paprika, one each of garlic powder, onion powder and dried thyme, half a teaspoon of cayenne, plus black pepper and salt.' },
   'harissa': { from: ['smoked paprika', 'cayenne pepper', 'cumin', 'garlic', 'olive oil'],

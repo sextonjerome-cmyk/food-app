@@ -1182,10 +1182,10 @@ window.RECIPES = [
       sub: "water and a stock cube" },
     { item: "turmeric", qty: 0.5, unit: "tsp", aisle: "spices", scale: true,
       note: "this is what makes the rice yellow" },
-    { item: "cumin", qty: 2, unit: "tsp", aisle: "spices", scale: true },
-    { item: "coriander", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "shawarma spice blend", qty: 1, unit: "tbsp", aisle: "spices", scale: true,
+      sub: "two teaspoons cumin, one of coriander, one of paprika and a pinch of allspice" },
+    { item: "garlic powder", qty: 0.5, unit: "tsp", aisle: "spices", scale: true,
+      note: "this half goes in the white sauce, not on the chicken" },
     { item: "mayonnaise", qty: 4, unit: "tbsp", aisle: "canned", scale: true },
     { item: "sour cream", qty: 3, unit: "tbsp", aisle: "dairy", scale: true,
       sub: "plain yogurt, which is closer to what the carts actually use" },
@@ -1203,8 +1203,8 @@ window.RECIPES = [
 
   misePlace: [
     "Cut the chicken into bite-sized pieces and pat them dry.",
-    "Mix the cumin, coriander, smoked paprika and half the garlic powder in a small bowl. That is your shawarma spice.",
-    "Stir the mayonnaise, sour cream, the rest of the garlic powder and a good squeeze of lemon together for the white sauce, then thin it with a teaspoon of water at a time until it pours.",
+    "Measure the shawarma spice blend into a small bowl.",
+    "Stir the mayonnaise, sour cream, the garlic powder and a good squeeze of lemon together for the white sauce, then thin it with a teaspoon of water at a time until it pours.",
     "Dice the tomato and slice the scallions, keeping the whites and greens apart."
   ],
 
@@ -1213,7 +1213,7 @@ window.RECIPES = [
     { text: "Add the rice and stir it around for a minute so every grain gets coated.", minutes: 1 },
     { text: "Pour in the stock, add a pinch of salt, and bring it to a boil.", minutes: null },
     { text: "Cover it, turn the heat right down, and leave it for fifteen minutes without lifting the lid.", minutes: 15 },
-    { text: "While the rice cooks, toss the chicken with the spice mix, a big pinch of salt and some pepper.", minutes: null },
+    { text: "While the rice cooks, toss the chicken with the shawarma spice, a big pinch of salt and some pepper.", minutes: null },
     { text: "Heat a slick of olive oil in a wide pan over medium-high heat until it shimmers.", minutes: null },
     { text: "Lay the chicken in one layer and leave it alone for four minutes so it browns instead of steaming.", minutes: 4 },
     { text: "Add the scallion whites and stir everything for another three minutes, until the chicken is cooked through.", minutes: 3 },
@@ -1229,7 +1229,7 @@ window.RECIPES = [
 
   source: { name: "HelloFresh's Street Cart-Style Chicken Bowls, rewritten from the halal-cart original",
             url: "https://www.hellofresh.com/recipes/street-cart-style-chicken-bowls-63ecaed802dfc404e006c190" },
-  vetting: "One of the most consistently praised meals in r/hellofresh, named as a top meal in several separate threads with the white sauce singled out every time. One reviewer says plainly that they make extra garlic white sauce because it is so good. The dish is a home version of New York halal-cart chicken, which Serious Eats documents independently, so the format is not a marketing invention. Written for a pan rather than a packet, with the spice blend built from jars Jerome already owns."
+  vetting: "One of the most consistently praised meals in r/hellofresh, named as a top meal in several separate threads with the white sauce singled out every time. One reviewer says plainly that they make extra garlic white sauce because it is so good. The dish is a home version of New York halal-cart chicken, which Serious Eats documents independently, so the format is not a marketing invention. Written for a pan rather than a packet, with the spice blend built from jars Jerome already owns. The blend ratio is the one that matches across HelloFresh’s own 2019 post, the Joe’s Daily compendium and My Sweet Precision; tap the spice on the ingredient list and the app tells you the spoons."
 },
 
 {
@@ -1401,9 +1401,8 @@ window.RECIPES = [
     { item: "sour cream", qty: 2, unit: "tbsp", aisle: "dairy", scale: true,
       sub: "crème fraîche, which is less likely to split" },
     { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
-    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "onion powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "fry seasoning", qty: 1, unit: "tbsp", aisle: "spices", scale: true,
+      sub: "a teaspoon each of paprika, garlic powder and onion powder" },
     { item: "dried thyme", qty: 0.5, unit: "tsp", aisle: "spices", scale: true },
     { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
     { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
@@ -1414,7 +1413,7 @@ window.RECIPES = [
     "Take the chops out of the fridge twenty minutes before you cook and salt them on both sides.",
     "Heat the oven to four hundred and twenty five degrees.",
     "Cut the potatoes into half-inch pieces.",
-    "Mix the smoked paprika, garlic powder, onion powder, dried thyme and a heavy grind of black pepper. That is the steak spice.",
+    "Mix the fry seasoning, the dried thyme and a heavy grind of black pepper. That is the steak spice.",
     "Slice the shallot as thin as you can."
   ],
 
@@ -1440,7 +1439,7 @@ window.RECIPES = [
 
   source: { name: "HelloFresh's Steakhouse-Style Pork Chops, rewritten with the pan-sauce method fixed",
             url: "https://www.hellofresh.com/recipes/steakhouse-style-pork-chops-648884de0b7af205da01b33e" },
-  vetting: "Named a hall-of-fame recipe in r/hellofresh's own thread on the subject, and praised repeatedly for the creamy onion gravy. Two failures recur in the reviews and both are fixed here. One cook reports that the cook time for thinner chops was far too long, answered here with a temperature rather than a clock; another says the broccoli was the only miss and felt bland even with lemon, answered by seasoning the vegetable properly and finishing it with acid off the tray. A commenter on the Reddit thread makes the same point plainly, that they cooked a lot of dry proteins before buying a thermometer."
+  vetting: "Named a hall-of-fame recipe in r/hellofresh's own thread on the subject, and praised repeatedly for the creamy onion gravy. Two failures recur in the reviews and both are fixed here. One cook reports that the cook time for thinner chops was far too long, answered here with a temperature rather than a clock; another says the broccoli was the only miss and felt bland even with lemon, answered by seasoning the vegetable properly and finishing it with acid off the tray. A commenter on the Reddit thread makes the same point plainly, that they cooked a lot of dry proteins before buying a thermometer. The blend ratio is the one that matches across HelloFresh’s own 2019 post, the Joe’s Daily compendium and My Sweet Precision; tap the spice on the ingredient list and the app tells you the spoons."
 }
 
 ,
@@ -1834,8 +1833,8 @@ window.RECIPES = [
       sub: "plain yogurt" },
     { item: "mayonnaise", qty: 2, unit: "tbsp", aisle: "canned", scale: true },
     { item: "limes", qty: 1, unit: "piece", aisle: "produce", scale: false },
-    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
-    { item: "garlic powder", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "southwest spice blend", qty: 2, unit: "tsp", aisle: "spices", scale: true,
+      sub: "a teaspoon of garlic powder with half a teaspoon each of cumin and chilli powder" },
     { item: "scallions", qty: 2, unit: "piece", aisle: "produce", scale: true },
     { item: "butter", qty: 2, unit: "tbsp", aisle: "dairy", scale: true, staple: true },
     { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
@@ -1852,7 +1851,7 @@ window.RECIPES = [
   ],
 
   steps: [
-    { text: "Toss the cauliflower with oil, the smoked paprika, the garlic powder, salt and pepper.", minutes: null },
+    { text: "Toss the cauliflower with oil, the southwest spice blend, salt and pepper.", minutes: null },
     { text: "Spread it on a tray in one layer with space between the pieces.", minutes: null },
     { text: "Roast for about twenty five minutes, turning it once, until the edges are properly browned.", minutes: 25 },
     { text: "While it roasts, toss the cabbage with a squeeze of lime and a pinch of salt and leave it to soften.", minutes: null },
@@ -1868,7 +1867,7 @@ window.RECIPES = [
 
   source: { name: "HelloFresh's buffalo cauliflower tacos, with the roasting fixed",
             url: "https://www.hellofresh.com/recipes/buffalo-cauliflower-tacos-5e6a7dc0f79b0a0ec7fd8b31" },
-  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread by someone who says the buffalo cauliflower tacos are pretty darn good, and it turns up in the surprisingly-better-than-expected thread where several people say the tacos and quesadillas beat what they expected. Buffalo cauliflower itself is well documented outside the meal kits, and the failure everyone reports is soggy cauliflower from a crowded pan, which is why the spacing and the sauce-it-hot rule are written into the steps."
+  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread by someone who says the buffalo cauliflower tacos are pretty darn good, and it turns up in the surprisingly-better-than-expected thread where several people say the tacos and quesadillas beat what they expected. Buffalo cauliflower itself is well documented outside the meal kits, and the failure everyone reports is soggy cauliflower from a crowded pan, which is why the spacing and the sauce-it-hot rule are written into the steps. The blend ratio is the one that matches across HelloFresh’s own 2019 post, the Joe’s Daily compendium and My Sweet Precision; tap the spice on the ingredient list and the app tells you the spoons."
 },
 
 {
@@ -1966,7 +1965,8 @@ window.RECIPES = [
     { item: "green beans", qty: 6, unit: "oz", aisle: "produce", scale: true,
       sub: "frozen green beans" },
     { item: "honey", qty: 1, unit: "tbsp", aisle: "dry", scale: true },
-    { item: "smoked paprika", qty: 1, unit: "tsp", aisle: "spices", scale: true },
+    { item: "fry seasoning", qty: 2, unit: "tsp", aisle: "spices", scale: true,
+      sub: "two teaspoons paprika with a pinch each of garlic and onion powder" },
     { item: "lemons", qty: 0.5, unit: "piece", aisle: "produce", scale: false },
     { item: "olive oil", qty: null, unit: null, aisle: "dry", scale: false, staple: true },
     { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
@@ -1982,7 +1982,7 @@ window.RECIPES = [
   ],
 
   steps: [
-    { text: "Toss the potatoes with oil, the smoked paprika, salt and pepper and roast them for ten minutes.", minutes: 10 },
+    { text: "Toss the potatoes with oil, the fry seasoning, salt and pepper and roast them for ten minutes.", minutes: 10 },
     { text: "Brush the chicken all over with the mustard and honey mixture.", minutes: null },
     { text: "Press the onion and panko crumbs onto the top and sides, pushing hard so they stick.", minutes: null },
     { text: "Add the green beans to the potato tray with a little oil, and put the chicken on the same tray crumb side up.", minutes: null },
@@ -1997,7 +1997,7 @@ window.RECIPES = [
 
   source: { name: "HelloFresh's onion crunch chicken, made from a tin of fried onions",
             url: "https://www.hellofresh.com/recipes/onion-crunch-chicken-5f7c8e2d1a1b4c3d2e5f6a7b" },
-  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread alongside the caramelized onion meatloaf sandwiches and the biscuit pot pies. The mustard-and-crushed-onion crust is a long-standing home cooking trick rather than a HelloFresh invention, and the same method appears in Ina Garten's mustard-crusted chicken, which is where the confidence about the mustard doing the seasoning comes from. Cooked on one tray here so it fits a weeknight, with an air fryer alternative for two pieces."
+  vetting: "Named in r/hellofresh's best-meal-you-ever-had thread alongside the caramelized onion meatloaf sandwiches and the biscuit pot pies. The mustard-and-crushed-onion crust is a long-standing home cooking trick rather than a HelloFresh invention, and the same method appears in Ina Garten's mustard-crusted chicken, which is where the confidence about the mustard doing the seasoning comes from. Cooked on one tray here so it fits a weeknight, with an air fryer alternative for two pieces. The blend ratio is the one that matches across HelloFresh’s own 2019 post, the Joe’s Daily compendium and My Sweet Precision; tap the spice on the ingredient list and the app tells you the spoons."
 },
 
 {
