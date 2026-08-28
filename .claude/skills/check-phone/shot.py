@@ -68,11 +68,18 @@ class WS:
                 return msg.get("result", {})
 
 
-def target_ws(port=9222):
+def target_ws(port=None):
+    # Another Claude session may have its own Chrome on the default port, and
+    # grabbing the first page target there means screenshotting someone else's
+    # work. Take the Frigo tab by URL, and only fall back if it isn't open yet.
+    port = port or int(os.environ.get("CDP_PORT", 9222))
     pages = json.load(urllib.request.urlopen(f"http://localhost:{port}/json"))
+    pages = [p for p in pages if p.get("type") == "page"]
     for p in pages:
-        if p.get("type") == "page":
+        if "localhost:8777" in p.get("url", ""):
             return p["webSocketDebuggerUrl"]
+    if pages:
+        return pages[0]["webSocketDebuggerUrl"]
     raise SystemExit("no page target")
 
 

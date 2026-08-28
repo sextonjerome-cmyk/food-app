@@ -13,6 +13,33 @@ const AISLES = {
 };
 const AISLE_ORDER = ['produce','bakery','meat','dairy','dry','canned','frozen','spices','other'];
 
+/* The same shelves named the way a kitchen is, not a supermarket. The aisle
+   order above is for walking a store; this order is for standing in front of
+   an open fridge door. */
+const SECTION_LABEL = {
+  produce:'Vegetables & fruit', meat:'Meat & fish', dairy:'Dairy & eggs',
+  canned:'Condiments, sauces & jars', dry:'Dry goods & pasta',
+  bakery:'Bread & baking', frozen:'Frozen', spices:'Spices & seasoning',
+  other:'Other'
+};
+const SECTION_SHORT = {
+  produce:'Vegetables', meat:'Meat & fish', dairy:'Dairy', canned:'Condiments',
+  dry:'Dry goods', bakery:'Bread', frozen:'Frozen', spices:'Spices', other:'Other'
+};
+const SECTION_ORDER = ['produce','meat','dairy','canned','dry','bakery','frozen','spices','other'];
+
+/* The freezer is one aisle in a shop but four shelves at home, so it says
+   where its rows belong. Anything unlisted falls back to its aisle. */
+const SECTION_OVERRIDES = window.FRIGO_SECTIONS || {};
+
+function sectionOf(item, tab){
+  const map = SECTION_OVERRIDES[tab];
+  if (map) for (const sec in map){
+    if (map[sec].some(n => norm(n) === norm(item.name))) return sec;
+  }
+  return SECTION_LABEL[item.aisle] ? item.aisle : 'other';
+}
+
 /* --------------------------------------------------- default inventory */
 /* The list itself lives in ingredients.js so it can be edited by hand, or
    through items.html, without going anywhere near this file. */
@@ -91,6 +118,7 @@ function save(){
 const view = {
   screen:'cook',
   tab:'fridge',
+  section:'all',
   search:'',
   recipeId:null,
   cookAlong:null,
@@ -654,6 +682,11 @@ function render(){
   main.innerHTML = html;
   renderTabs();
 
+  /* The title bar is taller on some screens than others, and the shelf headings
+     park underneath it. Measure it rather than guessing, or a sliver of the row
+     above shows through the gap. */
+  document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
+
   /* The page scrolls on the window, not on #screen, so resetting the element's
      scrollTop did nothing — tapping a recipe from far down the Cook list landed
      you a thousand pixels into it, past the photo. Only jump to the top when the
@@ -838,13 +871,15 @@ function recipeCard(m){
   if (swaps === 1) bits.push(`use your ${esc(m.swaps[0].swap.item)} instead of ${esc(m.swaps[0].ing.item)}`);
   else if (swaps > 1) bits.push(`${swaps} swaps from your shelves`);
   const swapLine = bits.length
-    ? `<span class="swap">You'd ${bits.join(', and ')}.</span>` : '';
+    ? `<span class="swap">${svg('i-check','icon-sm')}You'd ${bits.join(', and ')}.</span>` : '';
+  /* "Two ingredients missing" is the thing he wants to read off the card. The
+     names come second, smaller — the count is what decides whether he taps. */
   const matchLine = missing === 0
-    ? (swaps
+    ? (swaps || makes
         ? `<span class="ok">You can cook this.</span> ${swapLine}`
         : `<span class="ok">You have everything.</span>`)
-    : `You have <b>${r.ingredients.length - missing} of ${r.ingredients.length}</b> —
-       still need ${m.missing.slice(0,3).map(i => esc(i.item)).join(', ')}${missing>3?` and ${missing-3} more`:''}.
+    : `<span class="short">${missing} ingredient${missing===1?'':'s'} missing</span>
+       <span class="needlist">${m.missing.slice(0,3).map(i => esc(i.item)).join(', ')}${missing>3?` and ${missing-3} more`:''}</span>
        ${swapLine}`;
   return `<button class="rcard" data-open="${esc(r.id)}">
     <span class="photo">${photoHTML(r)}${rating ? `<span class="stars">${svg('i-star','icon-sm')}${rating}</span>` : ''}</span>
@@ -854,6 +889,7 @@ function recipeCard(m){
       ${r.subtitle ? `<span class="gloss">${esc(r.subtitle)}</span>` : ''}
       <span class="match">${matchLine}</span>
       ${m.capacityWarning ? `<span class="warnline">${svg('i-timer','icon-sm')}${esc(m.capacityWarning)}</span>` : ''}
+      <span class="see">See the recipe ${svg('i-chev','icon-sm')}</span>
     </span></button>`;
 }
 
@@ -893,6 +929,29 @@ function screenFridge(){
   const tabs = `<div class="filter-row">${TABS.map(t =>
     `<button class="opt" data-tab="${t}" aria-pressed="${tab===t}">${TAB_LABEL[t]}</button>`).join('')}</div>`;
 
+  /* Which shelves this tab actually has. Built from the full tab, not from the
+     search results, so the row doesn't jump around while he types. */
+  const present = [];
+  itemsFor(tab).forEach(i => {
+    const sec = sectionOf(i, tab);
+    if (!present.includes(sec)) present.push(sec);
+  });
+  present.sort((a, b) => SECTION_ORDER.indexOf(a) - SECTION_ORDER.indexOf(b));
+  if (!present.includes(view.section)) view.section = 'all';
+
+  /* One shelf at a time. Tapping Vegetables shows the vegetables and nothing
+     else, which is how he actually stands at the fridge and ticks things off. */
+  /* While he is typing, the search runs across the whole tab — a shelf filter
+     that hides the very thing he searched for reads as a broken app. */
+  const sectionRow = (present.length < 2 || q) ? '' :
+    `<div class="filter-row sects">
+      <button class="opt" data-sect="all" aria-pressed="${view.section==='all'}">Everything</button>
+      ${present.map(sec =>
+        `<button class="opt" data-sect="${sec}" aria-pressed="${view.section===sec}">${esc(SECTION_SHORT[sec])}</button>`).join('')}
+    </div>`;
+
+  if (view.section !== 'all' && !q) items = items.filter(i => sectionOf(i, tab) === view.section);
+
   const search = `<div class="searchbox">${svg('i-search')}
     <input type="text" placeholder="Type anything &mdash; found or not" value="${esc(view.search)}"
            data-role="search" enterkeyhint="done" autocomplete="off">
@@ -900,7 +959,7 @@ function screenFridge(){
   </div>`;
 
   const inv = state.inventory[tab];
-  const rows = items.map(i => {
+  const rowHTML = i => {
     const st = inv[i.name] || {};
     const flag = st.always ? `<span class="always-tag">ALWAYS</span>`
                : st.have && st.low ? `<span class="low">LOW</span>` : '';
@@ -910,6 +969,22 @@ function screenFridge(){
       ${flag}
       <span class="more" data-more="${esc(i.name)}" role="presentation">${svg('i-plus','icon-sm')}</span>
     </button>`;
+  };
+
+  /* Split into shelves. Forty rows in one column meant scrolling past the meat
+     to reach the mustard; now each part of the fridge is its own short list,
+     and the header says how much of it he has. */
+  const bySection = {};
+  items.forEach(i => {
+    const sec = sectionOf(i, tab);
+    (bySection[sec] = bySection[sec] || []).push(i);
+  });
+  const shown = SECTION_ORDER.filter(sec => bySection[sec]);
+  const rows = shown.map(sec => {
+    const list = bySection[sec];
+    const got = list.filter(i => (inv[i.name] || {}).have).length;
+    return `<div class="secthead"><span>${esc(SECTION_LABEL[sec])}</span>
+      <span class="n num">${got}/${list.length}</span></div>` + list.map(rowHTML).join('');
   }).join('');
 
   /* The add button sits directly under the box you typed in. It used to live
@@ -949,7 +1024,7 @@ function screenFridge(){
   const count = Object.values(inv).filter(v => v && v.have).length;
   const always = Object.values(inv).filter(v => v && v.always).length;
 
-  return tabs + search + addBlock + sayAll
+  return tabs + sectionRow + search + addBlock + sayAll
     + (items.length
         ? `<div class="group">${rows}</div>`
         : typed
@@ -1050,9 +1125,9 @@ function screenRecipe(){
       ${missing
         ? `<button class="add" data-buy="${i}">Buy</button>`
         : madeable
-          ? `<span class="sub-badge">make</span>`
+          ? `<span class="sub-badge">${svg('i-check','icon-sm')}make</span>`
           : swapped
-            ? `<span class="sub-badge">swap</span>`
+            ? `<span class="sub-badge">${svg('i-check','icon-sm')}swap</span>`
             : `<span class="have">${svg('i-star','icon-sm')}</span>`}
     </div>`;
   }).join('');
@@ -1108,6 +1183,8 @@ function screenRecipe(){
 
   ${r.beginnerTip ? `<div class="note tip"><span class="label">Beginner tip</span>${esc(r.beginnerTip)}</div>` : ''}
   ${r.makeItBetter ? `<div class="note better"><span class="label">Make it better</span>${esc(r.makeItBetter)}</div>` : ''}
+  ${r.vetting ? `<div class="note vetted"><span class="label">Why this one is in here</span>${esc(r.vetting)}${
+    r.source && r.source.url ? `<a class="srclink" href="${esc(r.source.url)}" target="_blank" rel="noopener">Read the original &rsaquo;</a>` : ''}</div>` : ''}
 
   <div class="section"><h2>How was it?</h2>
     <div class="rate">${stars}</div>
@@ -1468,7 +1545,7 @@ document.addEventListener('contextmenu', e => {
 /* ------------------------------------------------------------- events */
 document.addEventListener('click', e => {
   if (swallowClick){ swallowClick = false; e.preventDefault(); e.stopPropagation(); return; }
-  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
+  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
   if (!t) {
     if (e.target.id === 'sheet') closeSheet();
     return;
@@ -1483,7 +1560,8 @@ document.addEventListener('click', e => {
     const v = t.dataset.f === 'time' ? Number(t.dataset.v) : t.dataset.v;
     view.filters[t.dataset.f] = v; render(); return;
   }
-  if (t.dataset.tab){ view.tab = t.dataset.tab; view.search = ''; render(); return; }
+  if (t.dataset.tab){ view.tab = t.dataset.tab; view.section = 'all'; view.search = ''; render(); return; }
+  if (t.dataset.sect){ view.section = t.dataset.sect; render(); return; }
   if (t.dataset.theme){ state.prefs.theme = t.dataset.theme; setTheme(); save(); render(); return; }
 
   /* inventory */

@@ -229,6 +229,10 @@ p{margin:0}
   scrollbar-width:none;-ms-overflow-style:none;
 }
 .filter-row::-webkit-scrollbar{display:none}
+/* The shelf row sits under the four tabs and has to read as the smaller of the
+   two, or the screen looks like it has two sets of tabs fighting each other. */
+.filter-row.sects{margin-top:-2px}
+.filter-row.sects .opt{font-size:13.5px;padding:0 14px;min-height:44px}
 .opt{
   flex:none;
   padding:11px 14px;min-height:44px;
@@ -300,6 +304,16 @@ p{margin:0}
 .rcard .match{font-size:13px;color:var(--ink-2);line-height:1.4}
 .rcard .match b{color:var(--ink);font-weight:620}
 .rcard .match .ok{color:var(--have);font-weight:620}
+/* The count is the thing he reads off the card, so it gets the weight and the
+   colour; the names of the missing items sit under it, quiet. */
+.rcard .match .short{display:block;color:var(--need);font-weight:650}
+.rcard .match .needlist{display:block;color:var(--ink-3);font-size:12.5px;margin-top:1px}
+.rcard .see{
+  display:flex;align-items:center;gap:4px;margin-top:2px;
+  font-size:11px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);
+}
+.rcard .see svg{width:14px;height:14px;transform:rotate(-90deg)}
 .rcard .warnline{
   display:flex;gap:7px;align-items:flex-start;
   font-size:12.5px;color:var(--warn);line-height:1.35;
@@ -326,6 +340,19 @@ p{margin:0}
 
 .group{display:flex;flex-direction:column;gap:2px}
 .group > .eyebrow{padding:14px 2px 6px}
+/* One heading per shelf. It sticks to the top so you always know which part of
+   the fridge you are looking at halfway down a long list. */
+.secthead{
+  /* --topbar-h is measured after every render; the fallback is the plain bar. */
+  position:sticky;top:var(--topbar-h, 70px);z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg);
+  padding:16px 2px 7px;margin-top:2px;
+  border-bottom:1px solid var(--line-2);
+  font-size:10.5px;font-weight:650;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-2);
+}
+.secthead .n{color:var(--ink-3);letter-spacing:.04em}
 
 .item{
   display:flex;align-items:center;gap:13px;
@@ -400,6 +427,9 @@ p{margin:0}
 .note.tip .label{color:var(--ink-2)}
 .note.better{background:var(--accent-dim);color:var(--ink)}
 .note.better .label{color:var(--accent)}
+.note.vetted{background:var(--surface);border:1px solid var(--line);color:var(--ink-2);font-size:14px}
+.note.vetted .label{color:var(--have)}
+.note.vetted .srclink{color:var(--accent);text-decoration:none;font-size:13px;margin-top:3px}
 
 .ing{
   display:flex;align-items:baseline;gap:10px;
@@ -421,10 +451,16 @@ p{margin:0}
 .ing .n small.swapnote{color:var(--warn)}
 .ing .n small.swapnote b{font-weight:650}
 .ing .sub-badge{
-  flex:none;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  flex:none;display:inline-flex;align-items:center;gap:4px;
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--warn);border:1px solid currentColor;border-radius:var(--r-pill);padding:3px 8px;
 }
-.rcard .match .swap{display:block;color:var(--warn);margin-top:2px}
+.ing .sub-badge svg{width:12px;height:12px}
+.rcard .match .swap{
+  display:flex;align-items:flex-start;gap:5px;
+  color:var(--warn);margin-top:3px;
+}
+.rcard .match .swap svg{width:14px;height:14px;flex:none;margin-top:2px}
 .ing .add{
   flex:none;font-size:11.5px;font-weight:650;color:var(--need);
   border:1px solid currentColor;border-radius:var(--r-pill);padding:4px 9px;

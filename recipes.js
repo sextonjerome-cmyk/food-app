@@ -397,7 +397,7 @@ window.RECIPES = [
     { item: "spring onions", qty: 2, unit: "piece", aisle: "produce", scale: false },
     { item: "rice", qty: 1, unit: "cup", aisle: "dry", scale: true, note: "uncooked" },
     { item: "sugar", qty: 1, unit: "tsp", aisle: "dry", scale: true, staple: true },
-    { item: "neutral oil", qty: 2, unit: "tbsp", aisle: "other", scale: true, staple: true },
+    { item: "vegetable oil", qty: 2, unit: "tbsp", aisle: "canned", scale: true, staple: true },
     { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
   ],
 
@@ -411,7 +411,7 @@ window.RECIPES = [
   ],
 
   steps: [
-    { text: "Heat the neutral oil in a wok or a wide pan over medium-high heat and cook the pork, breaking it up, for about two minutes until it is no longer pink.", minutes: 2 },
+    { text: "Heat the oil in a wok or a wide pan over medium-high heat and cook the pork, breaking it up, for about two minutes until it is no longer pink.", minutes: 2 },
     { text: "Turn the heat down to medium and add the chilli bean paste.", minutes: null },
     { text: "Fry the paste slowly for about three minutes, until the oil in the pan turns deep red. This is the most important minute of the dish.", minutes: 3 },
     { text: "Add the garlic and stir it around for one minute.", minutes: 1 },
@@ -668,7 +668,7 @@ window.RECIPES = [
     { item: "dried thyme", qty: 1.5, unit: "tsp", aisle: "spices", scale: true },
     { item: "dried rosemary", qty: 1, unit: "tsp", aisle: "spices", scale: true },
     { item: "all-purpose flour", qty: 2, unit: "tbsp", aisle: "dry", scale: true, staple: true },
-    { item: "cooking oil", qty: 2, unit: "tbsp", aisle: "other", scale: true, staple: true },
+    { item: "vegetable oil", qty: 2, unit: "tbsp", aisle: "canned", scale: true, staple: true },
     { item: "salt", qty: null, unit: null, aisle: "spices", scale: false, staple: true },
     { item: "black pepper", qty: null, unit: null, aisle: "spices", scale: false, staple: true }
   ],

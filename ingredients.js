@@ -210,3 +210,27 @@ window.FRIGO_INGREDIENTS = {
   ]
 
 };
+
+/* --------------------------------------------------------------------------
+   Kitchen sections — how the Fridge screen is split up.
+
+   By default a row sits under its own aisle, which already reads well: the
+   fridge falls into produce, meat, dairy and jars on its own. The freezer is
+   the exception — every row there is aisle 'frozen', which would make one
+   undivided wall of eighteen items. So the freezer says where its rows go.
+
+   Left is the section, right is the rows that belong in it. A name not listed
+   here just falls back to its aisle, so adding an item never needs a change.
+   -------------------------------------------------------------------------- */
+window.FRIGO_SECTIONS = {
+
+  freezer: {
+    produce: ['frozen peas', 'frozen corn', 'frozen spinach', 'frozen green beans',
+              'frozen broccoli', 'frozen mixed vegetables', 'frozen berries'],
+    meat:    ['frozen chicken breast', 'frozen chicken thighs', 'frozen ground beef',
+              'frozen shrimp', 'frozen fish fillets'],
+    bakery:  ['puff pastry', 'pie crust', 'bread (frozen)'],
+    other:   ['frozen fries', 'frozen dumplings', 'ice cubes']
+  }
+
+};
