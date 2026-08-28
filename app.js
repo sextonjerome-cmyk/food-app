@@ -996,8 +996,23 @@ function screenFridge(){
     ? allItems().find(i => sameItem(i.name, typed))
     : null;
 
+  /* What actually happens: he taps the search box, hits the microphone on his
+     keyboard, and says the whole fridge into it. That used to match no row and
+     offer to add the entire sentence as one ingredient called "eggs milk and
+     some carrots". If the words hold more than one thing we know, tick them. */
+  const heard = (typed && typed.split(/\s+/).length > 1) ? readItemList(typed) : null;
+  const spokenNames = heard ? heard.known.concat(heard.fresh) : [];
+  const heardAList = spokenNames.length > 1;
+
   let addBlock = '';
-  if (typed && !already){
+  if (heardAList){
+    addBlock = `<button class="btn" data-act="tick-spoken">${svg('i-check')}
+         Tick all ${spokenNames.length} of these
+       </button>
+       <p class="hint">${esc(spokenNames.map(k => k.name).join(', '))}.${
+         heard.fresh.length ? ` ${heard.fresh.length} of those ${heard.fresh.length === 1 ? 'is' : 'are'}
+           new &mdash; I&rsquo;ll add ${heard.fresh.length === 1 ? 'it' : 'them'} to your list.` : ''}</p>`;
+  } else if (typed && !already){
     addBlock = knownAs
       ? `<button class="btn" data-act="add-known" data-name="${esc(knownAs.name)}"
                  data-ktab="${knownAs.tab}">
@@ -1380,8 +1395,11 @@ function harvestKnown(words, shelf){
   return found;
 }
 
-function applyItemList(text){
-  const ticked = [], added = [], unknown = [];
+/* Work out what the text means and change nothing. The button that offers to
+   tick a spoken list counts what this returns, and applying writes exactly
+   this — so the label can never promise a different number than it delivers. */
+function readItemList(text){
+  const known = [], fresh = [], unknown = [];
   const shelf = allItems();
   String(text).split(LIST_SPLIT).forEach(raw => {
     const s = norm(String(raw).replace(QTY_LEAD, '').replace(LIST_NOISE, ' '))
@@ -1392,21 +1410,27 @@ function applyItemList(text){
     const hits = harvestKnown(s.split(' '), shelf);
     if (hits.length){
       hits.forEach(k => {
-        if (ticked.includes(k.name)) return;
-        state.inventory[k.tab][k.name] = { have:true, low:false };
-        ticked.push(k.name);
+        if (!known.some(o => o.name === k.name && o.tab === k.tab)) known.push(k);
       });
       return;
     }
     /* Nothing in the fragment is recognised, so take it whole — that's how a
        genuinely new item like "urfa biber" survives instead of being chopped. */
     const tab = tabForAisle(aisleOf(s));
-    if (!state.custom[tab].some(o => norm(o.name) === s))
-      state.custom[tab].push({ name:s, aisle:aisleOf(s, tab), staple:false });
-    state.inventory[tab][s] = { have:true, low:false };
-    added.push(s);
+    if (!fresh.some(o => o.name === s)) fresh.push({ name:s, tab, aisle:aisleOf(s, tab) });
   });
-  return { ticked, added, unknown };
+  return { known, fresh, unknown };
+}
+
+function applyItemList(text){
+  const r = readItemList(text);
+  r.known.forEach(k => { state.inventory[k.tab][k.name] = { have:true, low:false }; });
+  r.fresh.forEach(f => {
+    if (!state.custom[f.tab].some(o => norm(o.name) === f.name))
+      state.custom[f.tab].push({ name:f.name, aisle:f.aisle, staple:false });
+    state.inventory[f.tab][f.name] = { have:true, low:false };
+  });
+  return { ticked: r.known.map(k => k.name), added: r.fresh.map(f => f.name), unknown: r.unknown };
 }
 
 function reportList(r){
@@ -1660,6 +1684,13 @@ document.addEventListener('click', e => {
     }
 
     case 'clear-search': view.search = ''; render(); break;
+    /* A whole spoken fridge, dropped in the search box. Same reader the paste
+       sheet uses, so "coriandre" and "2 boxes of eggs" land the same way. */
+    case 'tick-spoken': {
+      const r = applyItemList(view.search);
+      view.search = ''; save(); render(); reportList(r);
+      break;
+    }
     case 'add-item': {
       const name = view.search.trim();
       if (!name) break;
