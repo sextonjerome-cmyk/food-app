@@ -70,8 +70,8 @@ const FRESH = () => ({
     { id:'airfryer',   name:'Air Fryer',    qt:2 },
     { id:'ricecooker', name:'Rice Cooker',  qt:1.5 }
   ],
-  ratings:{}, cooked:{}, favorites:[],
-  shopping:[], planned:[], aiRecipes:[],
+  ratings:{}, cooked:{}, favorites:[], notes:{},
+  shopping:[], planned:[], aiRecipes:[], myRecipes:[],
   prefs:{ servings:2, spice:3, theme:'auto', apiKey:'', staplesOn:true }
 });
 
@@ -123,6 +123,10 @@ const view = {
   recipeId:null,
   cookAlong:null,
   filtersOpen:false,
+  useByFor:null,
+  editingRecipe:null,
+  recipeSearch:'',
+  onlyReady:false,
   filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any' }
 };
 
@@ -610,7 +614,56 @@ function qtyLabel(ing, factor){
 
 /* ------------------------------------------------------------ matching */
 function recipePool(){
-  return (window.RECIPES || []).concat(state.aiRecipes || []);
+  return (window.RECIPES || []).concat(state.aiRecipes || [], state.myRecipes || []);
+}
+function isMyRecipe(id){ return (state.myRecipes || []).some(r => r.id === id); }
+
+/* ------------------------------------------------------------ use it soon
+
+   A date on a fridge item, and how many sleeps are left. Dates are stored as
+   plain YYYY-MM-DD because that is what a date input gives back and it sorts
+   correctly as a string; the clock only comes into it to work out "today". */
+function today(){
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function addDays(n){
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function daysLeft(iso){
+  if (!iso) return null;
+  return Math.round((new Date(iso + 'T00:00:00') - new Date(today() + 'T00:00:00')) / 86400000);
+}
+function useByLabel(iso){
+  const d = daysLeft(iso);
+  if (d === null) return '';
+  if (d < 0)  return d === -1 ? 'A DAY OVER' : Math.abs(d) + ' DAYS OVER';
+  if (d === 0) return 'TODAY';
+  if (d === 1) return 'TOMORROW';
+  return d + ' DAYS';
+}
+
+/* Everything ticked that has a date on it, soonest first. */
+function expiringItems(within){
+  const out = [];
+  TABS.forEach(tab => {
+    const inv = state.inventory[tab];
+    for (const name in inv){
+      const st = inv[name];
+      if (!st || !st.have || !st.useBy) continue;
+      const d = daysLeft(st.useBy);
+      if (within !== undefined && d > within) continue;
+      out.push({ name, tab, useBy: st.useBy, days: d });
+    }
+  });
+  out.sort((a, b) => a.days - b.days);
+  return out;
+}
+/* Does a recipe ingredient point at something that needs eating? */
+function inventorySoon(name){
+  return expiringItems(3).some(e => norm(e.name) === norm(name) || sameItem(e.name, name));
 }
 function analyse(recipe, servings){
   const factor = servings / (recipe.baseServings || 2);
@@ -628,6 +681,7 @@ function analyse(recipe, servings){
     missing.push(ing);
   });
   const usesLow = (recipe.ingredients||[]).some(i => inventoryLow(i.item));
+  const usesSoon = (recipe.ingredients||[]).filter(i => inventorySoon(i.item)).map(i => i.item);
   let capacityWarning = null;
   const app = state.appliances.find(a => (recipe.appliances||[]).includes(a.id));
   if (app && app.qt && recipe.capacityQt){
@@ -635,10 +689,11 @@ function analyse(recipe, servings){
     if (needed > app.qt * 0.62)
       capacityWarning = `Tight fit in your ${app.qt} qt ${app.name.toLowerCase()} at ${servings} servings — cook it in two batches.`;
   }
-  return { factor, missing, have, swaps, makes, usesLow, capacityWarning };
+  return { factor, missing, have, swaps, makes, usesLow, usesSoon, capacityWarning };
 }
 function matchRecipes(){
   const f = view.filters, servings = state.prefs.servings;
+  const q = norm(view.recipeSearch);
   const out = [];
   recipePool().forEach(r => {
     if (f.appliance !== 'any' && !(r.appliances||[]).includes(f.appliance)) return;
@@ -646,12 +701,19 @@ function matchRecipes(){
     if (f.time      !== 0     && (r.activeMinutes || r.minutes) > f.time) return;
     if (f.difficulty!== 'any' && r.difficulty !== f.difficulty) return;
     const a = analyse(r, servings);
+    if (view.onlyReady && a.missing.length) return;
+    if (q){
+      const hay = [r.title, r.subtitle || '', (r.tags||[]).join(' '),
+                   (r.ingredients||[]).map(i => i.item).join(' ')].join(' ');
+      if (!norm(hay).includes(q)) return;
+    }
     out.push({ r, ...a });
   });
   out.sort((x, y) => {
     if (x.missing.length !== y.missing.length) return x.missing.length - y.missing.length;
     const wx = x.swaps.length + x.makes.length, wy = y.swaps.length + y.makes.length;
     if (wx !== wy) return wx - wy;
+    if (x.usesSoon.length !== y.usesSoon.length) return y.usesSoon.length - x.usesSoon.length;
     const rx = state.ratings[x.r.id] || 0, ry = state.ratings[y.r.id] || 0;
     if (rx !== ry) return ry - rx;
     if (x.usesLow !== y.usesLow) return x.usesLow ? -1 : 1;
@@ -686,6 +748,10 @@ function render(){
      park underneath it. Measure it rather than guessing, or a sliver of the row
      above shows through the gap. */
   document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
+
+  /* Anything Jerome typed is set as a value, not poured into innerHTML. */
+  const noteBox = main.querySelector('[data-role=note]');
+  if (noteBox) noteBox.value = state.notes[noteBox.dataset.recipe] || '';
 
   /* The page scrolls on the window, not on #screen, so resetting the element's
      scrollTop did nothing — tapping a recipe from far down the Cook list landed
@@ -776,15 +842,28 @@ function screenCook(){
   if (f.time) on.push((TIMES.find(t => t[0] === f.time) || [0, ''])[1]);
   if (f.difficulty !== 'any') on.push(f.difficulty);
 
+  /* Two rows, not four. The first recipe photo has to be reachable without
+     scrolling, so search shares its row with the filter button and the shelf
+     toggle shares its row with the servings. */
   const bar = `<div class="filterbar">
-    <button class="opt fbtn ${on.length?'has':''}" data-act="toggle-filters"
-            aria-expanded="${view.filtersOpen ? 'true' : 'false'}">
-      ${svg('i-sliders','icon-sm')}
-      <span class="fsum">${on.length ? esc(on.join(' &middot; ').replace(/&amp;middot;/g,'·')) : 'All recipes'}</span>
-      ${svg('i-chev','icon-sm chev')}
-    </button>
-    ${stepper}
-  </div>`;
+      <div class="searchbox">${svg('i-search')}
+        <input type="text" placeholder="Search recipes" value="${esc(view.recipeSearch)}"
+               data-role="rsearch" enterkeyhint="search" autocomplete="off">
+        ${view.recipeSearch ? `<button class="bar-btn" data-act="clear-rsearch" aria-label="Clear">${svg('i-x','icon-sm')}</button>` : ''}
+      </div>
+      <button class="opt fbtn icon-only ${on.length?'has':''}" data-act="toggle-filters"
+              aria-label="Filters" aria-expanded="${view.filtersOpen ? 'true' : 'false'}">
+        ${svg('i-sliders','icon-sm')}${svg('i-chev','icon-sm chev')}
+      </button>
+    </div>
+    <div class="filterbar">
+      <button class="opt fbtn ready" data-act="only-ready" aria-pressed="${view.onlyReady}">
+        ${svg('i-check','icon-sm')}<span class="fsum">Only what I can cook now</span>
+      </button>
+      ${stepper}
+    </div>
+    ${on.length ? `<p class="grouplede" style="margin:-4px 2px 0">Filtered to
+      ${esc(on.join(' &middot; ').replace(/&amp;middot;/g,'·'))}.</p>` : ''}`;
 
   const panel = !view.filtersOpen ? '' : `
   <div class="filter">
@@ -804,9 +883,13 @@ function screenCook(){
   </div>
   <p class="grouplede">Servings are set above. Quantities scale to match.</p>`;
 
+  /* Thirty-one recipes fit in the head; sixty will not. Searching hits the
+     title, the tags and the ingredient list, so "harissa" finds the dishes
+     that use it. */
   const filters = bar + panel;
 
   const ai = `<button class="btn ghost" data-act="claude-kitchen">${svg('i-speak')} Ask Claude on my phone</button>
+    <button class="btn ghost" data-act="my-recipe">${svg('i-plus')} Write in my own recipe</button>
     <button class="btn ghost" data-act="ai">${svg('i-sparkle')} Invent me something new</button>`;
 
   if (!recipePool().length){
@@ -854,7 +937,14 @@ function screenCook(){
            Everything below needs two or more things from the shop.</p>`
       : '';
 
-  return filters + nudge
+  const soon = expiringItems(3);
+  const soonBanner = !soon.length ? '' :
+    `<div class="note soon"><span class="label">Use these soon</span>
+      ${soon.slice(0, 6).map(e => `${esc(e.name)} (${useByLabel(e.useBy).toLowerCase()})`).join(', ')}${
+        soon.length > 6 ? ` and ${soon.length - 6} more` : ''}.
+      <span class="hint">Recipes using them are pushed up the list.</span></div>`;
+
+  return filters + soonBanner + nudge
        + group(ready,  'Cook this now',  'Everything for these is already in your kitchen.')
        + group(nearly, 'One thing short', 'Buy the single missing thing and these are on.')
        + group(shop,   'Needs a shop',    null)
@@ -961,8 +1051,13 @@ function screenFridge(){
   const inv = state.inventory[tab];
   const rowHTML = i => {
     const st = inv[i.name] || {};
-    const flag = st.always ? `<span class="always-tag">ALWAYS</span>`
-               : st.have && st.low ? `<span class="low">LOW</span>` : '';
+    /* A date beats the other two tags: ALWAYS and LOW can wait, a thing going
+       off on Thursday cannot. Past a week out it stops being news. */
+    const left = st.have && st.useBy ? daysLeft(st.useBy) : null;
+    const flag = (left !== null && left <= 7)
+        ? `<span class="useby ${left < 0 ? 'over' : left <= 2 ? 'urgent' : ''}">${useByLabel(st.useBy)}</span>`
+        : st.always ? `<span class="always-tag">ALWAYS</span>`
+        : st.have && st.low ? `<span class="low">LOW</span>` : '';
     return `<button class="item ${st.have?'on':''} ${st.always?'always':''}" data-item="${esc(i.name)}">
       <span class="box"></span>
       <span class="name">${esc(i.name)}</span>
@@ -1201,14 +1296,21 @@ function screenRecipe(){
   ${r.vetting ? `<div class="note vetted"><span class="label">Why this one is in here</span>${esc(r.vetting)}${
     r.source && r.source.url ? `<a class="srclink" href="${esc(r.source.url)}" target="_blank" rel="noopener">Read the original &rsaquo;</a>` : ''}</div>` : ''}
 
+  <div class="section"><h2>My notes</h2>
+    <textarea class="note-box" rows="3" data-role="note" data-recipe="${esc(r.id)}"
+      placeholder="What you changed, what you'd do differently. Saves as you type."></textarea>
+  </div>
+
   <div class="section"><h2>How was it?</h2>
     <div class="rate">${stars}</div>
     <p class="eyebrow" style="text-align:center">${rating ? 'Five-star ones come back to the top' : 'Rate it after you cook it'}</p>
   </div>
 
+  ${isMyRecipe(r.id) ? `<button class="btn ghost" data-act="edit-mine">${svg('i-plus')} Edit this recipe</button>` : ''}
   <button class="btn ghost" data-act="plan-this">${svg('i-plan')} Plan this for another day</button>
   <button class="btn ghost" data-act="used-up">${svg('i-fridge')} I cooked it &mdash; what did I use up?</button>
 
+  ${isMyRecipe(r.id) ? `<button class="btn ghost danger" data-act="delete-mine">Delete this recipe</button>` : ''}
   ${r.source ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
     Adapted from ${esc(r.source.name)}</p>` : ''}
   ${r.photoCredit ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
@@ -1345,7 +1447,9 @@ function screenSettings(){
    or from Jerome talking into the box, so it has to cope with bullets,
    quantities and the word "and". */
 const LIST_NOISE = /^[\s\-•*\d.)\]]+|\b(a|an|some|few|couple|of|and|i|ive|i've|have|got|there|is|are|my|the)\b/gi;
-const QTY_LEAD = /^\s*(\d+[\d\/.,]*)\s*(x|kg|g|lb|lbs|oz|ml|l|litres?|liters?|cups?|tbsp|tsp|cloves?|pieces?|packs?|packets?|boxes?|box|bags?|bunch(es)?|tins?|cans?|jars?|bottles?)?\s*/i;
+/* The unit has to end where the word ends, or the l of litres eats the l of
+   lemon and "1 lemon" becomes one litre of emon. */
+const QTY_LEAD = /^\s*(\d+[\d\/.,]*)\s*(?:(x|kg|g|lb|lbs|oz|ml|l|litres?|liters?|cups?|tbsp|tsp|cloves?|pieces?|packs?|packets?|boxes?|box|bags?|bunch(?:es)?|tins?|cans?|jars?|bottles?)(?![a-z]))?\s*/i;
 
 function tabForAisle(aisle){
   if (aisle === 'frozen') return 'freezer';
@@ -1443,6 +1547,172 @@ function reportList(r){
     ${line('added as new', r.added)}
     ${r.unknown.length ? line('I couldn&rsquo;t work out', r.unknown) : ''}
     <button class="btn" data-act="close-sheet">Done</button>`);
+}
+
+function openUseBy(tab, name){
+  view.useByFor = { tab, name };
+  const cur = (state.inventory[tab][name] || {}).useBy || '';
+  openSheet(`<h2>${esc(name)}</h2>
+    <p class="hint">When does it need eating?</p>
+    <div class="filter-row">
+      <button class="opt" data-useby="${addDays(1)}">Tomorrow</button>
+      <button class="opt" data-useby="${addDays(3)}">In 3 days</button>
+      <button class="opt" data-useby="${addDays(7)}">In a week</button>
+    </div>
+    <div class="field">
+      <label for="ubdate">Or pick the day</label>
+      <input id="ubdate" type="date" data-role="useby-date" value="${esc(cur)}" min="${today()}">
+    </div>
+    <button class="btn" data-act="useby-save">Save</button>
+    ${cur ? '<button class="btn ghost" data-act="useby-clear">Take the date off</button>' : ''}
+    <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
+}
+function setUseBy(iso){
+  const w = view.useByFor;
+  if (!w) return;
+  const inv = state.inventory[w.tab];
+  const cur = inv[w.name] || { have:true, low:false };
+  cur.have = true;
+  if (iso) cur.useBy = iso; else delete cur.useBy;
+  inv[w.name] = cur;
+  view.useByFor = null;
+  closeSheet(); save(); render();
+  toast(iso ? w.name + ' — use by ' + useByLabel(iso).toLowerCase() : 'Date taken off ' + w.name);
+}
+
+/* --------------------------------------------------- his own recipes
+
+   A recipe he types in himself. It has to end up in the same shape as a
+   researched one or nothing downstream works — matching, scaling and the
+   shopping list all read the same fields. The quantities are parsed off the
+   front of each line with the same reader the spoken kitchen list uses, and
+   every ingredient is snapped to a name already on his shelves where one
+   fits, so "2 tbsp dijon" counts the dijon he actually owns. */
+function parseMyIngredient(line){
+  const raw = String(line).trim().replace(/^[-•*]\s*/, '');
+  if (raw.length < 2) return null;
+  let qty = null, unit = null, item = raw;
+  const m = QTY_LEAD.exec(raw);
+  if (m && m[1]){
+    const n = m[1].includes('/')
+      ? parseFloat(m[1].split('/')[0]) / parseFloat(m[1].split('/')[1])
+      : parseFloat(m[1].replace(',', '.'));
+    if (isFinite(n) && n > 0){
+      qty = Math.round(n * 100) / 100;
+      unit = (m[2] || 'piece').toLowerCase();
+      item = raw.slice(m[0].length).trim();
+    }
+  }
+  if (item.length < 2) item = raw;
+  /* Keep the words he wrote — "1 lemon", not "1 lemons". The matcher already
+     treats those as the same thing, so snapping the name buys nothing; the
+     shelf match is only worth having for the aisle it knows. */
+  const known = allItems().find(i => norm(i.name) === norm(item))
+             || allItems().find(i => sameItem(i.name, item));
+  return { item, qty, unit: qty ? unit : null,
+           aisle: known ? known.aisle : aisleOf(item), scale: qty !== null };
+}
+
+function parseMyStep(line){
+  const text = String(line).trim().replace(/^\s*\d+[.)]\s*/, '').replace(/^[-•*]\s*/, '');
+  if (text.length < 2) return null;
+  /* Only a written number turns into a timer, because that is the only case
+     where the button would say something true. */
+  const m = /(\d+)\s*(?:min|minute)/i.exec(text);
+  return { text, minutes: m ? Number(m[1]) : null };
+}
+
+function openMyRecipe(id){
+  const r = id ? (state.myRecipes || []).find(x => x.id === id) : null;
+  view.editingRecipe = r ? r.id : null;
+  openSheet(`<h2>${r ? 'Edit my recipe' : 'Write in my own recipe'}</h2>
+    <div class="field"><label for="mr-title">What's it called</label>
+      <input id="mr-title" type="text" data-role="mr-title" placeholder="Mum's roast chicken"></div>
+    <div class="row"><div class="lab"><b>Serves</b><small>What the amounts below are for</small></div>
+      <input class="small-num" type="number" data-role="mr-serves" min="1" max="12" value="${r ? r.baseServings : 2}"></div>
+    <div class="row"><div class="lab"><b>Minutes</b><small>Start to finish</small></div>
+      <input class="small-num" type="number" data-role="mr-mins" min="5" max="600" value="${r ? r.minutes : 30}"></div>
+    <div class="field"><label for="mr-ings">Ingredients &mdash; one per line</label>
+      <textarea id="mr-ings" data-role="mr-ings" rows="6"
+        placeholder="4 chicken thighs&#10;2 tbsp dijon mustard&#10;1 lemon"></textarea>
+      <p class="hint">Put the amount first. Anything already on your shelves is recognised,
+         so these count towards what you can cook.</p></div>
+    <div class="field"><label for="mr-steps">Method &mdash; one step per line</label>
+      <textarea id="mr-steps" data-role="mr-steps" rows="6"
+        placeholder="Heat the oven to two hundred degrees.&#10;Brown the thighs for 8 minutes."></textarea>
+      <p class="hint">Say "8 minutes" in a step and it gets a timer button.</p></div>
+    <button class="btn" data-act="mr-save">${r ? 'Save the changes' : 'Add it to my recipes'}</button>
+    <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
+  /* His words are set on the nodes, never poured into innerHTML. */
+  const set = (role, val) => {
+    const el = document.querySelector('[data-role=' + role + ']');
+    if (el) el.value = val;
+  };
+  set('mr-title', r ? r.title : '');
+  set('mr-ings', r ? r.ingredients.map(i =>
+        [i.qty || '', i.qty && i.unit !== 'piece' ? i.unit : '', i.item]
+          .filter(Boolean).join(' ')).join('\n') : '');
+  set('mr-steps', r ? r.steps.map(st => st.text).join('\n') : '');
+  const t = document.querySelector('[data-role=mr-title]');
+  if (t) t.focus();
+}
+
+function saveMyRecipe(){
+  const val = role => {
+    const el = document.querySelector('[data-role=' + role + ']');
+    return el ? el.value : '';
+  };
+  const title = val('mr-title').trim();
+  const ings  = val('mr-ings').split('\n').map(parseMyIngredient).filter(Boolean);
+  const steps = val('mr-steps').split('\n').map(parseMyStep).filter(Boolean);
+  if (!title){ toast('It needs a name'); return; }
+  if (!ings.length){ toast('Add at least one ingredient'); return; }
+  if (!steps.length){ toast('Add at least one step'); return; }
+
+  const serves = Math.max(1, Math.min(12, Number(val('mr-serves')) || 2));
+  const mins   = Math.max(1, Math.min(600, Number(val('mr-mins')) || 30));
+  const old = view.editingRecipe
+    ? (state.myRecipes || []).find(x => x.id === view.editingRecipe) : null;
+
+  const recipe = {
+    id: old ? old.id
+       : 'mine-' + (norm(title).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
+                    || 'recipe') + '-' + Date.now().toString(36),
+    title,
+    photo: null,
+    cuisine: 'other',
+    appliances: ['stove'],
+    minutes: mins,
+    activeMinutes: mins,
+    difficulty: 'easy',
+    baseServings: serves,
+    scalable: [1, 8],
+    capacityQt: null,
+    tags: ['mine'],
+    spiceLevel: 2,
+    ingredients: ings,
+    misePlace: [],
+    steps,
+    source: { name: 'My own kitchen' }
+  };
+
+  state.myRecipes = (state.myRecipes || []).filter(x => x.id !== recipe.id);
+  state.myRecipes.push(recipe);
+  view.editingRecipe = null;
+  closeSheet(); save();
+  view.screen = 'recipe'; view.recipeId = recipe.id;
+  render();
+  toast(old ? 'Saved' : title + ' is in your recipes');
+}
+
+function deleteMyRecipe(id){
+  state.myRecipes = (state.myRecipes || []).filter(x => x.id !== id);
+  delete state.notes[id];
+  delete state.ratings[id];
+  state.favorites = state.favorites.filter(f => f !== id);
+  closeSheet(); save();
+  view.screen = 'cook'; view.recipeId = null;
+  render(); toast('Deleted');
 }
 
 function openPasteList(){
@@ -1569,7 +1839,7 @@ document.addEventListener('contextmenu', e => {
 /* ------------------------------------------------------------- events */
 document.addEventListener('click', e => {
   if (swallowClick){ swallowClick = false; e.preventDefault(); e.stopPropagation(); return; }
-  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
+  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-useby],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
   if (!t) {
     if (e.target.id === 'sheet') closeSheet();
     return;
@@ -1589,6 +1859,7 @@ document.addEventListener('click', e => {
   if (t.dataset.theme){ state.prefs.theme = t.dataset.theme; setTheme(); save(); render(); return; }
 
   /* inventory */
+  if (t.dataset.useby){ setUseBy(t.dataset.useby); return; }
   if (t.dataset.more){
     e.stopPropagation();
     const name = t.dataset.more, cur = state.inventory[view.tab][name] || {};
@@ -1600,6 +1871,9 @@ document.addEventListener('click', e => {
         : 'For the things you never run out of. Hold the row on the list to do this without opening this menu.'}</p>
       <button class="btn ${cur.low?'':'ghost'}" data-act="toggle-low" data-name="${esc(name)}">
         ${cur.low ? 'Not running low any more' : 'Mark as running low'}</button>
+      <button class="btn ${cur.useBy?'':'ghost'}" data-act="use-by" data-name="${esc(name)}">
+        ${cur.useBy ? 'Use by ' + esc(cur.useBy) + ' — change it' : 'Set a use-by date'}</button>
+      <p class="hint">Recipes that use it climb to the top of Cook as the day gets closer.</p>
       <button class="btn ghost" data-act="to-list" data-name="${esc(name)}">Add to shopping list</button>
       <button class="btn ghost" data-act="rename-item" data-name="${esc(name)}">Fix the spelling</button>
       <button class="btn ghost" data-act="hide-item" data-name="${esc(name)}">Remove from my list</button>
@@ -1684,6 +1958,27 @@ document.addEventListener('click', e => {
     }
 
     case 'clear-search': view.search = ''; render(); break;
+    case 'clear-rsearch': view.recipeSearch = ''; render(); break;
+    case 'only-ready': view.onlyReady = !view.onlyReady; render(); break;
+    case 'my-recipe': openMyRecipe(null); break;
+    case 'mr-save': saveMyRecipe(); break;
+    case 'edit-mine': openMyRecipe(view.recipeId); break;
+    case 'delete-mine': {
+      const r = findRecipe(view.recipeId);
+      openSheet(`<h2>Delete ${esc(r ? r.title : 'this recipe')}?</h2>
+        <p class="hint">It only exists on this phone, so this cannot be undone.</p>
+        <button class="btn" data-act="delete-mine-yes">Delete it</button>
+        <button class="btn ghost" data-act="close-sheet">Keep it</button>`);
+      break;
+    }
+    case 'delete-mine-yes': deleteMyRecipe(view.recipeId); break;
+    case 'use-by': openUseBy(view.tab, t.dataset.name); break;
+    case 'useby-save': {
+      const box = document.querySelector('[data-role=useby-date]');
+      setUseBy(box && box.value ? box.value : '');
+      break;
+    }
+    case 'useby-clear': setUseBy(''); break;
     /* A whole spoken fridge, dropped in the search box. Same reader the paste
        sheet uses, so "coriandre" and "2 boxes of eggs" land the same way. */
     case 'tick-spoken': {
@@ -1955,6 +2250,19 @@ document.addEventListener('input', e => {
     render();
     const box = document.querySelector('[data-role=search]');
     if (box){ box.focus(); box.setSelectionRange(pos, pos); }
+  }
+  if (e.target.dataset.role === 'rsearch'){
+    view.recipeSearch = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const box = document.querySelector('[data-role=rsearch]');
+    if (box){ box.focus(); box.setSelectionRange(pos, pos); }
+  }
+  /* Notes are typed a word at a time between stirs, so they save as he goes
+     rather than behind a button he would forget to press. */
+  if (e.target.dataset.role === 'note'){
+    const id = e.target.dataset.recipe;
+    if (id){ state.notes[id] = e.target.value; save(); }
   }
   if (e.target.dataset.role === 'apikey'){ state.prefs.apiKey = e.target.value.trim(); save(); }
 });

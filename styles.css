@@ -254,6 +254,13 @@ p{margin:0}
 }
 .fbtn .fsum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .fbtn.has{border-color:var(--accent);color:var(--accent)}
+.fbtn.icon-only{flex:none;width:auto;gap:2px;padding:0 12px}
+.fbtn.icon-only .chev{width:16px;height:16px}
+/* The pressed state is the whole point of this one — it has to look switched
+   on from across the counter, not merely outlined. */
+.fbtn.ready[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.fbtn.ready .fsum{flex:none}
+.filterbar .searchbox{flex:1;min-width:0}
 .fbtn .chev{transition:transform .15s ease}
 .fbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
 
@@ -387,6 +394,17 @@ p{margin:0}
   color:var(--warn);border:1px solid currentColor;
   border-radius:3px;padding:2px 5px;flex:none;
 }
+/* How long it has left. Quiet a week out, amber at two days, red once the day
+   has passed — the same three states the ingredient list already uses. */
+.item .useby{
+  font-size:10px;font-weight:700;letter-spacing:.08em;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-3);border:1px solid currentColor;
+  border-radius:3px;padding:2px 5px;flex:none;
+}
+.item .useby.urgent{color:var(--warn)}
+.item .useby.over{color:var(--need);background:var(--accent-dim)}
+
 /* always in stock — the "got it" green, not a second accent */
 .item.always .box{background:var(--have);border-color:var(--have)}
 .item.always .name{color:var(--ink)}
@@ -427,6 +445,9 @@ p{margin:0}
 .note.tip .label{color:var(--ink-2)}
 .note.better{background:var(--accent-dim);color:var(--ink)}
 .note.better .label{color:var(--accent)}
+.note.soon{background:var(--surface-2);color:var(--ink);border-left:3px solid var(--warn)}
+.note.soon .label{color:var(--warn)}
+.note.soon .hint{color:var(--ink-3);font-size:12.5px}
 .note.vetted{background:var(--surface);border:1px solid var(--line);color:var(--ink-2);font-size:14px}
 .note.vetted .label{color:var(--have)}
 .note.vetted .srclink{color:var(--accent);text-decoration:none;font-size:13px;margin-top:3px}
@@ -466,6 +487,16 @@ p{margin:0}
   border:1px solid currentColor;border-radius:var(--r-pill);padding:4px 9px;
 }
 .ing .have{flex:none;color:var(--have)}
+.btn.ghost.danger{color:var(--need);border-color:var(--need)}
+
+.note-box{
+  width:100%;box-sizing:border-box;
+  background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:12px 14px;font-size:16px;line-height:1.45;
+  resize:vertical;min-height:88px;
+}
+.note-box::placeholder{color:var(--ink-3)}
 
 .mise{
   list-style:none;margin:0;padding:0;
@@ -579,6 +610,7 @@ p{margin:0}
 /* one line under a Cook-screen group heading; must sit quieter than the
    heading above it, so it stays off the 16px body size */
 .grouplede{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:3px 2px 12px}
+.field input[type=date],
 .field input[type=text],.field input[type=password],.field input[type=number]{
   background:var(--surface-2);border:1px solid transparent;
   border-radius:var(--r-sm);padding:12px 13px;
@@ -622,6 +654,15 @@ p{margin:0}
   resize:vertical;min-height:120px;
 }
 .sheet-inner textarea::placeholder{color:var(--ink-3)}
+.sheet-inner .field{padding:2px 0}
+.sheet-inner .row .small-num{
+  width:84px;flex:none;text-align:center;
+  background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:0 10px;min-height:44px;font-size:16px;
+  font-variant-numeric:tabular-nums;
+}
+.sheet-inner input[type=date],
 .sheet-inner input[type=text]{
   width:100%;box-sizing:border-box;
   background:var(--surface-2);color:var(--ink);
