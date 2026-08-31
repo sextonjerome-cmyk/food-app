@@ -1570,6 +1570,17 @@ function screenSettings(){
        <b>adds</b>: it will not untick anything.</p>
   </div>
 
+  <div class="section"><h2>This app</h2>
+    <div class="card pad" style="padding:4px 16px">
+      <div class="row"><div class="lab"><b>Version</b>
+        <small>${BUILD ? esc(BUILD) : 'not installed for offline use yet'}</small></div>
+      </div>
+    </div>
+    <button class="btn ghost" data-act="check-update">${svg('i-check')} Check for a new version</button>
+    <p class="hint">Frigo keeps itself on the phone so it works with no signal, which also
+       means it can sit on an old copy. This fetches the newest one and restarts.</p>
+  </div>
+
   <div class="section"><h2>Your data</h2>
     <button class="btn ghost" data-act="export">Save a backup file</button>
     <button class="btn ghost" data-act="import">Restore from a backup</button>
@@ -2080,6 +2091,44 @@ function deleteMyRecipe(id){
   closeSheet(); save();
   view.screen = 'cook'; view.recipeId = null;
   render(); toast('Deleted');
+}
+
+/* ------------------------------------------------------- which build is this
+
+   "It still shows the old version" is unanswerable without this. The cache the
+   service worker is actually serving from is named after the deploy, and the
+   page can read that list directly — no message passing, no constant in two
+   files to forget to bump. */
+let BUILD = '';
+
+function readBuild(){
+  if (!window.caches || !caches.keys) return;
+  caches.keys().then(keys => {
+    const mine = keys.filter(k => /^frigo-v/.test(k)).sort();
+    const found = mine.length ? mine[mine.length - 1] : '';
+    if (found && found !== BUILD){
+      BUILD = found;
+      if (view.screen === 'settings') render();
+    }
+  }).catch(() => {});
+}
+
+/* Chrome only looks for a new worker when the app navigates, which an installed
+   app resumed from the background never does. This is the button that asks. */
+async function checkForUpdate(){
+  if (!('serviceWorker' in navigator)){
+    toast('This browser cannot update in the background');
+    return;
+  }
+  toast('Looking for a new version…');
+  try{
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg){ location.reload(); return; }
+    await reg.update();
+  }catch(e){}
+  /* Whatever the worker decided, a reload is what swaps the running page for
+     the one that was just fetched. */
+  setTimeout(() => location.reload(true), 1200);
 }
 
 /* ================================================================= camera
@@ -3178,6 +3227,8 @@ document.addEventListener('click', e => {
       break;
     }
 
+    case 'check-update': checkForUpdate(); break;
+
     case 'export': {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
       const a = document.createElement('a');
@@ -3476,6 +3527,7 @@ function applyLinkList(){
 
 load();
 setTheme();
+readBuild();
 const fromLink = applyLinkList();
 if (fromLink) save();
 render();
