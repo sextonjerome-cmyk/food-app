@@ -1,0 +1,85 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D &middot; Tonight</title>
+<style>
+/* ── D · TONIGHT ────────────────────────────────────────────────────────────
+   No list at all. The app asks one question and answers it with one dish,
+   full screen. Swipe for the next. Everything is thumb-sized because this is
+   read from three feet away with oily hands — the deck is the whole idea,
+   and browsing is a thing you opt into, not the front door.                */
+:root{
+  --ground:#0A0A0B; --ink:#FFFFFF; --ink-2:rgba(255,255,255,.62);
+  --glass:rgba(255,255,255,.13); --edge:rgba(255,255,255,.24);
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --num:ui-monospace,"Roboto Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased}
+.phone{max-width:412px;margin:0 auto;position:relative;height:915px;overflow:hidden}
+
+.shot{position:absolute;inset:0}
+.shot img{width:100%;height:100%;object-fit:cover}
+.shot::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,10,11,.72) 0 18%,rgba(10,10,11,.08) 42%,
+             rgba(10,10,11,.72) 72%,rgba(10,10,11,.97) 100%)}
+
+.layer{position:absolute;inset:0;display:flex;flex-direction:column;
+       padding:22px 22px 30px}
+
+.ask{font-size:12px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+     color:var(--ink-2)}
+/* the deck position — you are on card 1 of 6, and you can feel the edge */
+.pips{display:flex;gap:5px;margin-top:14px}
+.pips i{height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.24)}
+.pips i.on{background:#fff}
+
+.body{margin-top:auto}
+.tick{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
+      font-weight:650;letter-spacing:.02em;color:#8FE3B0;margin-bottom:14px}
+.tick i{width:7px;height:7px;border-radius:50%;background:#8FE3B0}
+
+h1{margin:0;font-size:46px;line-height:.98;font-weight:700;letter-spacing:-.035em;
+   text-wrap:balance}
+.gloss{margin:12px 0 0;font-size:16.5px;line-height:1.35;color:var(--ink-2);
+       max-width:20ch}
+
+.facts{display:flex;gap:8px;margin:20px 0 0;flex-wrap:wrap}
+.fact{border:1px solid var(--edge);background:var(--glass);border-radius:999px;
+      padding:8px 14px;font-size:13px;font-weight:600}
+.fact b{font-family:var(--num);font-variant-numeric:tabular-nums}
+
+.acts{display:flex;gap:12px;margin-top:24px}
+.big{flex:1;min-height:62px;border:0;border-radius:14px;background:#fff;
+     color:#0A0A0B;font-size:17.5px;font-weight:700;letter-spacing:-.01em}
+.skip{flex:0 0 62px;min-height:62px;border:1px solid var(--edge);border-radius:14px;
+      background:var(--glass);color:#fff;font-size:22px}
+.hint{margin:16px 0 0;text-align:center;font-size:12.5px;color:rgba(255,255,255,.44)}
+.hint b{color:rgba(255,255,255,.8);font-weight:600}
+</style></head><body><div class="phone">
+
+<div class="shot"><img src="../img/shakshuka.webp" alt=""></div>
+
+<div class="layer">
+  <span class="ask">Cook tonight</span>
+  <div class="pips"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+
+  <div class="body">
+    <span class="tick"><i></i>You have all nine things</span>
+    <h1>Shakshuka</h1>
+    <p class="gloss">Eggs poached in spiced tomato and pepper.</p>
+
+    <div class="facts">
+      <span class="fact"><b>40</b> min</span>
+      <span class="fact">One pan</span>
+      <span class="fact">Real kick</span>
+    </div>
+
+    <div class="acts">
+      <button class="big">Start cooking</button>
+      <button class="skip" aria-label="Show me another">&rsaquo;</button>
+    </div>
+    <p class="hint">Swipe for the next of <b>6</b> &middot; hold for the whole shelf</p>
+  </div>
+</div>
+</div></body></html>

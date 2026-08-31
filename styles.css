@@ -1,32 +1,36 @@
 /* ==========================================================================
-   Frigo — Dark Kitchen
-   Dark is primary. Light is the warm daylight counterpart, never clinical.
+   Frigo — After Dark
+   Deep indigo ground, one electric lime that only ever means "you can cook
+   this", coral only for "you can't". Colour is never decoration here: if
+   something is bright, it is telling you whether you can eat tonight.
+   Dark is primary. Light is the same logic in daylight, never washed out.
    All colour lives in tokens; nothing is declared only inside a media block.
    ========================================================================== */
 
 :root{
   /* ground */
-  --bg:#111010;
-  --surface:#1B1918;
-  --surface-2:#262320;
-  --line:#2C2926;
-  --line-2:#443F3A;
+  --bg:#0E1020;
+  --surface:#171A31;
+  --surface-2:#1F2340;
+  --line:#2A2F52;
+  --line-2:#3A4070;
 
   /* ink */
-  --ink:#F3EEE6;
-  --ink-2:#9B938A;
-  --ink-3:#6B645C;
+  --ink:#EEF0FA;
+  --ink-2:#9096BE;
+  --ink-3:#666C96;
 
-  /* accent */
-  --accent:#E7A23C;
-  --accent-2:#F2BC66;
-  --accent-ink:#1A1512;
-  --accent-dim:#2A2119;
+  /* the one accent — electric lime. It means READY, nowhere else. */
+  --accent:#B8F03C;
+  --accent-2:#C9F76A;
+  --accent-ink:#141A05;
+  --accent-dim:#222C18;
 
   /* semantic */
-  --have:#6FBF7F;
-  --need:#E07B5C;
-  --warn:#D9A441;
+  --have:#B8F03C;
+  --near:#8B7BF7;
+  --need:#FF7A5C;
+  --warn:#FFC24D;
 
   --r:14px;
   --r-sm:10px;
@@ -43,44 +47,93 @@
 
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
-    --bg:#FAF7F2;
+    --bg:#F5F6FC;
     --surface:#FFFFFF;
-    --surface-2:#F2ECE3;
-    --line:#E8E0D5;
-    --line-2:#D2C7B8;
-    --ink:#211D19;
-    --ink-2:#6E655B;
-    --ink-3:#9A9087;
-    --accent:#B5701A;
-    --accent-2:#95590E;
+    --surface-2:#ECEEF8;
+    --line:#E1E4F1;
+    --line-2:#C6CBE2;
+    --ink:#11132A;
+    --ink-2:#545A80;
+    --ink-3:#858AAC;
+    --accent:#4C6B00;
+    --accent-2:#3B5300;
     --accent-ink:#FFFFFF;
-    --accent-dim:#F7EBD8;
-    --have:#3E7F4C;
-    --need:#B4462A;
+    --accent-dim:#EEF6DA;
+    --have:#4C6B00;
+    --near:#5B45C9;
+    --need:#C2412A;
     --warn:#8A6412;
-    --shadow:0 6px 20px -12px rgba(60,45,25,.4);
-    --scrim:rgba(30,24,16,.42);
+    --shadow:0 6px 20px -12px rgba(20,24,60,.34);
+    --scrim:rgba(14,16,32,.46);
   }
 }
 :root[data-theme="light"]{
-  --bg:#FAF7F2;
+  --bg:#F5F6FC;
   --surface:#FFFFFF;
-  --surface-2:#F2ECE3;
-  --line:#E8E0D5;
-  --line-2:#D2C7B8;
-  --ink:#211D19;
-  --ink-2:#6E655B;
-  --ink-3:#9A9087;
-  --accent:#B5701A;
-  --accent-2:#95590E;
+  --surface-2:#ECEEF8;
+  --line:#E1E4F1;
+  --line-2:#C6CBE2;
+  --ink:#11132A;
+  --ink-2:#545A80;
+  --ink-3:#858AAC;
+  --accent:#4C6B00;
+  --accent-2:#3B5300;
   --accent-ink:#FFFFFF;
-  --accent-dim:#F7EBD8;
-  --have:#3E7F4C;
-  --need:#B4462A;
+  --accent-dim:#EEF6DA;
+  --have:#4C6B00;
+  --near:#5B45C9;
+  --need:#C2412A;
   --warn:#8A6412;
-  --shadow:0 6px 20px -12px rgba(60,45,25,.4);
-  --scrim:rgba(30,24,16,.42);
+  --shadow:0 6px 20px -12px rgba(20,24,60,.34);
+  --scrim:rgba(14,16,32,.46);
 }
+
+/* ---------- the score: the answer, before the browsing ---------- */
+.score{
+  background:linear-gradient(180deg,var(--surface-2),var(--surface));
+  border:1px solid var(--line);border-radius:18px;padding:13px 15px 12px;
+  margin:2px 0 10px;
+}
+.score-top{display:flex;align-items:baseline;gap:10px}
+.score-n{
+  font-size:42px;font-weight:800;letter-spacing:-.05em;line-height:1;
+  color:var(--accent);font-variant-numeric:tabular-nums;
+}
+.score-u{font-size:14.5px;color:var(--ink-2);font-weight:600;line-height:1.25}
+.score-bar{display:flex;gap:3px;margin-top:12px}
+.score-bar i{height:6px;border-radius:3px;min-width:6px}
+.score-bar .a{background:var(--have)}
+.score-bar .b{background:var(--near)}
+.score-bar .c{background:var(--line-2)}
+.score-key{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--ink-2);
+           flex-wrap:wrap}
+.score-key span::before{
+  content:"";display:inline-block;width:7px;height:7px;border-radius:2px;
+  margin-right:6px;vertical-align:1px;
+}
+.score-key .k1::before{background:var(--have)}
+.score-key .k2::before{background:var(--near)}
+.score-key .k3::before{background:var(--line-2)}
+
+/* ---------- one-tap filters ---------- */
+.quickrow{
+  display:flex;gap:7px;overflow-x:auto;margin:0 calc(var(--pad) * -1) 10px;
+  padding:2px var(--pad) 6px;scrollbar-width:none;
+}
+.quickrow::-webkit-scrollbar{display:none}
+.qchip{
+  flex:0 0 auto;min-height:44px;padding:11px 16px;border-radius:var(--r-pill);
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
+  font:inherit;font-size:13px;font-weight:600;white-space:nowrap;
+}
+.qchip[aria-pressed="true"]{
+  background:var(--accent);border-color:var(--accent);color:var(--accent-ink);
+  font-weight:750;
+}
+
+/* Servings had a row to itself once the ready toggle moved up into a chip. */
+.servrow{align-items:center;gap:12px}
+.servlab{font-size:13px;font-weight:600;color:var(--ink-2)}
 
 /* ---------- base ---------- */
 *{box-sizing:border-box}
@@ -496,7 +549,7 @@ p{margin:0}
 .cam-x{
   width:44px;height:44px;flex:none;display:grid;place-items:center;
   border:none;border-radius:var(--r-pill);
-  background:rgba(0,0,0,.5);color:#F3EEE6;
+  background:rgba(0,0,0,.55);color:#EEF0FA;
 }
 .cam-modes{
   margin-left:auto;display:flex;gap:8px;
@@ -504,7 +557,7 @@ p{margin:0}
 }
 .cam-modes .opt{
   min-height:40px;padding:0 16px;border:none;
-  background:none;color:#B9B1A7;
+  background:none;color:#A8AECE;
 }
 .cam-modes .opt[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
 
@@ -518,12 +571,12 @@ p{margin:0}
 .cam-bottom{display:flex;flex-direction:column;align-items:center;gap:16px}
 .cam-msg{
   margin:0;text-align:center;max-width:22em;
-  color:#F3EEE6;font-size:15px;line-height:1.45;
+  color:#EEF0FA;font-size:15px;line-height:1.45;
   text-shadow:0 1px 8px rgba(0,0,0,.9);
 }
 .cam-shoot{
   width:72px;height:72px;flex:none;border-radius:var(--r-pill);
-  background:#F3EEE6;border:4px solid rgba(0,0,0,.45);
+  background:#EEF0FA;border:4px solid rgba(0,0,0,.45);
   box-shadow:0 0 0 3px rgba(243,238,230,.6);
 }
 .cam-shoot[disabled]{opacity:.5}

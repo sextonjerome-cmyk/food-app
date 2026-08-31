@@ -1,0 +1,115 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G &middot; After Dark</title>
+<style>
+/* ── G · AFTER DARK ─────────────────────────────────────────────────────────
+   The modern product look, done properly: deep indigo ground, one electric
+   lime that only ever means "you can cook this", coral only for "you can't".
+   Colour is never decoration here — if something is bright, it is telling you
+   whether you can eat tonight.                                             */
+:root{
+  --ground:#0E1020; --raised:#171A31; --raised-2:#1F2340; --line:#2A2F52;
+  --ink:#EEF0FA; --ink-2:#9096BE; --ink-3:#666C96;
+  --lime:#B8F03C; --lime-ink:#141A05;
+  --coral:#FF7A5C; --violet:#8B7BF7;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --num:ui-monospace,"Roboto Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased}
+.phone{max-width:412px;margin:0 auto;padding-bottom:88px}
+
+header{padding:22px 18px 0}
+header h1{margin:0;font-size:29px;font-weight:750;letter-spacing:-.035em;line-height:1.04}
+
+/* the score card — the one big number, because it is the whole answer */
+.score{margin:18px 0 0;background:linear-gradient(180deg,var(--raised-2),var(--raised));
+       border:1px solid var(--line);border-radius:18px;padding:18px}
+.score .big{display:flex;align-items:baseline;gap:10px}
+.score .n{font-size:52px;font-weight:800;letter-spacing:-.05em;color:var(--lime);
+          font-variant-numeric:tabular-nums;line-height:1}
+.score .u{font-size:15px;color:var(--ink-2);font-weight:600}
+.score .bar{display:flex;gap:3px;margin-top:16px}
+.score .bar i{height:6px;border-radius:3px}
+.score .bar .a{flex:6;background:var(--lime)}
+.score .bar .b{flex:9;background:var(--violet)}
+.score .bar .c{flex:16;background:var(--line)}
+.score .key{display:flex;gap:14px;margin-top:11px;font-size:11.5px;color:var(--ink-2)}
+.score .key i{display:inline-block;width:7px;height:7px;border-radius:2px;
+              margin-right:5px}
+.k1 i{background:var(--lime)} .k2 i{background:var(--violet)}
+
+.tabs{display:flex;gap:7px;padding:20px 18px 4px;overflow-x:auto}
+.tab{flex:0 0 auto;background:var(--raised);border:1px solid var(--line);
+     color:var(--ink-2);border-radius:999px;padding:9px 15px;font-size:12.5px;
+     font-weight:600;min-height:40px}
+.tab.on{background:var(--lime);border-color:var(--lime);color:var(--lime-ink);font-weight:750}
+
+.list{list-style:none;margin:14px 14px 0;padding:0;display:grid;gap:11px}
+.c{display:flex;gap:13px;align-items:center;background:var(--raised);
+   border:1px solid var(--line);border-radius:16px;padding:12px}
+.c img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:0 0 auto}
+.t{flex:1;min-width:0}
+.t h3{margin:0;font-size:17px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.t p{margin:5px 0 0;font-size:12.5px;color:var(--ink-2)}
+.r{flex:0 0 auto;text-align:right}
+.chip{display:inline-block;font-family:var(--num);font-size:11.5px;font-weight:700;
+      padding:4px 8px;border-radius:7px;font-variant-numeric:tabular-nums}
+.chip.go{background:rgba(184,240,60,.14);color:var(--lime)}
+.chip.buy{background:rgba(255,122,92,.14);color:var(--coral)}
+.mins{display:block;font-family:var(--num);font-size:11.5px;color:var(--ink-3);
+      margin-top:7px}
+.sec{margin:24px 18px 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+     font-weight:700;color:var(--ink-3)}
+
+nav{position:fixed;left:0;right:0;bottom:0;max-width:412px;margin:0 auto;
+    background:#12142A;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(4,1fr)}
+nav button{background:none;border:0;padding:13px 0 18px;color:var(--ink-3);
+  font-size:11px;font-weight:650}
+nav button[aria-current]{color:var(--lime)}
+</style></head><body><div class="phone">
+
+<header>
+  <h1>Tonight&rsquo;s options</h1>
+  <div class="score">
+    <div class="big"><span class="n">6</span><span class="u">dishes you can cook right now</span></div>
+    <div class="bar"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+    <div class="key"><span class="k1"><i></i>Ready</span>
+      <span class="k2"><i></i>One away</span>
+      <span><i style="background:var(--line)"></i>Further off</span></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab on">Everything</button><button class="tab">Under 30</button>
+  <button class="tab">One pan</button><button class="tab">Big kick</button>
+</div>
+
+<p class="sec">Ready now</p>
+<ul class="list">
+  <li class="c"><img src="../img/menemen.webp" alt="">
+    <div class="t"><h3>Menemen</h3><p>Turkish eggs, peppers, tomato</p></div>
+    <div class="r"><span class="chip go">9/9</span><span class="mins">25m</span></div></li>
+  <li class="c"><img src="../img/smash-burger.webp" alt="">
+    <div class="t"><h3>Smash Burger</h3><p>Lacy crust, cheese inside</p></div>
+    <div class="r"><span class="chip go">7/7</span><span class="mins">20m</span></div></li>
+  <li class="c"><img src="../img/poulet-moutarde.webp" alt="">
+    <div class="t"><h3>Poulet &agrave; la Moutarde</h3><p>Mustard cream chicken</p></div>
+    <div class="r"><span class="chip go">8/8</span><span class="mins">45m</span></div></li>
+</ul>
+
+<p class="sec">One thing away</p>
+<ul class="list">
+  <li class="c"><img src="../img/shakshuka.webp" alt="">
+    <div class="t"><h3>Shakshuka</h3><p>Buy red pepper</p></div>
+    <div class="r"><span class="chip buy">8/9</span><span class="mins">40m</span></div></li>
+  <li class="c"><img src="../img/mapo-tofu.webp" alt="">
+    <div class="t"><h3>Mapo Tofu</h3><p>Buy silken tofu</p></div>
+    <div class="r"><span class="chip buy">7/8</span><span class="mins">30m</span></div></li>
+</ul>
+
+<nav><button aria-current="page">Cook</button><button>Fridge</button>
+     <button>List</button><button>Plan</button></nav>
+</div></body></html>

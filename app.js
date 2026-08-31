@@ -78,6 +78,18 @@ const STYLES = [
   ['vegetarian','Vegetarian'], ['comfort','Comfort'], ['cheap','Cheap'],
   ['spicy','Big kick'], ['leftovers','Leftovers']
 ];
+/* The five questions asked most often, as one-tap chips above the fold.
+   Anything needing two answers at once still belongs in the panel below. */
+const QUICK = [
+  ['all',   'Everything'],
+  ['ready', 'Ready now'],
+  ['quick', 'Done in 30 min'],
+  ['onepan','One pan'],
+  ['kick',  'Big kick'],
+  ['veg',   'Vegetarian'],
+  ['soon',  'Going off soon']
+];
+
 const STYLE_TAGS = {
   'one-pan':  ['one-pan','one-pot','sheet-pan'],
   'spicy':    ['spicy','big-kick'],
@@ -381,6 +393,7 @@ const view = {
   editingRecipe:null,
   recipeSearch:'',
   onlyReady:false,
+  quick:'all',
   filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any', style:'any' },
   review:null,
   camera:false
@@ -1016,6 +1029,22 @@ function analyse(recipe, servings){
   }
   return { factor, missing, have, swaps, makes, usesLow, usesSoon, capacityWarning };
 }
+/* The quick chips narrow what is LISTED, never what is counted. The score at
+   the top always describes the whole collection under the detailed filters, so
+   tapping "Under 30 min" does not make it look like dinner just vanished. */
+function applyQuick(list){
+  const tagged = (m, names) => (m.r.tags || []).some(t => names.includes(t));
+  switch (view.quick){
+    case 'ready':  return list.filter(m => !m.missing.length);
+    case 'quick':  return list.filter(m => (m.r.minutes || 0) <= 30);
+    case 'onepan': return list.filter(m => tagged(m, ['one-pan','one-pot','sheet-pan']));
+    case 'kick':   return list.filter(m => tagged(m, ['spicy','big-kick']) || (m.r.spiceLevel||0) >= 3);
+    case 'veg':    return list.filter(m => tagged(m, ['vegetarian','vegan']));
+    case 'soon':   return list.filter(m => m.usesSoon.length);
+    default:       return list;
+  }
+}
+
 function matchRecipes(){
   const f = view.filters, servings = state.prefs.servings;
   const q = norm(view.recipeSearch);
@@ -1173,10 +1202,40 @@ function screenCook(){
   if (f.difficulty !== 'any') on.push(f.difficulty);
   if (f.style !== 'any') on.push((STYLES.find(x => x[0] === f.style) || ['','' ])[1]);
 
-  /* Two rows, not four. The first recipe photo has to be reachable without
-     scrolling, so search shares its row with the filter button and the shelf
-     toggle shares its row with the servings. */
-  const bar = `<div class="filterbar">
+  /* The answer, before the browsing. One number, and a bar showing how the
+     whole collection splits — six you can cook, nine a shop away, the rest
+     further off. This is the question the app exists to answer, so it goes
+     above everything, including the search box. */
+  const nReady = results.filter(m => !m.missing.length).length;
+  const nNear  = results.filter(m => m.missing.length === 1).length;
+  const nFar   = results.filter(m => m.missing.length > 1).length;
+  const total  = nReady + nNear + nFar || 1;
+  const score = `<div class="score">
+      <div class="score-top">
+        <span class="score-n num">${nReady}</span>
+        <span class="score-u">${nReady === 1 ? 'dish you can cook' : 'dishes you can cook'} right now</span>
+      </div>
+      <div class="score-bar" role="img"
+           aria-label="${nReady} ready, ${nNear} one thing away, ${nFar} further off">
+        ${nReady ? `<i class="a" style="flex:${nReady}"></i>` : ''}
+        ${nNear  ? `<i class="b" style="flex:${nNear}"></i>`  : ''}
+        ${nFar   ? `<i class="c" style="flex:${nFar}"></i>`   : ''}
+      </div>
+      <div class="score-key">
+        <span class="k1">${nReady} ready</span>
+        <span class="k2">${nNear} one away</span>
+        <span class="k3">${nFar} further off</span>
+      </div>
+    </div>`;
+
+  /* One tap for the things he actually asks for. The detailed panel is still
+     underneath for cuisine, appliance and exact times — these are the five
+     questions he asks every day. */
+  const chips = `<div class="quickrow">${QUICK.map(([v, l]) =>
+      `<button class="qchip" data-act="quick" data-v="${v}"
+               aria-pressed="${view.quick === v}">${esc(l)}</button>`).join('')}</div>`;
+
+  const bar = score + chips + `<div class="filterbar">
       <div class="searchbox">${svg('i-search')}
         <input type="text" placeholder="Search recipes" value="${esc(view.recipeSearch)}"
                data-role="rsearch" enterkeyhint="search" autocomplete="off">
@@ -1187,11 +1246,8 @@ function screenCook(){
         ${svg('i-sliders','icon-sm')}${svg('i-chev','icon-sm chev')}
       </button>
     </div>
-    <div class="filterbar">
-      <button class="opt fbtn ready" data-act="only-ready" aria-pressed="${view.onlyReady}">
-        ${svg('i-check','icon-sm')}<span class="fsum">Only what I can cook now</span>
-      </button>
-      ${stepper}
+    <div class="filterbar servrow">
+      <span class="servlab">Servings</span>${stepper}
     </div>
     ${on.length ? `<p class="grouplede" style="margin:-4px 2px 0">Filtered to
       ${esc(on.join(' &middot; ').replace(/&amp;middot;/g,'·'))}.</p>` : ''}`;
@@ -1233,6 +1289,13 @@ function screenCook(){
       <p>The collection is still being researched. Every recipe gets checked against real
          cooks before it goes in here.</p></div>` + ai;
   }
+  if (results.length && !applyQuick(results).length){
+    const label = (QUICK.find(q => q[0] === view.quick) || ['','that'])[1];
+    return filters + `<div class="empty"><strong>Nothing under &ldquo;${label}&rdquo;</strong>
+      <p>Your other filters still hold ${results.length} ${results.length === 1 ? 'dish' : 'dishes'}.
+         Tap <b>Everything</b> to see them.</p>
+      <button class="btn" data-act="quick" data-v="all">Show everything</button></div>` + ai;
+  }
   if (!results.length){
     return filters + `<div class="empty"><strong>Nothing matches those filters</strong>
       <p>Try loosening the time or the appliance — or let the AI invent something from
@@ -1242,9 +1305,10 @@ function screenCook(){
   /* Split by how much shopping it needs, because that is the actual question:
      what can I cook right now, versus what needs a trip to the shop. A flat
      ranked list buried the cookable ones among the ones he can't touch. */
-  const ready = results.filter(m => m.missing.length === 0);
-  const nearly = results.filter(m => m.missing.length === 1);
-  const shop   = results.filter(m => m.missing.length > 1);
+  const shown  = applyQuick(results);
+  const ready  = shown.filter(m => m.missing.length === 0);
+  const nearly = shown.filter(m => m.missing.length === 1);
+  const shop   = shown.filter(m => m.missing.length > 1);
 
   /* Staples are ticked for him on first run, so a raw count is never zero and
      "has he told us anything yet" has to ignore them. */
@@ -3477,6 +3541,10 @@ document.addEventListener('click', e => {
     /* Long-pressing a password field to paste is a fight on Android, and an
        API key is 108 characters nobody is going to type. One button instead. */
     case 'paste-into': pasteInto(t.dataset.target); break;
+
+    case 'quick':
+      view.quick = (view.quick === t.dataset.v) ? 'all' : t.dataset.v;
+      render(); break;
 
     case 'sync-now': syncNow(); break;
 

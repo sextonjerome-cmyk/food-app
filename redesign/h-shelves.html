@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H &middot; Shelves</title>
+<style>
+/* ── H · SHELVES ────────────────────────────────────────────────────────────
+   Colour with a job. The four places food lives each own a hue, and that hue
+   follows you everywhere: the fridge is cold blue, the freezer ice, the pantry
+   wheat, the spice rack rust. Glance at a dish and its coloured beads tell you
+   which shelves you will be opening — and which one is letting you down.   */
+:root{
+  --paper:#F7F6F3; --card:#FFFFFF; --ink:#15181C; --ink-2:#5F666E; --ink-3:#949AA1;
+  --line:#E4E3DF;
+  --fridge:#2E7FC4; --freezer:#4FB3C4; --pantry:#C89135; --spice:#B4442E;
+  --go:#2C7A4B; --buy:#C4432E;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --num:ui-monospace,"Roboto Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased}
+.phone{max-width:412px;margin:0 auto;padding-bottom:96px}
+
+header{background:var(--card);padding:20px 18px 16px;border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:25px;font-weight:750;letter-spacing:-.03em}
+header p{margin:7px 0 0;font-size:14px;color:var(--ink-2)}
+header > p b{color:var(--go);font-weight:750}
+
+/* the four shelves, always visible, always the same colours */
+.shelves{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.sh{border-radius:10px;padding:10px 8px;color:#fff;text-align:left}
+.sh b{display:block;font-family:var(--num);font-size:17px;font-weight:700;
+      font-variant-numeric:tabular-nums;line-height:1}
+.sh span{display:block;font-size:10px;margin-top:4px;opacity:.9;font-weight:600;
+         letter-spacing:.04em}
+.sh.f{background:var(--fridge)} .sh.z{background:var(--freezer)}
+.sh.p{background:var(--pantry)} .sh.s{background:var(--spice)}
+
+.sec{margin:22px 18px 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+     font-weight:750;color:var(--ink-3)}
+
+.list{list-style:none;margin:12px 14px 0;padding:0;display:grid;gap:11px}
+.c{display:flex;gap:12px;align-items:center;background:var(--card);
+   border:1px solid var(--line);border-radius:12px;padding:12px}
+.c img{width:62px;height:62px;border-radius:9px;object-fit:cover;flex:0 0 auto}
+.t{flex:1;min-width:0}
+.t h3{margin:0;font-size:17px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+/* beads: one per shelf the dish draws on, hollow when that shelf is short */
+.beads{display:flex;gap:5px;margin-top:8px;align-items:center}
+.beads i{width:11px;height:11px;border-radius:50%}
+.beads .f{background:var(--fridge)} .beads .z{background:var(--freezer)}
+.beads .p{background:var(--pantry)} .beads .s{background:var(--spice)}
+.beads i.out{background:transparent;box-shadow:inset 0 0 0 2px currentColor}
+.beads .f.out{color:var(--fridge)} .beads .p.out{color:var(--pantry)}
+.beads .s.out{color:var(--spice)}
+.beads em{font-style:normal;font-size:11.5px;color:var(--ink-2);margin-left:4px}
+.r{flex:0 0 auto;text-align:right}
+.tag{display:inline-block;font-size:10.5px;font-weight:750;letter-spacing:.05em;
+     text-transform:uppercase;padding:3px 8px;border-radius:5px}
+.tag.go{background:#E3F1E8;color:var(--go)}
+.tag.buy{background:#FBE7E3;color:var(--buy)}
+.mins{display:block;font-family:var(--num);font-size:11.5px;color:var(--ink-3);
+      margin-top:7px;font-variant-numeric:tabular-nums}
+
+/* the nav wears the shelf colours too, so the app never stops telling you
+   where you are */
+nav{position:fixed;left:0;right:0;bottom:0;max-width:412px;margin:0 auto;
+    background:var(--card);border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(4,1fr)}
+nav button{background:none;border:0;padding:13px 0 18px;color:var(--ink-3);
+  font-size:11px;font-weight:650}
+nav button[aria-current]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--fridge)}
+</style></head><body><div class="phone">
+
+<header>
+  <h1>What you can cook</h1>
+  <p><b>6</b> ready &middot; 9 need one thing</p>
+  <div class="shelves">
+    <div class="sh f"><b>38</b><span>FRIDGE</span></div>
+    <div class="sh z"><b>11</b><span>FREEZER</span></div>
+    <div class="sh p"><b>24</b><span>PANTRY</span></div>
+    <div class="sh s"><b>11</b><span>SPICES</span></div>
+  </div>
+</header>
+
+<p class="sec">Ready now</p>
+<ul class="list">
+  <li class="c"><img src="../img/menemen.webp" alt="">
+    <div class="t"><h3>Menemen</h3>
+      <div class="beads"><i class="f"></i><i class="p"></i><i class="s"></i>
+        <em>fridge, pantry, spices</em></div></div>
+    <div class="r"><span class="tag go">All in</span><span class="mins">25m</span></div></li>
+
+  <li class="c"><img src="../img/smash-burger.webp" alt="">
+    <div class="t"><h3>Smash Burger</h3>
+      <div class="beads"><i class="f"></i><i class="z"></i><i class="p"></i>
+        <em>fridge, freezer, pantry</em></div></div>
+    <div class="r"><span class="tag go">All in</span><span class="mins">20m</span></div></li>
+
+  <li class="c"><img src="../img/poulet-moutarde.webp" alt="">
+    <div class="t"><h3>Poulet &agrave; la Moutarde</h3>
+      <div class="beads"><i class="f"></i><i class="p"></i>
+        <em>fridge, pantry</em></div></div>
+    <div class="r"><span class="tag go">All in</span><span class="mins">45m</span></div></li>
+</ul>
+
+<p class="sec">One thing away</p>
+<ul class="list">
+  <li class="c"><img src="../img/shakshuka.webp" alt="">
+    <div class="t"><h3>Shakshuka</h3>
+      <div class="beads"><i class="f out"></i><i class="p"></i><i class="s"></i>
+        <em>fridge is short &mdash; red pepper</em></div></div>
+    <div class="r"><span class="tag buy">Buy 1</span><span class="mins">40m</span></div></li>
+
+  <li class="c"><img src="../img/mapo-tofu.webp" alt="">
+    <div class="t"><h3>Mapo Tofu</h3>
+      <div class="beads"><i class="f out"></i><i class="p"></i><i class="s"></i>
+        <em>fridge is short &mdash; silken tofu</em></div></div>
+    <div class="r"><span class="tag buy">Buy 1</span><span class="mins">30m</span></div></li>
+
+  <li class="c"><img src="../img/gratin-dauphinois.webp" alt="">
+    <div class="t"><h3>Gratin Dauphinois</h3>
+      <div class="beads"><i class="f out"></i><i class="p"></i>
+        <em>fridge is short &mdash; heavy cream</em></div></div>
+    <div class="r"><span class="tag buy">Buy 1</span><span class="mins">110m</span></div></li>
+</ul>
+
+<nav><button aria-current="page">Cook</button><button>Fridge</button>
+     <button>List</button><button>Plan</button></nav>
+</div></body></html>

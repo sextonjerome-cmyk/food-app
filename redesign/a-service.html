@@ -1,0 +1,154 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A · Service</title>
+<style>
+/* ── A · SERVICE ────────────────────────────────────────────────────────────
+   The vernacular of a working kitchen: the pass, the dupe rail, the ticket
+   printer. Dishes arrive as chits on a steel rail, the most-ready at the top.
+   Paper is the only bright surface; the photo is small because on a rail you
+   read the ticket, not the picture.                                        */
+:root{
+  --steel:#15181B; --steel-2:#1E2226; --rail:#2A2F34;
+  --chit:#F6F3EA; --chit-2:#E9E4D6; --ink:#14171A; --ink-2:#6A6659;
+  --fire:#C6362F;       /* short — you are missing something */
+  --pass:#2E6B4E;       /* all in — it can go */
+  --mono:ui-monospace,"Cascadia Mono","Roboto Mono",Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--steel);font-family:var(--sans);color:var(--chit);
+     -webkit-font-smoothing:antialiased}
+.phone{max-width:412px;margin:0 auto;padding:0 0 84px}
+
+/* the rail the tickets hang from */
+.head{position:sticky;top:0;background:var(--steel);padding:18px 16px 12px;
+      border-bottom:1px solid var(--rail);z-index:5}
+.rail{display:flex;align-items:baseline;justify-content:space-between}
+.rail h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.22em;
+         text-transform:uppercase;font-family:var(--mono)}
+.rail .count{font-family:var(--mono);font-size:12px;color:var(--ink-2);
+             letter-spacing:.08em}
+.state{margin:10px 0 0;font-size:13px;color:#8E897C;font-family:var(--mono)}
+.state b{color:var(--chit);font-weight:600}
+
+/* the chit */
+.chit{position:relative;background:var(--chit);color:var(--ink);
+      margin:14px 12px 0;border-radius:2px;
+      box-shadow:0 12px 24px -18px #000,0 1px 0 rgba(255,255,255,.05)}
+/* the perforation — the signature. Printed edge, not a decoration: it is
+   where the ticket was torn off the roll. */
+.chit::before{content:"";position:absolute;left:0;right:0;top:-6px;height:6px;
+  background:radial-gradient(circle at 5px 0,transparent 0 4.5px,var(--chit) 5px);
+  background-size:10px 6px;background-repeat:repeat-x}
+.chit-in{padding:14px 14px 12px}
+.top{display:flex;gap:12px;align-items:flex-start}
+.thumb{width:56px;height:56px;flex:0 0 auto;border-radius:2px;object-fit:cover;
+       filter:saturate(.92)}
+.who{flex:1;min-width:0}
+.name{margin:0;font-size:17px;line-height:1.15;font-weight:700;letter-spacing:-.01em;
+      text-transform:uppercase}
+.sub{margin:3px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.3}
+.fig{text-align:right;font-family:var(--mono);flex:0 0 auto}
+.fig .frac{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;
+           letter-spacing:-.02em}
+.fig .lbl{display:block;font-size:9.5px;letter-spacing:.14em;color:var(--ink-2);
+          text-transform:uppercase;margin-top:2px}
+.short .frac{color:var(--fire)} .full .frac{color:var(--pass)}
+
+.meta{margin-top:11px;padding-top:10px;border-top:1px dashed #CFC8B6;
+      display:flex;gap:14px;font-family:var(--mono);font-size:11.5px;
+      color:var(--ink-2);letter-spacing:.04em}
+.meta span{font-variant-numeric:tabular-nums}
+.need{margin:9px 0 0;font-size:13px;color:var(--fire);font-weight:600}
+.go{margin:11px 0 0;width:100%;min-height:46px;border:0;border-radius:2px;
+    background:var(--ink);color:var(--chit);font-family:var(--mono);font-size:12.5px;
+    letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+.chit.short .go{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+.sep{margin:26px 12px 4px;font-family:var(--mono);font-size:10.5px;
+     letter-spacing:.2em;text-transform:uppercase;color:#6E6A5F}
+
+nav{position:fixed;left:0;right:0;bottom:0;max-width:412px;margin:0 auto;
+    background:var(--steel-2);border-top:1px solid var(--rail);
+    display:grid;grid-template-columns:repeat(4,1fr)}
+nav button{background:none;border:0;color:#7A7568;padding:12px 0 16px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+nav button[aria-current]{color:var(--chit);box-shadow:inset 0 2px 0 var(--fire)}
+</style></head><body><div class="phone">
+
+<header class="head">
+  <div class="rail"><h1>The Pass</h1><span class="count">31 ON FILE</span></div>
+  <p class="state"><b>6</b> can go now &middot; <b>9</b> are one item short</p>
+</header>
+
+<p class="sep">Ready — everything is in</p>
+
+<article class="chit full">
+  <div class="chit-in">
+    <div class="top">
+      <img class="thumb" src="../img/menemen.webp" alt="">
+      <div class="who">
+        <h2 class="name">Menemen</h2>
+        <p class="sub">Turkish eggs with peppers and tomato</p>
+      </div>
+      <div class="fig"><span class="frac">9/9</span><span class="lbl">In</span></div>
+    </div>
+    <div class="meta"><span>25 MIN</span><span>PAN</span><span>HEAT 2</span></div>
+    <button class="go">Start cooking</button>
+  </div>
+</article>
+
+<article class="chit full">
+  <div class="chit-in">
+    <div class="top">
+      <img class="thumb" src="../img/smash-burger.webp" alt="">
+      <div class="who">
+        <h2 class="name">Smash Burger</h2>
+        <p class="sub">Thin patties, lacy crust, cheese in the middle</p>
+      </div>
+      <div class="fig"><span class="frac">7/7</span><span class="lbl">In</span></div>
+    </div>
+    <div class="meta"><span>20 MIN</span><span>SKILLET</span><span>HEAT 1</span></div>
+    <button class="go">Start cooking</button>
+  </div>
+</article>
+
+<p class="sep">One item short</p>
+
+<article class="chit short">
+  <div class="chit-in">
+    <div class="top">
+      <img class="thumb" src="../img/shakshuka.webp" alt="">
+      <div class="who">
+        <h2 class="name">Shakshuka</h2>
+        <p class="sub">Eggs poached in spiced tomato and pepper</p>
+      </div>
+      <div class="fig"><span class="frac">8/9</span><span class="lbl">Short</span></div>
+    </div>
+    <p class="need">Buy: red pepper</p>
+    <div class="meta"><span>40 MIN</span><span>PAN</span><span>HEAT 3</span></div>
+    <button class="go">Add to the list</button>
+  </div>
+</article>
+
+<article class="chit short">
+  <div class="chit-in">
+    <div class="top">
+      <img class="thumb" src="../img/crevettes-ail-citron.webp" alt="">
+      <div class="who">
+        <h2 class="name">Garlic Lemon Butter Shrimp</h2>
+        <p class="sub">Ten minutes, one pan, a lot of bread</p>
+      </div>
+      <div class="fig"><span class="frac">6/7</span><span class="lbl">Short</span></div>
+    </div>
+    <p class="need">Buy: parsley</p>
+    <div class="meta"><span>20 MIN</span><span>PAN</span><span>HEAT 2</span></div>
+    <button class="go">Add to the list</button>
+  </div>
+</article>
+
+<nav>
+  <button aria-current="page">Pass</button><button>Fridge</button>
+  <button>List</button><button>Plan</button>
+</nav>
+</div></body></html>
