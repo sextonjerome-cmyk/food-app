@@ -24,6 +24,8 @@ window.FRIGO_INGREDIENTS = {
     ['heavy cream',     'dairy'],
     ['crème fraîche',   'dairy'],
     ['sour cream',      'dairy'],
+    ['half and half',   'dairy'],
+    ['cream cheese',    'dairy'],
     ['plain yogurt',    'dairy'],
     ['parmesan',        'dairy'],
     ['pecorino romano', 'dairy'],
@@ -172,6 +174,7 @@ window.FRIGO_INGREDIENTS = {
   spices: [
     ['smoked paprika',      'spices'],
     ['cajun seasoning',     'spices'],
+    ['old bay seasoning',   'spices'],
     ['sichuan peppercorns', 'spices'],
     ['sweet paprika',       'spices'],
     ['cumin',               'spices'],

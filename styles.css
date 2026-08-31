@@ -421,6 +421,137 @@ p{margin:0}
 }
 .item .more:hover{background:var(--surface-2);color:var(--ink)}
 
+/* ---------- the list read back before it lands ----------
+   Rows scroll inside their own box so the Tick button stays on screen no
+   matter how much of the kitchen he just said out loud. */
+.picklist{
+  display:flex;flex-direction:column;
+  /* The sheet is a flex column, so without this the list is squeezed to a
+     sliver by everything around it — a one-row list lost its only row. */
+  flex:none;
+  max-height:32dvh;overflow-y:auto;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:0 12px;
+  margin-top:-6px;
+}
+.picklist .item{min-height:50px}
+.picklist .item .name{display:flex;flex-direction:column;gap:1px}
+.item .heard{font-size:12.5px;color:var(--ink-3)}
+.item.editing{gap:6px}
+.item.editing input{
+  flex:1;min-width:0;
+  background:var(--bg);color:var(--ink);
+  border:1px solid var(--accent);border-radius:var(--r-sm);
+  padding:10px 12px;font-size:16px;font-family:inherit;
+}
+.item.editing .more{color:var(--accent)}
+
+/* ---------- putting the kitchen back after cooking ----------
+   Two targets on one row: the tick means finished, the pill means nearly. */
+.item.usedrow{padding:0;gap:8px}
+.usedbox{
+  flex:1;min-width:0;display:flex;align-items:center;gap:13px;
+  padding:6px 0;min-height:52px;color:var(--ink-2);text-align:left;
+}
+.usedbox .box{
+  width:22px;height:22px;flex:none;
+  border:1.6px solid var(--line-2);border-radius:var(--r-sm);position:relative;
+}
+.usedbox.on{color:var(--ink)}
+.usedbox.on .box{background:var(--need);border-color:var(--need)}
+.usedbox.on .box::after{
+  content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;
+  border:solid var(--accent-ink);border-width:0 2.2px 2.2px 0;transform:rotate(42deg);
+}
+.lowbtn{
+  flex:none;min-height:44px;padding:0 14px;
+  border:1px solid var(--line-2);border-radius:var(--r-pill);
+  background:none;color:var(--ink-3);
+  font:inherit;font-size:12.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;
+}
+/* ---------- the camera ----------
+   Full screen, above everything, its own ground. The video sits under a thin
+   layer of controls; nothing else on the page is visible or reachable. */
+.camera{
+  /* Under the sheet and the toast: the "is this it?" question has to land on
+     top of the live view, not behind it. */
+  position:fixed;inset:0;z-index:50;
+  background:#000;
+  display:block;overflow:hidden;
+}
+.camera video{
+  position:absolute;inset:0;
+  width:100%;height:100%;object-fit:cover;
+  background:#000;
+}
+.cam-ui{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:calc(12px + env(safe-area-inset-top)) 16px
+          calc(20px + env(safe-area-inset-bottom));
+}
+.cam-top{display:flex;align-items:center;gap:12px}
+.cam-x{
+  width:44px;height:44px;flex:none;display:grid;place-items:center;
+  border:none;border-radius:var(--r-pill);
+  background:rgba(0,0,0,.5);color:#F3EEE6;
+}
+.cam-modes{
+  margin-left:auto;display:flex;gap:8px;
+  background:rgba(0,0,0,.5);border-radius:var(--r-pill);padding:4px;
+}
+.cam-modes .opt{
+  min-height:40px;padding:0 16px;border:none;
+  background:none;color:#B9B1A7;
+}
+.cam-modes .opt[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+
+/* The reading window. Just a rectangle — it tells him where to aim without
+   pretending to be a laser. */
+.cam-frame{
+  align-self:center;width:78%;max-width:320px;aspect-ratio:1.6;
+  border:2px solid rgba(243,238,230,.85);border-radius:var(--r);
+  box-shadow:0 0 0 100vmax rgba(0,0,0,.35);
+}
+.cam-bottom{display:flex;flex-direction:column;align-items:center;gap:16px}
+.cam-msg{
+  margin:0;text-align:center;max-width:22em;
+  color:#F3EEE6;font-size:15px;line-height:1.45;
+  text-shadow:0 1px 8px rgba(0,0,0,.9);
+}
+.cam-shoot{
+  width:72px;height:72px;flex:none;border-radius:var(--r-pill);
+  background:#F3EEE6;border:4px solid rgba(0,0,0,.45);
+  box-shadow:0 0 0 3px rgba(243,238,230,.6);
+}
+.cam-shoot[disabled]{opacity:.5}
+
+/* Two camera buttons side by side under the say-it button. */
+.camrow{display:flex;gap:10px}
+.camrow .btn{flex:1;min-width:0;padding-inline:8px;font-size:14.5px}
+
+/* Shown, not tapped — the row in the "is this it?" question. */
+.box.on-static{
+  width:22px;height:22px;flex:none;border-radius:var(--r-sm);position:relative;
+  background:var(--accent);border:1.6px solid var(--accent);
+}
+.box.on-static::after{
+  content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;
+  border:solid var(--accent-ink);border-width:0 2.2px 2.2px 0;transform:rotate(42deg);
+}
+
+.usedrow.lowpick .lowbtn{
+  background:var(--accent-dim);border-color:var(--warn);color:var(--warn);
+}
+.item .newtag{
+  font-size:10px;font-weight:700;letter-spacing:.08em;
+  color:var(--accent);border:1px solid currentColor;
+  border-radius:3px;padding:2px 5px;flex:none;
+}
+.btn[disabled]{opacity:.45}
+
 /* ---------- recipe detail ---------- */
 .hero{margin:calc(var(--pad) * -1) calc(var(--pad) * -1) 0}
 .hero .photo{aspect-ratio:4/3;width:100%;background:var(--surface-2)}
@@ -690,6 +821,13 @@ p{margin:0}
 }
 /* the toast's one button — 44px of finger, paid for with negative margin so
    the toast itself stays the same height */
+/* A sheet fills the bottom of the screen, and the toast sits above it — so a
+   message raised from a sheet was landing squarely on that sheet's own button.
+   While one is open the toast moves to the top instead. */
+#sheet:not([hidden]) ~ .toast{
+  top:calc(14px + env(safe-area-inset-top));
+  bottom:auto;
+}
 .toast-act{
   flex:none;margin:-11px -18px -11px 0;padding:11px 18px;
   min-height:44px;

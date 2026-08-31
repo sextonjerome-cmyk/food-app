@@ -1,16 +1,25 @@
 /* ==========================================================================
-   Frigo — "invent me something" via the Claude API
+   Frigo — everything in the app that touches the network
+
+   Three calls live here and nowhere else: invent a recipe, look up a barcode,
+   and read a photo of the shelf. All three are things Jerome taps deliberately;
+   the rest of the app never opens a socket.
 
    Raw fetch rather than the Anthropic SDK: this project has a zero-dependency,
    no-build-step rule, so there is nothing to npm install and nothing to bundle.
-   The key is Jerome's own, kept in localStorage, and only sent when he taps
-   the button. Nothing else in the app touches the network.
+   The API key is Jerome's own, kept in localStorage, and only sent when he taps
+   the button.
    ========================================================================== */
 window.FrigoAI = (function () {
 'use strict';
 
 const ENDPOINT = 'https://api.anthropic.com/v1/messages';
 const MODEL    = 'claude-opus-5';
+
+/* Open Food Facts: an open database, no key, no account, no tracking. Coverage
+   is good on branded jars and cans and non-existent on anything loose, which is
+   exactly why the camera also has a photo mode. */
+const BARCODE_API = 'https://world.openfoodfacts.org/api/v2/product/';
 
 /* Mirrors .claude/rules/recipe-schema.md, trimmed to what the model must
    invent. Structured outputs guarantee this parses — no repair code needed. */
@@ -109,6 +118,119 @@ RULES:
   bay leaf or the water in a pan.`;
 }
 
+/* ------------------------------------------------------------- barcodes */
+
+/* One scanned number in, a product name out, or null when the database has
+   never heard of it. Deliberately quiet about failure: a miss is the normal
+   case, not an error worth a dialog. */
+async function lookupBarcode(code) {
+  const clean = String(code).replace(/[^0-9]/g, '');
+  if (clean.length < 6) return null;
+
+  let res;
+  try {
+    res = await fetch(BARCODE_API + encodeURIComponent(clean)
+                      + '.json?fields=product_name,brands,quantity');
+  } catch (e) {
+    throw new Error('No connection — a barcode needs the internet. Say it out loud instead.');
+  }
+  if (!res.ok) return null;
+
+  let data;
+  try { data = await res.json(); } catch (e) { return null; }
+  if (!data || data.status !== 1 || !data.product) return null;
+
+  const p = data.product;
+  const name = String(p.product_name || '').trim();
+  if (!name) return null;
+  return {
+    code:  clean,
+    name:  name,
+    brand: String(p.brands || '').split(',')[0].trim(),
+    size:  String(p.quantity || '').trim()
+  };
+}
+
+/* ---------------------------------------------------------------- photos */
+
+const PHOTO_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['items'],
+  properties: {
+    items: { type: 'array', items: { type: 'string' } }
+  }
+};
+
+const PHOTO_PROMPT = `Name every food ingredient you can actually see in this photo.
+
+RULES:
+- One entry per ingredient, using the ordinary name a cook would say out loud:
+  "chicken thighs", "dijon mustard", "spring onions".
+- Read the labels on jars, packets and tins. If a label names the food, use the
+  food, not the brand — a bottle of Heinz is "ketchup".
+- Only what is actually visible. Do not guess at what might be behind something,
+  and do not pad the list with things a kitchen usually has.
+- Skip anything that is not food: plates, pans, cloths, the shelf itself.
+- If you cannot tell what something is, leave it out rather than guessing.
+- No quantities, no adjectives, no sentences. Just the names.`;
+
+/* A phone photo is far bigger than this needs to be, and every pixel is billed,
+   so the caller shrinks it first. Costs roughly a cent a shot. */
+async function readPhoto(o) {
+  if (!o.apiKey) throw new Error('No API key set. Add one in Settings.');
+
+  const comma = String(o.dataUrl || '').indexOf(',');
+  if (comma < 0) throw new Error('That photo did not come out. Try again.');
+  const b64 = o.dataUrl.slice(comma + 1);
+
+  const res = await fetch(ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': o.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1500,
+      output_config: {
+        effort: 'low',
+        format: { type: 'json_schema', schema: PHOTO_SCHEMA }
+      },
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image',
+            source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+          { type: 'text', text: PHOTO_PROMPT }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) {
+    let msg = 'Claude returned ' + res.status + '.';
+    try {
+      const body = await res.json();
+      if (body && body.error && body.error.message) msg = body.error.message;
+    } catch (e) {}
+    if (res.status === 401) msg = 'That API key was rejected. Check it in Settings.';
+    if (res.status === 429) msg = 'Too many requests just now. Try again in a minute.';
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('Claude would not read that one.');
+
+  const text = (data.content || []).find(b => b.type === 'text');
+  if (!text) throw new Error('Claude sent nothing back.');
+
+  const out = JSON.parse(text.text);
+  return (out.items || []).map(x => String(x).trim()).filter(Boolean);
+}
+
 async function invent(o) {
   if (!o.apiKey) throw new Error('No API key set. Add one in Settings.');
 
@@ -161,5 +283,5 @@ async function invent(o) {
   return r;
 }
 
-return { invent };
+return { invent, lookupBarcode, readPhoto };
 })();

@@ -1,6 +1,6 @@
 /* Frigo service worker — offline-first.
    BUMP CACHE_VERSION ON EVERY DEPLOY or the phone keeps running old code. */
-const CACHE_VERSION = 'frigo-v32';
+const CACHE_VERSION = 'frigo-v45';
 
 /* Recipe photos are cached up front, not on demand. He opens the app in the
    kitchen; the Cook screen is all photos, and it cannot go and fetch them
@@ -45,6 +45,7 @@ const SHELL = [
   './styles.css',
   './app.js',
   './ingredients.js',
+  './foodwords.js',
   './recipes.js',
   './ai.js',
   './manifest.json',

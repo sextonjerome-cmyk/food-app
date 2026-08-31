@@ -46,6 +46,20 @@ function sectionOf(item, tab){
 const DEFAULTS = window.FRIGO_INGREDIENTS
               || { fridge:[], freezer:[], pantry:[], spices:[] };
 
+/* Not his kitchen — the world's. Only ever consulted after his own shelves
+   have had their go, to break a dictated run into separate foods and to tell
+   an ingredient he simply hasn't got from a word the microphone misheard. */
+const FOODWORDS = window.FRIGO_FOODWORDS || {};
+let FOOD_VOCAB = null;
+function foodVocab(){
+  if (FOOD_VOCAB) return FOOD_VOCAB;
+  FOOD_VOCAB = [];
+  for (const aisle in FOODWORDS){
+    FOODWORDS[aisle].forEach(name => FOOD_VOCAB.push({ name, aisle, vocab:true }));
+  }
+  return FOOD_VOCAB;
+}
+
 const TABS = ['fridge','freezer','pantry','spices'];
 const TAB_LABEL = { fridge:'Fridge', freezer:'Freezer', pantry:'Pantry', spices:'Spices' };
 
@@ -55,6 +69,20 @@ const CUISINES = [
   ['other','Other']
 ];
 const TIMES = [[15,'15 min'],[30,'30 min'],[45,'45 min'],[60,'1 hour'],[0,'Any']];
+
+/* The kind of cooking, not the cuisine. Left is what the button sets, right is
+   what he reads. A couple of them cover two spellings of the same idea, which
+   is what STYLE_TAGS is for. */
+const STYLES = [
+  ['any','Any'], ['hellofresh-style','HelloFresh style'], ['one-pan','One pan'],
+  ['vegetarian','Vegetarian'], ['comfort','Comfort'], ['cheap','Cheap'],
+  ['spicy','Big kick'], ['leftovers','Leftovers']
+];
+const STYLE_TAGS = {
+  'one-pan':  ['one-pan','one-pot','sheet-pan'],
+  'spicy':    ['spicy','big-kick'],
+  'comfort':  ['comfort','crowd-pleaser']
+};
 
 /* ------------------------------------------------------------------ state */
 const KEY = 'frigo.v1';
@@ -107,11 +135,25 @@ function seedStaples(){
 }
 
 let saveTimer = null;
+function writeState(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+}
 function save(){
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
-  }, 250);
+  saveTimer = setTimeout(writeState, 250);
+}
+/* Android kills a backgrounded web app whenever it feels like it, and a tick
+   made in the last quarter second goes with it. Write anything pending the
+   moment the app leaves the screen. */
+function flushSave(){ clearTimeout(saveTimer); writeState(); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
+window.addEventListener('pagehide', flushSave);
+window.addEventListener('blur', flushSave);
+
+/* Chrome can evict a site's storage when the phone runs short. A site that has
+   asked to persist is exempt. Asking costs nothing and shows no prompt. */
+if (navigator.storage && navigator.storage.persist) {
+  try { navigator.storage.persist().catch(() => {}); } catch(e){}
 }
 
 /* ------------------------------------------------------------- view model */
@@ -127,7 +169,9 @@ const view = {
   editingRecipe:null,
   recipeSearch:'',
   onlyReady:false,
-  filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any' }
+  filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any', style:'any' },
+  review:null,
+  camera:false
 };
 
 /* ------------------------------------------------------------- utilities */
@@ -246,6 +290,7 @@ const SAME_PHRASE = [
   [/\bpul\s+biber\b/g, 'aleppo pepper'],
   [/\bgarbanzo\s+beans?\b/g, 'chickpea'],
   [/\bmasoor\s+dal\b/g, 'red lentil'],
+  [/\bgreek\s+yogh?u?rt\b/g, 'plain yogurt'],
   [/\bdouble\s+cream\b/g, 'heavy cream'],
   [/\bwhipping\s+cream\b/g, 'heavy cream'],
   [/\bcreme\s+fraiche\b/g, 'heavy cream'],
@@ -260,6 +305,7 @@ const SAME_PHRASE = [
 const SHORTHAND = {
   dijon:'dijon mustard', soy:'soy sauce', mayo:'mayonnaise', parm:'parmesan',
   worcestershire:'worcestershire sauce', balsamic:'balsamic vinegar',
+  halfandhalf:'half and half',
   'pomme de terre':'potato', 'pommes de terre':'potato',
   lait:'milk', sel:'salt', poivre:'black pepper', sucre:'sugar',
   farine:'all purpose flour', riz:'white rice', crevette:'shrimp',
@@ -289,14 +335,51 @@ const FILLER = new Set(['fresh','raw','whole','large','small','medium','ripe','p
   'canned','jarred','boneless','skinless','cooked','uncooked','organic','free','range',
   'extra','virgin','unsalted','salted','peeled','deveined','chopped','sliced','diced',
   'grated','of','a','the','good','quality','some','my','skin','on','bone','in','and',
-  'piece','pieces','pack','packet','tub','jar','tin','can','bunch','clove','cloves']);
+  'piece','pieces','pack','packet','tub','jar','tin','can','bunch','clove','cloves',
+  'fillet','fillets']);
 
 const singular = w => w.length > 3 ? w.replace(/ies$/,'y').replace(/oes$/,'o').replace(/(ses|xes|zes|ches|shes)$/,m=>m.slice(0,-2)).replace(/s$/,'') : w;
 
+/* Brand names, because that is what a jar is called out loud. He says Better
+   Than Bouillon, not chicken stock, and Grey Poupon, not dijon.
+
+   These run BEFORE everything else, on the name with its punctuation already
+   stripped — an apostrophe is a space by the time this sees it, so "frank's"
+   arrives as "frank s". A phrase that maps to a blank simply deletes the
+   maker's name and lets the real word behind it match on its own. */
+const BRAND_PHRASE = [
+  [/\b(chicken|beef|vegetable)\s+(?:better\s+than\s+bouillon|bouillon\s+cubes?|stock\s+pots?)\b/g, '$1 stock'],
+  [/\bbetter\s+than\s+bouillon\b/g, 'chicken stock'],
+  [/\b(?:goya|knorr|maggi|herb\s*ox|wyler\s*s)\s+(?:cubes?|bouillon|caldo)\b/g, 'chicken stock'],
+  [/\bbouillon\s+cubes?\b/g, 'chicken stock'],
+  [/\bgrey\s+poupon\b/g, 'dijon mustard'],
+  [/\bold\s+bay\b/g, 'old bay seasoning'],
+  [/\b(?:tabasco|cholula|valentina|texas\s+pete|frank\s+s?\s*red\s+hot)\b/g, 'hot sauce'],
+  [/\bphiladelphia\b/g, 'cream cheese'],
+  [/\bkerrygold\b/g, 'butter'],
+  [/\bcrisco\b/g, 'vegetable oil'],
+  [/\bbisquick\b/g, 'all purpose flour'],
+  [/\bkikkoman\b/g, 'soy sauce'],
+  [/\b(?:hellmann\s*s?|duke\s+s)\b(?!\s+(?:mayo|mayonnaise))/g, 'mayonnaise'],
+  [/\brotel\b/g, 'canned tomatoes'],
+  /* Two-word makers, deleted outright — the product word is already there. */
+  [/\b(?:la\s+choy|huy\s+fong|san\s+marzano|land\s+o\s*lakes|lee\s+kum\s+kee|mrs\s+dash|old\s+el\s+paso)\b/g, ' ']
+];
+
+/* One-word makers. Dropped only while something real is left beside them, so
+   "Heinz ketchup" is ketchup and a bare "Goya" still becomes a row he can see
+   rather than vanishing on him. */
+const BRAND_WORD = new Set(['heinz','hellmann','hellmanns','duke','dukes','kraft',
+  'campbell','campbells','swanson','pillsbury','daisy','kikkoman','kewpie','goya',
+  'knorr','maggi','barilla','ronzoni','tyson','perdue','sargento','bertolli',
+  'progresso','morton','mccormick','hunts','delmonte']);
+
 /* Break a name into the thing itself plus the words that qualify it.
    "extra virgin olive oil" -> head "oil", mods {olive}. */
-function itemParts(name){
+function keyWords(name){
   let s = norm(name).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g,' ').trim();
+  BRAND_PHRASE.forEach(([re, to]) => { s = s.replace(re, to); });
+  s = s.replace(/\s+/g, ' ').trim();
   if (SHORTHAND[s]) s = SHORTHAND[s];
   SAME_PHRASE.forEach(([re, to]) => { s = s.replace(re, to); });
   const words = s.split(' ')
@@ -305,6 +388,11 @@ function itemParts(name){
     .map(singular)
     .map(w => SAME_WORD[w] || w)
     .filter(w => w && !FILLER.has(w));
+  const real = words.filter(w => !BRAND_WORD.has(w));
+  return real.length ? real : words;
+}
+function itemParts(name){
+  const words = keyWords(name);
   if (!words.length) return null;
   return { head: words[words.length - 1], mods: new Set(words.slice(0, -1)) };
 }
@@ -725,6 +813,10 @@ function matchRecipes(){
     if (f.cuisine   !== 'any' && r.cuisine !== f.cuisine) return;
     if (f.time      !== 0     && (r.activeMinutes || r.minutes) > f.time) return;
     if (f.difficulty!== 'any' && r.difficulty !== f.difficulty) return;
+    if (f.style !== 'any'){
+      const want = STYLE_TAGS[f.style] || [f.style];
+      if (!(r.tags || []).some(t => want.includes(t))) return;
+    }
     const a = analyse(r, servings);
     if (view.onlyReady && a.missing.length) return;
     if (q){
@@ -754,6 +846,7 @@ function matchRecipes(){
    broken". Say so out loud instead. */
 function render(){
   const bar = $('#topbar'), main = $('#screen');
+  if (view.camera){ renderCamera(); return; }
   if (view.cookAlong){ renderCookAlong(); return; }
   document.querySelectorAll('.cookalong').forEach(n => n.remove());
 
@@ -866,6 +959,7 @@ function screenCook(){
   if (f.cuisine !== 'any') on.push(cuisineLabel(f.cuisine));
   if (f.time) on.push((TIMES.find(t => t[0] === f.time) || [0, ''])[1]);
   if (f.difficulty !== 'any') on.push(f.difficulty);
+  if (f.style !== 'any') on.push((STYLES.find(x => x[0] === f.style) || ['','' ])[1]);
 
   /* Two rows, not four. The first recipe photo has to be reachable without
      scrolling, so search shares its row with the filter button and the shelf
@@ -900,6 +994,11 @@ function screenCook(){
     <div class="eyebrow">Mood</div>
     <div class="filter-row">${CUISINES.map(([v, l]) =>
       `<button class="opt" data-f="cuisine" data-v="${v}" aria-pressed="${f.cuisine===v}">${esc(l)}</button>`).join('')}</div>
+  </div>
+  <div class="filter">
+    <div class="eyebrow">Kind of thing</div>
+    <div class="filter-row">${STYLES.map(([v, l]) =>
+      `<button class="opt" data-f="style" data-v="${v}" aria-pressed="${f.style===v}">${esc(l)}</button>`).join('')}</div>
   </div>
   <div class="filter">
     <div class="eyebrow">Time I've got</div>
@@ -1127,7 +1226,7 @@ function screenFridge(){
   let addBlock = '';
   if (heardAList){
     addBlock = `<button class="btn" data-act="tick-spoken">${svg('i-check')}
-         Tick all ${spokenNames.length} of these
+         Go through these ${spokenNames.length}
        </button>
        <p class="hint">${esc(spokenNames.map(k => k.name).join(', '))}.${
          heard.fresh.length ? ` ${heard.fresh.length} of those ${heard.fresh.length === 1 ? 'is' : 'are'}
@@ -1154,7 +1253,11 @@ function screenFridge(){
      placed after them lands a couple of thousand pixels off the bottom of a
      phone screen — which is exactly how the last two affordances got lost. */
   const sayAll = typed ? '' :
-    `<button class="btn" data-act="paste-list">${svg('i-speak')} Say or paste my whole kitchen</button>`;
+    `<button class="btn" data-act="paste-list">${svg('i-speak')} Say or paste my whole kitchen</button>
+     <div class="camrow">
+       <button class="btn ghost" data-act="scan-barcode">${svg('i-scan')} Scan a barcode</button>
+       <button class="btn ghost" data-act="take-photo">${svg('i-camera')} Photograph a shelf</button>
+     </div>`;
 
   const count = Object.values(inv).filter(v => v && v.have).length;
   const always = Object.values(inv).filter(v => v && v.always).length;
@@ -1333,7 +1436,7 @@ function screenRecipe(){
 
   ${isMyRecipe(r.id) ? `<button class="btn ghost" data-act="edit-mine">${svg('i-plus')} Edit this recipe</button>` : ''}
   <button class="btn ghost" data-act="plan-this">${svg('i-plan')} Plan this for another day</button>
-  <button class="btn ghost" data-act="used-up">${svg('i-fridge')} I cooked it &mdash; what did I use up?</button>
+  <button class="btn ghost" data-act="used-up">${svg('i-fridge')} I cooked it &mdash; update my kitchen</button>
 
   ${isMyRecipe(r.id) ? `<button class="btn ghost danger" data-act="delete-mine">Delete this recipe</button>` : ''}
   ${r.source ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
@@ -1459,10 +1562,19 @@ function screenSettings(){
        &ldquo;coriandre&rdquo; and &ldquo;2 boxes of eggs&rdquo; both land in the right place.</p>
   </div>
 
+  <div class="section"><h2>My other phone</h2>
+    <button class="btn ghost" data-act="send-kitchen">${svg('i-list')} Copy my kitchen to my other phone</button>
+    <p class="hint">Every phone keeps its own kitchen &mdash; nothing is uploaded, so nothing
+       syncs on its own. This makes a link out of everything you have ticked. Send it to your
+       other phone, open it, and the same boxes tick over there. It only ever
+       <b>adds</b>: it will not untick anything.</p>
+  </div>
+
   <div class="section"><h2>Your data</h2>
     <button class="btn ghost" data-act="export">Save a backup file</button>
     <button class="btn ghost" data-act="import">Restore from a backup</button>
-    <p class="hint">Everything lives on this phone only. Nothing is uploaded, ever.</p>
+    <p class="hint">Everything lives on this phone only. Nothing is uploaded, ever. The backup
+       file carries the lot &mdash; ratings, notes, shopping list and all.</p>
   </div>`;
 }
 
@@ -1471,7 +1583,7 @@ function screenSettings(){
    Free text in, inventory out. The list might come from Claude, from a note,
    or from Jerome talking into the box, so it has to cope with bullets,
    quantities and the word "and". */
-const LIST_NOISE = /^[\s\-•*\d.)\]]+|\b(a|an|some|few|couple|of|and|i|ive|i've|have|got|there|is|are|my|the)\b/gi;
+const LIST_NOISE = /^[\s\-•*\d.)\]]+|\b(a|an|some|few|couple|of|and|to|i|ive|i've|have|got|there|is|are|my|the)\b/gi;
 /* The unit has to end where the word ends, or the l of litres eats the l of
    lemon and "1 lemon" becomes one litre of emon. */
 const QTY_LEAD = /^\s*(\d+[\d\/.,]*)\s*(?:(x|kg|g|lb|lbs|oz|ml|l|litres?|liters?|cups?|tbsp|tsp|cloves?|pieces?|packs?|packets?|boxes?|box|bags?|bunch(?:es)?|tins?|cans?|jars?|bottles?)(?![a-z]))?\s*/i;
@@ -1486,7 +1598,45 @@ function tabForAisle(aisle){
 /* Dictated speech rarely has commas in it — "eggs some milk harissa" arrives as
    one run. These are the words people put between items when they're talking,
    so they mark a boundary as reliably as a comma does. */
-const LIST_SPLIT = /[,;\n\r]+|\b(?:and|plus|also|then|some|a|an|few|couple)\b/i;
+/* "comma" and "next" are in here because they are what he SAYS when two
+   things run together — Android writes the word rather than the punctuation
+   mark, and without this it would become an ingredient called comma. */
+const LIST_SPLIT = /[,;\n\r]+|\b(?:and|plus|also|then|next|comma|some|a|an|few|couple)\b/i;
+
+/* A couple of real names have a splitter word sitting inside them. Bolt those
+   back together before the text is cut up, or "half and half" arrives as
+   "half" and gets added as a brand new thing. */
+const LIST_GLUE = [
+  [/\bhalf\s+and\s+half\b/gi, 'halfandhalf'],
+  [/\bsalt\s+and\s+pepper\b/gi, 'salt, black pepper'],
+  [/\boil\s+and\s+vinegar\b/gi, 'olive oil, vinegar'],
+  [/\blea\s+(?:and|&)\s+perrins\b/gi, 'worcestershire sauce']
+];
+/* Spellings a phone keyboard and a French speaker both get wrong. There is
+   nothing to guess about these, so they are corrected quietly rather than
+   offered back as a question. Sound-alikes are a different matter and go
+   through soundsLike, which asks first. */
+const MISSPELT = [
+  [/\btumeric\b/gi, 'turmeric'],
+  [/\bcorriander\b/gi, 'coriander'],
+  [/\bcilanto\b/gi, 'cilantro'],
+  [/\bbrocoli\b/gi, 'broccoli'],
+  [/\bavacado(e?s)?\b/gi, 'avocados'],
+  [/\bjalepenos?\b/gi, 'jalapenos'],
+  [/\bmozarella\b/gi, 'mozzarella'],
+  [/\bparmesean\b/gi, 'parmesan'],
+  [/\bworstershire\b/gi, 'worcestershire'],
+  [/\bciabbata\b/gi, 'ciabatta'],
+  [/\bzucchinis?\b/gi, 'zucchini'],
+  [/\bveggies?\b/gi, 'vegetables']
+];
+
+function glueList(text){
+  let out = String(text);
+  MISSPELT.forEach(([re, to]) => { out = out.replace(re, to); });
+  LIST_GLUE.forEach(([re, to]) => { out = out.replace(re, to); });
+  return out;
+}
 
 /* Even after splitting, one fragment often holds several things — someone
    reeling off "eggs milk harissa chicken thighs" pauses for none of it. So
@@ -1505,61 +1655,253 @@ function sigCount(name){
    other's — right for "tomatoes" vs "ripe tomatoes", disastrous here, because
    "eggs milk butter garlic" would match plain "garlic" and eat the three words
    in front of it. Inside a window, both sides must weigh the same. */
-function harvestKnown(words, shelf){
-  const found = [];
-  let i = 0;
+/* What a word sounds like, roughly. Dictation does not mistype, it mishears:
+   thyme comes back as "time", chives as "hives", cumin as "coming". Those are
+   miles apart as letters and next to identical as sounds, so the comparison
+   has to be on the sound. Vowels go, the consonants that a microphone confuses
+   are folded together, and a doubled sound counts once.
+
+       cumin -> kmn      coming -> kmnk      (one apart)
+       thyme -> tm       time   -> tm        (the same)
+       shallots -> slts  "shall lots" -> slts
+
+   It is deliberately crude. Its answers are never applied, only offered. */
+const SOUND_CLASS = { b:'b', p:'b', f:'f', v:'f', c:'k', k:'k', q:'k', g:'k',
+  j:'j', s:'s', z:'s', x:'s', t:'t', d:'t', l:'l', r:'r', m:'m', n:'n' };
+
+function soundOf(name){
+  const flat = norm(name).replace(/[^a-z]/g, '')
+    .replace(/ph/g, 'f').replace(/gh/g, '').replace(/ck/g, 'k')
+    .replace(/sh/g, 's').replace(/ch/g, 'k').replace(/th/g, 't');
+  let out = '';
+  for (const ch of flat){
+    const c = SOUND_CLASS[ch];
+    if (!c || c === out[out.length - 1]) continue;
+    out += c;
+  }
+  return out;
+}
+
+/* Plain edit distance, used only to pick between candidates that already
+   sound alike. Bails out once it is clearly too far to matter. */
+function editDistance(a, b, cap){
+  if (Math.abs(a.length - b.length) > cap) return cap + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++){
+    const row = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j++){
+      row[j] = Math.min(prev[j] + 1, row[j - 1] + 1,
+                        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (row[j] < best) best = row[j];
+    }
+    if (best > cap) return cap + 1;
+    prev = row;
+  }
+  return prev[b.length];
+}
+
+/* The nearest real food to something nobody recognised. Sound first, spelling
+   only to break a tie. A one-letter word or a very short sound is refused —
+   at that length everything is near everything. */
+function soundsLike(phrase, pools){
+  const heard = soundOf(phrase);
+  if (heard.length < 2) return null;
+  const letters = norm(phrase).replace(/[^a-z]/g, '');
+  if (letters.length < 4) return null;
+
+  /* One word may be a sound out. Two words may not: a mishear happens per
+     word, so a run that only nearly fits is a coincidence. Without this,
+     "hives brazil" came back as fresh parsley instead of chives and basil. */
+  const cap = phrase.trim().split(/\s+/).length > 1 ? 0 : 1;
+
+  let best = null, bestScore = Infinity;
+  pools.forEach(pool => pool.forEach(item => {
+    const mine = soundOf(item.name);
+    if (!mine || Math.abs(mine.length - heard.length) > cap) return;
+    const sound = editDistance(mine, heard, cap);
+    if (sound > cap) return;
+    const spelt = editDistance(norm(item.name).replace(/[^a-z]/g, ''), letters, 6);
+    /* Length has to be in the same country, or "or so" finds harissa. */
+    if (spelt > Math.max(3, Math.round(letters.length * 0.6))) return;
+    const score = sound * 10 + spelt;
+    if (score < bestScore){ bestScore = score; best = item; }
+  }));
+  return best;
+}
+
+function strictMatch(phrase, shelf){
+  const weight = sigCount(phrase);
+  if (!weight) return null;
+  return shelf.find(k => norm(k.name) === phrase)
+      || shelf.find(k => sigCount(k.name) === weight && sameItem(k.name, phrase))
+      || null;
+}
+
+/* He says the short name. The shelf carries the long one — "oregano" is filed
+   as "dried oregano", "cayenne" as "cayenne pepper" — and sameItem can join
+   neither, because the head noun differs. Without this, saying either one adds
+   a duplicate row instead of ticking the box already sitting there.
+
+   So whatever the strict pass could not place gets one more try: every word he
+   said must appear in the shelf name, and exactly one shelf name may fit. Two
+   candidates and it stays unmatched, because "cream" could be four things. */
+/* Words that name a family, not a thing. Anywhere the shelf holds several
+   candidates the one-match rule already refuses to guess; these are the ones
+   where it holds exactly one and the guess would still be wrong. "cheese"
+   fitting only "american cheese" says the list is short, not that he meant
+   American. Said on its own, one of these is reported back as not understood
+   rather than filed as a new ingredient. */
+const GENERIC = new Set(['cheese','meat','fish','bread']);
+
+function looseMatch(phrase, shelf){
+  const want = keyWords(phrase);
+  if (!want.length) return null;
+  if (want.length === 1 && GENERIC.has(want[0])) return null;
+  const hits = shelf.filter(k => {
+    const have = keyWords(k.name);
+    return have.length > want.length && want.every(w => have.includes(w));
+  });
+  return hits.length === 1 ? hits[0] : null;
+}
+
+/* Walk the words and take the longest run that matches. What never matched
+   comes back as gaps, so the next pass can try it and anything still left is
+   added as a new item rather than silently dropped. */
+function walkMatch(words, shelf, match){
+  const found = [], gaps = [];
+  let i = 0, gap = [];
+  const flushGap = () => { if (gap.length){ gaps.push(gap.join(' ')); gap = []; } };
   while (i < words.length){
-    let hit = null, span = 0;
+    let hit = null, span = 0, heard = '';
     for (let n = Math.min(MAX_ITEM_WORDS, words.length - i); n >= 1; n--){
       const phrase = words.slice(i, i + n).join(' ');
-      const weight = sigCount(phrase);
-      if (!weight) continue;
-      const match = shelf.find(k => norm(k.name) === phrase)
-                 || shelf.find(k => sigCount(k.name) === weight && sameItem(k.name, phrase));
-      if (match){ hit = match; span = n; break; }
+      const m = match(phrase, shelf);
+      if (m){ hit = m; span = n; heard = phrase; break; }
     }
-    if (hit){ found.push(hit); i += span; }
-    else i++;
+    if (hit){ flushGap(); found.push({ item:hit, heard }); i += span; }
+    else { gap.push(words[i]); i++; }
   }
-  return found;
+  flushGap();
+  return { found, gaps };
 }
 
 /* Work out what the text means and change nothing. The button that offers to
    tick a spoken list counts what this returns, and applying writes exactly
    this — so the label can never promise a different number than it delivers. */
+/* Free text in, four answers out.
+
+   Four, because the honest answer to a dictated fridge is not one list. It is:
+   things you already have, foods you have that aren't on a shelf yet, words I
+   think I misheard, and words I don't believe are food at all. The last two go
+   back unticked so nothing bad can land without him agreeing to it. */
 function readItemList(text){
-  const known = [], fresh = [], unknown = [];
+  const known = [], fresh = [], guesses = [], unsure = [], unknown = [];
   const shelf = allItems();
-  String(text).split(LIST_SPLIT).forEach(raw => {
+  const vocab = foodVocab();
+
+  const addKnown = k => {
+    if (!known.some(o => o.name === k.name && o.tab === k.tab)) known.push(k);
+  };
+  const addFresh = (name, aisle) => {
+    /* A vocabulary name can turn out to be a shelf name under another spelling,
+       and adding it again would leave him with two rows for one jar. */
+    const onShelf = shelf.find(i => norm(i.name) === norm(name));
+    if (onShelf){ addKnown(onShelf); return; }
+    const tab = tabForAisle(aisle || aisleOf(name));
+    if (!fresh.some(o => o.name === name)) {
+      fresh.push({ name, tab, aisle: aisle || aisleOf(name, tab) });
+    }
+  };
+  const addGuess = (heard, item) => {
+    if (guesses.some(g => g.name === item.name)) return;
+    if (known.some(o => o.name === item.name)) return;
+    if (fresh.some(o => o.name === item.name)) return;
+    const tab = item.tab || tabForAisle(item.aisle);
+    guesses.push({ name:item.name, tab, aisle:item.aisle, isNew:!!item.vocab, heard });
+  };
+
+  glueList(text).split(LIST_SPLIT).forEach(raw => {
     const s = norm(String(raw).replace(QTY_LEAD, '').replace(LIST_NOISE, ' '))
                 .replace(/[^a-z0-9'\s-]/g,' ').replace(/\s+/g,' ').trim();
     if (s.length < 2) return;
     if (!itemParts(s)) { unknown.push(raw.trim()); return; }
 
-    const hits = harvestKnown(s.split(' '), shelf);
-    if (hits.length){
-      hits.forEach(k => {
-        if (!known.some(o => o.name === k.name && o.tab === k.tab)) known.push(k);
+    const strict = walkMatch(s.split(' '), shelf, strictMatch);
+    strict.found.forEach(f => addKnown(f.item));
+    const matchedSomething = strict.found.length > 0;
+
+    strict.gaps.forEach(gap => {
+      /* All of the gap or none of it. A loose walk that leaves words behind is
+         how "goya cubes" found ice cubes and "old bay" found bay leaves — the
+         tail word fitted and the brand in front of it was filed as an
+         ingredient of its own. Every word accounted for, though, and it is
+         simply two things said in a row: "oregano cayenne". */
+      const near = walkMatch(gap.split(' '), shelf, looseMatch);
+      if (near.found.length && !near.gaps.length){
+        near.found.forEach(f => addKnown(f.item));
+        return;
+      }
+
+      const words = keyWords(gap);
+      if (!words.length) return;
+      if (words.length === 1 && GENERIC.has(words[0])){ unknown.push(gap); return; }
+
+      /* One stray word beside something that DID match is usually a word
+         describing it — "greek" next to yogurt. Named outright it is still
+         fine, which is how a lone "pomegranate" at the end of a spoken run
+         survives; what it may not do is get STRETCHED into an ingredient by a
+         near match, or come back as a complaint. A sound-alike still counts,
+         though: one misheard word sitting between good ones is the most
+         ordinary mistake there is, and it arrives unticked anyway. */
+      const stray = matchedSomething && words.length < 2;
+
+      /* His shelves have run out of ideas. Walk what is left against the food
+         vocabulary — this is the step that turns one unbroken run of dictation,
+         "kale swiss chard bok choy daikon", into four separate foods. */
+      const found = walkMatch(gap.split(' '), vocab, strictMatch);
+      found.found.forEach(f => addFresh(f.item.name, f.item.aisle));
+
+      found.gaps.forEach(rest => {
+        if (!stray){
+          const vh = looseMatch(rest, vocab);
+          if (vh){ addFresh(vh.name, vh.aisle); return; }
+        }
+
+        /* Nobody has heard of it. Before writing it off, ask what it sounds
+           like — this is where "coming" becomes cumin and "hives" chives. */
+        const near = walkMatch(rest.split(' '), null,
+                               (phrase) => soundsLike(phrase, [shelf, vocab]));
+        near.found.forEach(f => addGuess(f.heard, f.item));
+        if (stray) return;
+        near.gaps.forEach(left => {
+          if (keyWords(left).length) unsure.push(left);
+        });
       });
-      return;
-    }
-    /* Nothing in the fragment is recognised, so take it whole — that's how a
-       genuinely new item like "urfa biber" survives instead of being chopped. */
-    const tab = tabForAisle(aisleOf(s));
-    if (!fresh.some(o => o.name === s)) fresh.push({ name:s, tab, aisle:aisleOf(s, tab) });
+    });
   });
-  return { known, fresh, unknown };
+  return { known, fresh, guesses, unsure, unknown };
+}
+
+/* Tick without trampling. A row may already carry a use-by date or an always
+   flag, and saying its name out loud is no reason to lose either. */
+function tickHave(tab, name){
+  const inv = state.inventory[tab];
+  inv[name] = Object.assign({ low:false }, inv[name], { have:true });
 }
 
 function applyItemList(text){
   const r = readItemList(text);
-  r.known.forEach(k => { state.inventory[k.tab][k.name] = { have:true, low:false }; });
+  r.known.forEach(k => tickHave(k.tab, k.name));
   r.fresh.forEach(f => {
     if (!state.custom[f.tab].some(o => norm(o.name) === f.name))
       state.custom[f.tab].push({ name:f.name, aisle:f.aisle, staple:false });
-    state.inventory[f.tab][f.name] = { have:true, low:false };
+    tickHave(f.tab, f.name);
   });
-  return { ticked: r.known.map(k => k.name), added: r.fresh.map(f => f.name), unknown: r.unknown };
+  /* Guesses and not-sures are deliberately left out. They only ever land
+     through the review sheet, where he can see them first. */
+  return { ticked: r.known.map(k => k.name), added: r.fresh.map(f => f.name),
+           unknown: r.unknown.concat(r.unsure).concat(r.guesses.map(g => g.heard)) };
 }
 
 function reportList(r){
@@ -1740,14 +2082,612 @@ function deleteMyRecipe(id){
   render(); toast('Deleted');
 }
 
+/* ================================================================= camera
+
+   Two jobs, one live view.
+
+   SCAN reads barcodes off jars and tins straight from the video feed, using the
+   browser's own BarcodeDetector — no library, nothing bundled, nothing to keep
+   up to date. A hit is looked up in Open Food Facts and shown as a question,
+   because a scanner that files things silently is a scanner you stop trusting.
+   Say yes and it goes in; say no and it keeps looking.
+
+   PHOTO covers everything a barcode cannot, which is most of a fridge: loose
+   vegetables, meat in paper, last night's leftovers. The frame is pulled off
+   the video into a canvas, shrunk, and sent to Claude. It never reaches the
+   camera roll, and it is not kept afterwards either — it exists as a string in
+   memory for as long as the request takes.
+
+   Both of these leave the phone, which nothing else in the app does. That is
+   the trade, and it is why they are two deliberate buttons rather than
+   something running in the background. */
+
+const CAM = {
+  stream: null,
+  mode: 'scan',        /* scan | photo */
+  detector: null,
+  timer: null,
+  busy: false,
+  seen: '',            /* the code being asked about, so it isn't asked twice */
+  msg: ''
+};
+
+function cameraSupported(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+function barcodeSupported(){
+  return typeof window.BarcodeDetector === 'function';
+}
+
+function openCamera(mode){
+  if (!cameraSupported()){
+    toast('This phone will not give the app a camera');
+    return;
+  }
+  if (mode === 'photo' && !state.prefs.apiKey){
+    openSheet(`<h2>Reading a photo needs a key</h2>
+      <p class="hint">The photo goes to Claude to be read, using an API key of your own that
+         lives on this phone only. It costs about <b>a cent a photo</b> &mdash; five dollars of
+         credit is around five hundred of them.</p>
+      <p class="hint">Scanning barcodes needs no key, and saying your kitchen out loud needs
+         nothing at all.</p>
+      <button class="btn" data-act="go-settings">Open settings</button>
+      <button class="btn ghost" data-act="close-sheet">Not now</button>`);
+    return;
+  }
+  CAM.mode = mode;
+  CAM.msg = '';
+  CAM.seen = '';
+  view.camera = true;
+  render();
+  startCamera();
+}
+
+function closeCamera(){
+  stopScanLoop();
+  if (CAM.stream){
+    CAM.stream.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
+    CAM.stream = null;
+  }
+  view.camera = false;
+  CAM.busy = false;
+  document.querySelectorAll('.camera').forEach(n => n.remove());
+  render();
+}
+
+async function startCamera(){
+  try{
+    /* environment = the back camera. Phones ignore an exact request when there
+       is only one, so this is a preference rather than a demand. */
+    CAM.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }, audio: false
+    });
+  }catch(err){
+    CAM.msg = (err && err.name === 'NotAllowedError')
+      ? 'The camera is blocked for this app. Allow it in your browser settings and try again.'
+      : 'That camera would not start. You can still say your kitchen out loud.';
+    renderCamera();
+    return;
+  }
+  const v = document.querySelector('.camera video');
+  if (v){
+    v.srcObject = CAM.stream;
+    try{ await v.play(); }catch(e){}
+  }
+  if (CAM.mode === 'scan') startScanLoop();
+}
+
+function startScanLoop(){
+  if (!barcodeSupported()){
+    CAM.msg = 'This browser cannot read barcodes. Take a photo instead, or say it out loud.';
+    renderCamera();
+    return;
+  }
+  try{
+    CAM.detector = CAM.detector || new window.BarcodeDetector({
+      formats: ['ean_13','ean_8','upc_a','upc_e','code_128','itf']
+    });
+  }catch(e){
+    CAM.msg = 'This browser cannot read barcodes. Take a photo instead.';
+    renderCamera();
+    return;
+  }
+  stopScanLoop();
+  CAM.timer = setInterval(scanTick, 350);
+}
+
+function stopScanLoop(){
+  if (CAM.timer){ clearInterval(CAM.timer); CAM.timer = null; }
+}
+
+async function scanTick(){
+  const v = document.querySelector('.camera video');
+  if (!v || CAM.busy || !CAM.detector || v.readyState < 2) return;
+  let codes = [];
+  try{ codes = await CAM.detector.detect(v); }catch(e){ return; }
+  if (!codes.length) return;
+
+  const code = String(codes[0].rawValue || '').replace(/[^0-9]/g, '');
+  if (!code || code === CAM.seen) return;
+
+  CAM.seen = code;
+  CAM.busy = true;
+  stopScanLoop();
+  CAM.msg = 'Looking that up…';
+  renderCamera();
+
+  let hit = null, err = '';
+  try{ hit = await window.FrigoAI.lookupBarcode(code); }
+  catch(e){ err = e.message; }
+  CAM.busy = false;
+
+  if (err){ CAM.msg = err; renderCamera(); return; }
+  if (!hit){
+    CAM.msg = 'That one is not in the database. Take a photo of it instead, or say it.';
+    CAM.seen = '';
+    renderCamera();
+    startScanLoop();
+    return;
+  }
+  askAboutBarcode(hit);
+}
+
+/* A scanned product name is a label, not an ingredient: "Heinz Tomato Ketchup
+   397 g". A label names the thing LAST and describes it first, so the longest
+   suffix that means something is the answer — read left to right, "tomato"
+   matches the tomatoes on his shelf and the ketchup never gets a look in.
+
+   Falls back to the reader the microphone uses, which handles the labels that
+   are really a brand ("Better Than Bouillon"). */
+function matchLabel(label){
+  const words = norm(label).replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\b\d+(\.\d+)?\s*(g|kg|ml|l|oz|lb|lbs|ct|pk|fl)\b/g, ' ')
+    .replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const shelf = allItems();
+
+  /* What a shop calls it, minus the maker, the stock number, and the orphaned
+     "s" an apostrophe leaves behind. This is what he is offered when the shelf
+     has no row for it. */
+  const clean = words
+    .filter(w => !BRAND_WORD.has(singular(w)) && w.length > 1 && !/^\d+$/.test(w))
+    .join(' ') || words.join(' ');
+
+  for (let n = Math.min(MAX_ITEM_WORDS, words.length); n >= 1; n--){
+    const phrase = words.slice(words.length - n).join(' ');
+    if (!itemParts(phrase)) continue;
+    /* The suffix has to say at least as much as the shelf row it claims to be,
+       or a box of corn flakes matches the chilli flakes: "flakes" on its own
+       fits anything with flakes in the name. */
+    const hits = shelf.filter(k => sameItem(k.name, phrase)
+                                && sigCount(phrase) >= sigCount(k.name));
+    if (hits.length){
+      hits.sort((a, b) => sigCount(b.name) - sigCount(a.name));
+      return { item: hits[0], isNew: false, clean };
+    }
+  }
+
+  /* Nothing on the shelf lines up with the end of the label, so fall back to
+     the reader that knows the brands. It is allowed one clean answer and no
+     more — a label that produces a list is a label nobody understood. */
+  const read = readItemList(label);
+  if (read.known.length === 1 && !read.fresh.length){
+    return { item: read.known[0], isNew: false, clean };
+  }
+  if (!read.known.length && read.fresh.length === 1){
+    return { item: read.fresh[0], isNew: true, clean };
+  }
+  return { item: null, isNew: true, clean };
+}
+
+function askAboutBarcode(hit){
+  const found = matchLabel(hit.name);
+  const match = found.item;
+  const label = [hit.brand, hit.name, hit.size].filter(Boolean).join(' · ');
+  /* The label as its own ingredient, for the tins the shelf has no row for and
+     the ones the matcher gets wrong. A jar of cream of mushroom soup is not
+     mushrooms, and he is the one who can see that. */
+  const asIs = found.clean;
+
+  CAM.msg = '';
+  renderCamera();
+  openSheet(`<h2>Is this it?</h2>
+    <p class="hint">${esc(label)}</p>
+    ${match
+      ? `<div class="picklist"><div class="item"><span class="box on-static"></span>
+          <span class="name">${esc(match.name)}${found.isNew
+            ? '<small class="heard">new to your kitchen</small>' : ''}</span></div></div>
+         <button class="btn" data-act="barcode-yes" data-name="${esc(match.name)}">
+           Yes, tick it</button>`
+      : `<p class="hint">Nothing on your shelves matches that one.</p>`}
+    ${asIs && (!match || norm(match.name) !== norm(asIs))
+      ? `<button class="btn ${match ? 'ghost' : ''}" data-act="barcode-yes"
+                 data-name="${esc(asIs)}">${match ? 'No &mdash; add it as' : 'Add it as'}
+           &ldquo;${esc(asIs)}&rdquo;</button>` : ''}
+    <button class="btn ghost" data-act="barcode-no">Neither &mdash; keep scanning</button>`);
+}
+
+function resumeScanning(){
+  closeSheet();
+  CAM.seen = '';
+  CAM.msg = '';
+  if (view.camera){ renderCamera(); startScanLoop(); }
+}
+
+/* A phone camera hands over far more pixels than this needs, and every one of
+   them is billed. The long side comes down to 1092, which is the point past
+   which Claude gains nothing from a bigger picture. */
+const PHOTO_MAX = 1092;
+
+function grabFrame(){
+  const v = document.querySelector('.camera video');
+  if (!v || !v.videoWidth) return null;
+  const scale = Math.min(1, PHOTO_MAX / Math.max(v.videoWidth, v.videoHeight));
+  const c = document.createElement('canvas');
+  c.width  = Math.round(v.videoWidth * scale);
+  c.height = Math.round(v.videoHeight * scale);
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+async function shootPhoto(){
+  if (CAM.busy) return;
+  const shot = grabFrame();
+  if (!shot){ CAM.msg = 'The camera is not ready yet.'; renderCamera(); return; }
+
+  CAM.busy = true;
+  CAM.msg = 'Reading the photo…';
+  renderCamera();
+
+  let names = [], err = '';
+  try{
+    names = await window.FrigoAI.readPhoto({ apiKey: state.prefs.apiKey, dataUrl: shot });
+  }catch(e){ err = e.message; }
+  CAM.busy = false;
+
+  /* The picture has done its job. Nothing keeps a reference to it from here,
+     and it was never anywhere near his camera roll. */
+  if (err){ CAM.msg = err; renderCamera(); return; }
+  if (!names.length){
+    CAM.msg = 'Nothing I could name in that one. Try getting closer, or more light.';
+    renderCamera();
+    return;
+  }
+  closeCamera();
+  openReviewList(names.join(', '));
+}
+
+function renderCamera(){
+  let box = document.querySelector('.camera');
+  if (!view.camera){ if (box) box.remove(); return; }
+  if (!box){
+    box = document.createElement('div');
+    box.className = 'camera';
+    document.body.appendChild(box);
+  }
+
+  const scanning = CAM.mode === 'scan';
+  /* The video element is written once and then left alone — rebuilding it
+     would drop the stream and restart the camera on every state change. */
+  if (!box.querySelector('video')){
+    box.innerHTML = `<video playsinline muted></video><div class="cam-ui"></div>`;
+    const v = box.querySelector('video');
+    if (CAM.stream){ v.srcObject = CAM.stream; try{ v.play(); }catch(e){} }
+  }
+
+  box.querySelector('.cam-ui').innerHTML = `
+    <div class="cam-top">
+      <button class="cam-x" data-act="cam-close" aria-label="Close">${svg('i-x')}</button>
+      <div class="cam-modes">
+        <button class="opt" data-act="cam-scan" aria-pressed="${scanning}">Barcode</button>
+        <button class="opt" data-act="cam-photo" aria-pressed="${!scanning}">Photo</button>
+      </div>
+    </div>
+    ${scanning ? '<div class="cam-frame"></div>' : ''}
+    <div class="cam-bottom">
+      <p class="cam-msg">${esc(CAM.msg || (scanning
+        ? 'Point it at a barcode. It reads on its own.'
+        : 'Fill the frame with the shelf, then tap.'))}</p>
+      ${scanning ? '' : `<button class="cam-shoot" data-act="cam-shoot"
+         ${CAM.busy ? 'disabled' : ''} aria-label="Take the photo"></button>`}
+    </div>`;
+}
+
+function switchCameraMode(mode){
+  if (CAM.mode === mode) return;
+  CAM.mode = mode;
+  CAM.msg = '';
+  CAM.seen = '';
+  stopScanLoop();
+  renderCamera();
+  if (mode === 'scan') startScanLoop();
+}
+
+/* ------------------------------------------- putting the kitchen back after
+
+   A fridge that never empties is a fridge that lies. Cook the last of the
+   chicken thighs and the Cook screen goes on offering recipes built around
+   them, which is the one failure that makes the whole app untrustworthy.
+
+   Counting portions would fix it and would also have to be kept true forever,
+   which nobody does. So the question is asked once, at the only moment he
+   actually knows the answer: the pan is off the heat and he can see what is
+   left. Three states, because that is how a cupboard really is — untouched,
+   getting low, gone. */
+function openUsedUp(){
+  const r = findRecipe(view.recipeId);
+  if (!r) return;
+  const a = analyse(r, state.prefs.servings);
+
+  /* If he cooked it with a stand-in, the stand-in is what got used up —
+     offering the ingredient he never had would untick nothing. */
+  const usedNames = ing => {
+    const mk = (a.makes || []).find(s => s.ing === ing);
+    if (mk) return mk.make.from;
+    const sw = (a.swaps || []).find(s => s.ing === ing);
+    return [sw ? sw.swap.item : ing.item];
+  };
+  const seen = new Set();
+  const names = a.have.filter(i => !i.staple).flatMap(usedNames)
+    .filter(n => !isAlways(n) && !seen.has(norm(n)) && seen.add(norm(n)));
+
+  if (!names.length){
+    openSheet(`<h2>Nothing to put back</h2>
+      <p class="hint">Everything this used is a staple you keep in all the time.</p>
+      <button class="btn" data-act="close-sheet">Done</button>`);
+    return;
+  }
+
+  const rows = names.map(n => `<div class="item usedrow" data-usedup="${esc(n)}">
+      <button class="usedbox" data-pickused="${esc(n)}" aria-label="Used up">
+        <span class="box"></span><span class="name">${esc(n)}</span>
+      </button>
+      <button class="lowbtn" data-act="usedup-low" aria-label="Running low">Low</button>
+    </div>`).join('');
+
+  openSheet(`<h2>How is the kitchen now?</h2>
+    <p class="hint">Tick anything you <b>finished</b> &mdash; it comes out of your kitchen
+       and goes onto the shopping list. Tap <b>Low</b> for what is nearly gone; that stays,
+       but recipes using it move up. Leave the rest alone.</p>
+    <div class="picklist">${rows}</div>
+    <button class="btn" data-act="usedup-done">Done</button>
+    <button class="btn ghost" data-act="close-sheet">Nothing changed</button>`);
+}
+
+function applyUsedUp(){
+  const gone = [], low = [];
+  document.querySelectorAll('#sheet [data-usedup]').forEach(row => {
+    const name = row.dataset.usedup;
+    if (row.querySelector('.usedbox.on')) gone.push(name);
+    else if (row.classList.contains('lowpick')) low.push(name);
+  });
+
+  const eachRow = (name, fn) => TABS.forEach(tab => {
+    for (const k in state.inventory[tab]){
+      if (norm(k) === norm(name) && !state.inventory[tab][k].always) fn(tab, k);
+    }
+  });
+
+  gone.forEach(name => {
+    eachRow(name, (tab, k) => { state.inventory[tab][k] = { have:false, low:false }; });
+    addToShopping(name, '', '');
+  });
+  low.forEach(name => {
+    eachRow(name, (tab, k) => { state.inventory[tab][k].low = true; });
+  });
+
+  closeSheet(); save(); render();
+  const bits = [];
+  if (gone.length) bits.push(gone.length + ' onto the shopping list');
+  if (low.length) bits.push(low.length + ' marked low');
+  if (bits.length) toast(bits.join(', '));
+}
+
+/* ------------------------------------------- checking a list before it lands
+
+   Everything he says out loud used to go straight into the kitchen, and a
+   mis-heard word became a ticked box he then had to hunt down. So the reader
+   shows its working now: one row per thing it understood, every one already
+   ticked, and nothing is written until he says go.
+
+   Tap a row to leave it out. Hold a row and it comes off the list altogether —
+   the same gesture the fridge already uses, so there is only one to learn.
+   Rows are marked dropped rather than spliced out, which keeps every data-pick
+   index pointing at the same row for the life of the sheet. */
+function openReviewList(text){
+  const r = readItemList(text);
+  /* Ticked by default only where the app is sure. A correction it guessed at,
+     and a word it does not think is food at all, both arrive switched off — he
+     has to agree to those, they never agree to themselves. */
+  const rows = r.known.map(k => ({ name:k.name, tab:k.tab, aisle:k.aisle, isNew:false, on:true }))
+    .concat(r.fresh.map(f   => ({ name:f.name, tab:f.tab, aisle:f.aisle, isNew:true,  on:true })))
+    .concat(r.guesses.map(g => ({ name:g.name, tab:g.tab, aisle:g.aisle, isNew:g.isNew,
+                                  on:false, heard:g.heard })))
+    .concat(r.unsure.map(u  => ({ name:u, tab:tabForAisle(aisleOf(u)), aisle:aisleOf(u),
+                                  isNew:true, on:false, unsure:true })));
+
+  if (!rows.length){
+    openSheet(`<h2>Nothing I could read</h2>
+      <p class="hint">${r.unknown.length
+        ? 'I could not work out: ' + esc(r.unknown.slice(0, 12).join(', ')) + '.'
+        : 'Try naming the things one by one, with a comma between them.'}</p>
+      <button class="btn" data-act="close-sheet">Done</button>`);
+    return;
+  }
+
+  rows.forEach((row, i) => { row.i = i; });
+  view.review = { rows, unknown:r.unknown, editing:null };
+  renderReviewSheet();
+}
+
+/* Rebuilt whole only when a dropped row comes back. Every other change edits
+   the rows in place, because rebuilding scrolls him back to the top. */
+function renderReviewSheet(){
+  const r = view.review;
+  if (!r) return;
+  const rows = r.rows.filter(x => !x.dropped);
+
+  /* A row in the middle of being corrected is a field, not a button. The
+     pencil is a real 44 px target of its own, so tapping it never reads as a
+     tap on the row, and the hold gesture skips it for the same reason. */
+  const line = row => row.i === r.editing
+    ? `<div class="item editing">
+        <input type="text" data-role="edit-name" value="${esc(row.name)}"
+               enterkeyhint="done" autocomplete="off" spellcheck="false">
+        <button class="more" data-act="edit-save" aria-label="Save">${svg('i-check','icon-sm')}</button>
+        <button class="more" data-act="edit-cancel" aria-label="Cancel">${svg('i-x','icon-sm')}</button>
+      </div>`
+    : `<button class="item ${row.on ? 'on' : ''}" data-pick="${row.i}">
+        <span class="box"></span>
+        <span class="name">${esc(row.name)}${row.heard
+          ? `<small class="heard">you said &ldquo;${esc(row.heard)}&rdquo;</small>` : ''}</span>
+        ${row.isNew && !row.unsure && !row.heard ? '<span class="newtag">NEW</span>' : ''}
+        <span class="more" data-edit="${row.i}" role="presentation">${svg('i-pencil','icon-sm')}</span>
+      </button>`;
+  const guessed = rows.filter(x => x.heard).map(line).join('');
+  const unsure  = rows.filter(x => x.unsure).map(line).join('');
+  const plain   = rows.filter(x => !x.heard && !x.unsure);
+  const fresh   = plain.filter(x => x.isNew).map(line).join('');
+  const known   = plain.filter(x => !x.isNew).map(line).join('');
+  const n = rows.filter(x => x.on).length;
+
+  openSheet(`<h2>Is this right?</h2>
+    <p class="hint">Tap anything you have not really got. Tap the <b>pencil</b> to fix a
+       word it got wrong. <b>Hold</b> a row to take it off the list. Nothing is saved
+       until you tap the button.</p>
+    ${fresh ? `<div class="eyebrow">New to your kitchen</div>
+      <div class="picklist">${fresh}</div>` : ''}
+    ${known ? `<div class="eyebrow">Already on your shelves</div>
+      <div class="picklist">${known}</div>` : ''}
+    ${guessed ? `<div class="eyebrow">Did you mean these?</div>
+      <div class="picklist">${guessed}</div>
+      <p class="hint">The microphone heard something close to a food. Tap to take it.</p>` : ''}
+    ${unsure ? `<div class="eyebrow">I don&rsquo;t think this is food</div>
+      <div class="picklist">${unsure}</div>
+      <p class="hint">Left off unless you tap it. Tap to add it anyway.</p>` : ''}
+    ${r.unknown.length ? `<p class="hint">I could not work out
+      <b>${esc(r.unknown.slice(0, 10).join(', '))}</b>, so ${r.unknown.length === 1 ? 'it is' : 'they are'}
+      not on the list.</p>` : ''}
+    <button class="btn" data-act="review-apply"${n ? '' : ' disabled'}>${svg('i-check')}
+      <span data-role="review-n">${n ? 'Tick these ' + n : 'Nothing left to tick'}</span></button>
+    <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
+}
+
+function reviewRow(i){
+  return view.review ? view.review.rows[Number(i)] : null;
+}
+
+/* The sheet is edited in place rather than rebuilt. Twenty-odd rows scroll, and
+   re-rendering would throw him back to the top on every single tap. */
+function refreshReviewCount(){
+  const label = document.querySelector('[data-role=review-n]');
+  const btn = document.querySelector('[data-act=review-apply]');
+  if (!label || !view.review) return;
+  const n = view.review.rows.filter(x => x.on && !x.dropped).length;
+  label.textContent = n ? 'Tick these ' + n : 'Nothing left to tick';
+  if (btn) btn.disabled = !n;
+}
+
+function toggleReviewRow(i){
+  const row = reviewRow(i);
+  if (!row || row.dropped) return;
+  row.on = !row.on;
+  const el = document.querySelector('#sheet [data-pick="' + i + '"]');
+  if (el) el.classList.toggle('on', row.on);
+  refreshReviewCount();
+}
+
+function dropReviewRow(i){
+  const row = reviewRow(i);
+  if (!row || row.dropped) return;
+  row.dropped = true;
+  row.on = false;
+  const el = document.querySelector('#sheet [data-pick="' + i + '"]');
+  if (el) el.remove();
+  refreshReviewCount();
+  toast('Took ' + row.name + ' off the list', { label:'Undo', fn: () => {
+    row.dropped = false; row.on = true; renderReviewSheet();
+  }});
+}
+
+/* Correcting a row by hand. Whatever he types goes back through the same
+   reader the microphone's output does, so typing "cummin" still lands on cumin
+   and typing a real shelf name turns the row from a new ingredient into a tick
+   against one he already owns. If the reader makes nothing of it, his words
+   stand as they are — he is allowed to know something the app doesn't. */
+function openEditRow(i){
+  const row = reviewRow(i);
+  if (!row || row.dropped || !view.review) return;
+  view.review.editing = Number(i);
+  renderReviewSheet();
+  const box = document.querySelector('[data-role=edit-name]');
+  if (box){ box.focus(); box.select(); }
+}
+
+function cancelEditRow(){
+  if (!view.review) return;
+  view.review.editing = null;
+  renderReviewSheet();
+}
+
+function saveEditRow(){
+  const r = view.review;
+  if (!r || r.editing === null || r.editing === undefined) return;
+  const box = document.querySelector('[data-role=edit-name]');
+  const typed = box ? box.value.trim() : '';
+  const row = r.rows[r.editing];
+  if (!typed || !row){ cancelEditRow(); return; }
+
+  const read = readItemList(typed);
+  const hit = read.known[0] || read.fresh[0] || read.guesses[0] || null;
+  if (hit){
+    row.name  = hit.name;
+    row.tab   = hit.tab;
+    row.aisle = hit.aisle;
+    row.isNew = !read.known.length;
+  } else {
+    row.name  = norm(typed);
+    row.aisle = aisleOf(row.name);
+    row.tab   = tabForAisle(row.aisle);
+    row.isNew = true;
+  }
+  /* It was a guess or a doubt until he typed it out himself. Now it is a
+     decision, so it stops being flagged and comes on by default. */
+  delete row.heard;
+  delete row.unsure;
+  row.on = true;
+  r.editing = null;
+  renderReviewSheet();
+}
+
+function applyReview(){
+  const r = view.review;
+  if (!r) return;
+  const picked = r.rows.filter(x => x.on && !x.dropped);
+  if (!picked.length){ toast('Nothing selected'); return; }
+  let added = 0;
+  picked.forEach(x => {
+    if (x.isNew && !state.custom[x.tab].some(o => norm(o.name) === x.name)){
+      state.custom[x.tab].push({ name:x.name, aisle:x.aisle, staple:false });
+      added++;
+    }
+    tickHave(x.tab, x.name);
+  });
+  view.review = null;
+  closeSheet(); save(); render();
+  toast(picked.length + ' ticked' + (added ? ', ' + added + ' added as new' : ''));
+}
+
 function openPasteList(){
   openSheet(`<h2>Say what you&rsquo;ve got</h2>
     <p class="hint">Tap the box, then the <b>microphone</b> on your keyboard, and just say
-       your kitchen out loud. Or paste a list. Quantities and the word &ldquo;and&rdquo; are
-       fine &mdash; it sorts them out.</p>
+       your kitchen out loud. Quantities and the word &ldquo;and&rdquo; are fine &mdash; it
+       sorts them out, and it knows brand names too.</p>
+    <p class="hint">If two things run into each other, say <b>&ldquo;comma&rdquo;</b> or
+       <b>&ldquo;next&rdquo;</b> between them. You get to check the whole list before
+       anything is saved.</p>
     <textarea data-role="listbox" rows="7" placeholder="I've got eggs, some milk, harissa,
 chicken thighs, a bunch of spring onions and prawns"></textarea>
-    <button class="btn" data-act="apply-list">Add all of it</button>
+    <button class="btn" data-act="apply-list">Read it back to me</button>
     <button class="btn ghost" data-act="close-sheet">Cancel</button>`);
   const box = document.querySelector('[data-role=listbox]');
   if (box) box.focus();
@@ -1759,7 +2699,11 @@ function openSheet(html){
   s.innerHTML = `<div class="sheet-inner"><div class="grab"></div>${html}</div>`;
   s.hidden = false;
 }
-function closeSheet(){ $('#sheet').hidden = true; $('#sheet').innerHTML = ''; }
+function closeSheet(){
+  view.review = null;
+  $('#sheet').hidden = true;
+  $('#sheet').innerHTML = '';
+}
 
 /* ------------------------------------------------------------- actions */
 /* Every recipe ingredient already declares the aisle it belongs to, and that
@@ -1837,17 +2781,35 @@ function cancelHold(){
   hold = null;
 }
 
+/* render() replaces the row, so the click that follows a hold may land nowhere
+   useful — or on whatever takes its place. Eat it either way. */
+function heldDown(){
+  swallowClick = true;
+  setTimeout(() => { swallowClick = false; }, 700);
+}
+
 document.addEventListener('pointerdown', e => {
+  /* The swallow covers the click this same gesture is about to fire, and
+     nothing beyond it. Left on a timer it ate the next real tap, which on the
+     review sheet is usually the Tick button. */
+  swallowClick = false;
+  /* One gesture, two lists: on the fridge it means always-in-stock, on the
+     review sheet it takes the row off before anything is written. */
+  const pick = e.target.closest('#sheet [data-pick]');
+  if (pick && !e.target.closest('[data-edit]')){
+    hold = { x:e.clientX, y:e.clientY, timer:0 };
+    hold.timer = setTimeout(() => {
+      hold = null; heldDown();
+      dropReviewRow(pick.dataset.pick);
+    }, 600);
+    return;
+  }
   const row = e.target.closest('#screen [data-item]');
   if (!row || e.target.closest('[data-more]')) return;
   const name = row.dataset.item;
   hold = { name, x:e.clientX, y:e.clientY, timer:0 };
   hold.timer = setTimeout(() => {
-    hold = null;
-    /* render() replaces the row, so the click that follows may land nowhere
-       useful — or on whatever takes its place. Eat it either way. */
-    swallowClick = true;
-    setTimeout(() => { swallowClick = false; }, 700);
+    hold = null; heldDown();
     toggleAlways(view.tab, name);
   }, 500);
 });
@@ -1858,13 +2820,13 @@ document.addEventListener('pointerup', cancelHold);
 document.addEventListener('pointercancel', cancelHold);
 document.addEventListener('scroll', cancelHold, true);
 document.addEventListener('contextmenu', e => {
-  if (e.target.closest('#screen [data-item]')) e.preventDefault();
+  if (e.target.closest('#screen [data-item], #sheet [data-pick]')) e.preventDefault();
 });
 
 /* ------------------------------------------------------------- events */
 document.addEventListener('click', e => {
   if (swallowClick){ swallowClick = false; e.preventDefault(); e.stopPropagation(); return; }
-  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-useby],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i]');
+  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-useby],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i],[data-pick],[data-edit],[data-pickused]');
   if (!t) {
     if (e.target.id === 'sheet') closeSheet();
     return;
@@ -1885,6 +2847,13 @@ document.addEventListener('click', e => {
 
   /* inventory */
   if (t.dataset.useby){ setUseBy(t.dataset.useby); return; }
+  if (t.dataset.pickused !== undefined){
+    t.classList.toggle('on');
+    t.closest('[data-usedup]').classList.remove('lowpick');
+    return;
+  }
+  if (t.dataset.edit !== undefined){ e.stopPropagation(); openEditRow(t.dataset.edit); return; }
+  if (t.dataset.pick !== undefined){ toggleReviewRow(t.dataset.pick); return; }
   if (t.dataset.more){
     e.stopPropagation();
     const name = t.dataset.more, cur = state.inventory[view.tab][name] || {};
@@ -1975,12 +2944,28 @@ document.addEventListener('click', e => {
     case 'toggle-filters': view.filtersOpen = !view.filtersOpen; render(); break;
 
     case 'paste-list': openPasteList(); break;
-    case 'apply-list': {
-      const box = document.querySelector('[data-role=listbox]');
-      const r = applyItemList(box ? box.value : '');
-      save(); render(); reportList(r);
+    case 'scan-barcode': openCamera('scan'); break;
+    case 'take-photo': openCamera('photo'); break;
+    case 'cam-close': closeCamera(); break;
+    case 'cam-scan': switchCameraMode('scan'); break;
+    case 'cam-photo': switchCameraMode('photo'); break;
+    case 'cam-shoot': shootPhoto(); break;
+    case 'barcode-no': resumeScanning(); break;
+    case 'barcode-yes': {
+      const r = applyItemList(t.dataset.name);
+      save();
+      resumeScanning();
+      toast(t.dataset.name + (r.added.length ? ' added' : ' ticked'));
       break;
     }
+    case 'apply-list': {
+      const box = document.querySelector('[data-role=listbox]');
+      openReviewList(box ? box.value : '');
+      break;
+    }
+    case 'review-apply': applyReview(); break;
+    case 'edit-save': saveEditRow(); break;
+    case 'edit-cancel': cancelEditRow(); break;
 
     case 'clear-search': view.search = ''; render(); break;
     case 'clear-rsearch': view.recipeSearch = ''; render(); break;
@@ -2007,8 +2992,9 @@ document.addEventListener('click', e => {
     /* A whole spoken fridge, dropped in the search box. Same reader the paste
        sheet uses, so "coriandre" and "2 boxes of eggs" land the same way. */
     case 'tick-spoken': {
-      const r = applyItemList(view.search);
-      view.search = ''; save(); render(); reportList(r);
+      const said = view.search;
+      view.search = ''; render();
+      openReviewList(said);
       break;
     }
     case 'add-item': {
@@ -2127,44 +3113,13 @@ document.addEventListener('click', e => {
       break;
     }
 
-    case 'used-up': {
-      const r = findRecipe(view.recipeId);
-      const a = analyse(r, state.prefs.servings);
-      /* If he cooked it with a stand-in, the stand-in is what got used up —
-         offering the ingredient he never had would untick nothing. */
-      const usedNames = ing => {
-        const mk = (a.makes || []).find(s => s.ing === ing);
-        if (mk) return mk.make.from;
-        const sw = (a.swaps || []).find(s => s.ing === ing);
-        return [sw ? sw.swap.item : ing.item];
-      };
-      const seen = new Set();
-      const rows = a.have.filter(i => !i.staple).flatMap(usedNames)
-        .filter(n => !isAlways(n) && !seen.has(norm(n)) && seen.add(norm(n)))
-        .map(n => `<button class="item" data-usedup="${esc(n)}"><span class="box"></span>
-          <span class="name">${esc(n)}</span></button>`).join('');
-      openSheet(`<h2>What did you finish?</h2>
-        <p class="hint">Tick anything you used up. It comes out of your kitchen and goes
-           straight onto the shopping list.</p>
-        <div class="group">${rows}</div>
-        <button class="btn" data-act="usedup-done">Done</button>`);
+    case 'used-up': openUsedUp(); break;
+    case 'usedup-low': {
+      const row = t.closest('[data-usedup]');
+      if (row) row.classList.toggle('lowpick');
       break;
     }
-    case 'usedup-done': {
-      const picked = Array.from(document.querySelectorAll('#sheet .item.on'))
-        .map(el => el.dataset.usedup);
-      picked.forEach(name => {
-        TABS.forEach(tab => {
-          for (const k in state.inventory[tab])
-            if (norm(k) === norm(name) && !state.inventory[tab][k].always)
-              state.inventory[tab][k] = { have:false, low:false };
-        });
-        addToShopping(name, '', '');
-      });
-      closeSheet(); save(); render();
-      if (picked.length) toast(picked.length + ' moved to your shopping list');
-      break;
-    }
+    case 'usedup-done': applyUsedUp(); break;
 
     case 'cookalong': {
       view.cookAlong = { recipeId: view.recipeId, i: 0 };
@@ -2175,11 +3130,19 @@ document.addEventListener('click', e => {
     case 'ca-close':
       try{ speechSynthesis.cancel(); }catch(e){}
       releaseWakeLock(); view.cookAlong = null; render(); break;
-    case 'ca-done':
+    case 'ca-done': {
+      /* The one moment he can actually see what is left in the pan and the
+         packet. Asking here is the difference between a fridge that stays true
+         and one that quietly fills up with food he ate a week ago. */
       try{ speechSynthesis.cancel(); }catch(e){}
-      releaseWakeLock(); view.cookAlong = null; render();
-      document.querySelector('.rate')?.scrollIntoView({ block:'center' });
+      releaseWakeLock();
+      const done = findRecipe(view.cookAlong && view.cookAlong.recipeId);
+      view.cookAlong = null;
+      if (done) state.cooked[done.id] = isoPlus(0);
+      save(); render();
+      openUsedUp();
       break;
+    }
 
     case 'add-app': {
       openSheet(`<h2>Add an appliance</h2>
@@ -2203,6 +3166,17 @@ document.addEventListener('click', e => {
     }
     case 'del-app':
       state.appliances.splice(Number(t.dataset.i), 1); save(); render(); break;
+
+    case 'send-kitchen': {
+      const have = haveList();
+      if (!have.length){ toast('Nothing is ticked yet'); break; }
+      /* Everything ticked, as a link the app already knows how to read on the
+         way back in — see applyLinkList. */
+      const url = location.origin + location.pathname
+                + '#have=' + encodeURIComponent(have.join(', '));
+      sendToClaude(url, 'My kitchen as a link');
+      break;
+    }
 
     case 'export': {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
@@ -2260,12 +3234,6 @@ document.addEventListener('click', e => {
       break;
     }
   }
-});
-
-/* sheet checkbox rows toggle in place */
-document.addEventListener('click', e => {
-  const row = e.target.closest('#sheet .item[data-usedup]');
-  if (row) row.classList.toggle('on');
 });
 
 document.addEventListener('input', e => {
@@ -2524,6 +3492,7 @@ window.addEventListener('hashchange', () => {
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape'){
+    if (view.camera && $('#sheet').hidden){ closeCamera(); return; }
     if (!$('#sheet').hidden) closeSheet();
     else if (view.cookAlong){ view.cookAlong = null; releaseWakeLock(); render(); }
   }
@@ -2533,6 +3502,8 @@ window.addEventListener('keydown', e => {
    name matching against real recipe data instead of me eyeballing it.
    Read-only helpers; nothing here changes state. */
 window.FrigoTest = { sameItem, itemParts, aisleOf, inventoryHas, applyItemList, applyLinkList,
+                     openCamera, closeCamera, askAboutBarcode, matchLabel, grabFrame, CAM,
+                     readItemList, openReviewList, applyReview, dropReviewRow, toggleReviewRow,
                      analyse, findSubstitute, findMakeIt, matchRecipes,
                      kitchenFile, promptCookThis, promptWhatToCook, promptStanding, view, state };
 
