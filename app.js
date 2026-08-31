@@ -100,7 +100,8 @@ const FRESH = () => ({
   ],
   ratings:{}, cooked:{}, favorites:[], notes:{},
   shopping:[], planned:[], aiRecipes:[], myRecipes:[],
-  prefs:{ servings:2, spice:3, theme:'auto', apiKey:'', staplesOn:true }
+  prefs:{ servings:2, spice:3, theme:'auto', apiKey:'', staplesOn:true,
+          syncUrl:'', syncedAt:0 }
 });
 
 let state = FRESH();
@@ -134,8 +135,219 @@ function seedStaples(){
   }));
 }
 
+/* --------------------------------------------------- merging two copies
+
+   Two phones, one kitchen. Neither copy is the truth, so a merge keeps what
+   the other side knows and never quietly drops a tick.
+
+   Inventory is the only place where UNTICKED is real information — he drank
+   the milk — so those entries carry `at`, the moment they last changed, and
+   the newer one wins. Everything else is added to, never taken away, because
+   losing a rating or a shopping row is worse than carrying a stale one.
+
+   `prefs` is never merged and never sent: the API key and the sync address
+   belong to one device. */
+
+let stampBase = null;
+
+function rebase(){
+  stampBase = JSON.parse(JSON.stringify(state.inventory));
+}
+
+function stampInventory(){
+  const now = Date.now();
+  TABS.forEach(tab => {
+    const inv = state.inventory[tab] || {};
+    const was = (stampBase && stampBase[tab]) || {};
+    for (const k in inv){
+      const cur = inv[k], old = was[k];
+      if (!cur || typeof cur !== 'object') continue;
+      const moved = !old || old.have !== cur.have || old.low !== cur.low
+                        || old.useBy !== cur.useBy || old.always !== cur.always;
+      if (moved) cur.at = now;
+      else if (!cur.at && old.at) cur.at = old.at;
+    }
+  });
+  rebase();
+}
+
+function unionBy(mine, theirs, keyOf){
+  const out = (mine || []).slice();
+  const seen = {};
+  out.forEach(x => { const k = keyOf(x); if (k) seen[k] = true; });
+  (theirs || []).forEach(x => {
+    const k = keyOf(x);
+    if (k && !seen[k]) { seen[k] = true; out.push(x); }
+  });
+  return out;
+}
+
+function fillGaps(mine, theirs){
+  const out = Object.assign({}, mine);
+  for (const k in (theirs || {})) if (!(k in out)) out[k] = theirs[k];
+  return out;
+}
+
+function mergeStates(mine, theirs){
+  if (!theirs || typeof theirs !== 'object') return mine;
+  const out = deepMerge(FRESH(), mine);
+
+  TABS.forEach(tab => {
+    const ours = out.inventory[tab] || (out.inventory[tab] = {});
+    const then = (theirs.inventory || {})[tab] || {};
+    for (const k in then){
+      const them = then[k];
+      if (!them || typeof them !== 'object') continue;
+      const us = ours[k];
+      if (!us) { ours[k] = them; continue; }
+      if ((them.at || 0) > (us.at || 0)) ours[k] = them;
+    }
+    /* Custom items travel; hidden ones do not. Hiding is a removal, and a
+       removal that spreads by itself is how a merge loses something. */
+    out.custom[tab] = unionBy(out.custom[tab], (theirs.custom || {})[tab],
+                              x => norm(String(x)));
+  });
+
+  out.ratings   = fillGaps(out.ratings,   theirs.ratings);
+  out.cooked    = fillGaps(out.cooked,    theirs.cooked);
+  out.notes     = fillGaps(out.notes,     theirs.notes);
+  out.favorites = unionBy(out.favorites, theirs.favorites, x => norm(String(x)));
+
+  out.shopping  = unionBy(out.shopping, theirs.shopping,
+                          x => norm(String(x && x.item)) + '|' + (x && x.from || ''));
+  out.planned   = unionBy(out.planned, theirs.planned,
+                          x => (x && x.recipeId || '') + '|' + (x && x.date || ''));
+  out.aiRecipes = unionBy(out.aiRecipes, theirs.aiRecipes, x => x && x.id);
+  out.myRecipes = unionBy(out.myRecipes, theirs.myRecipes, x => x && x.id);
+
+  out.prefs = mine.prefs;
+  return out;
+}
+
+/* ------------------------------------------------------ sync between phones
+
+   The one place Frigo talks to a machine that isn't Anthropic, and only when
+   he taps Sync. The far end is a Google Apps Script he deployed himself from
+   his own Sheet — see sync-sheet.gs. It holds one blob of JSON and nothing
+   else; there is no account and no service in between.
+
+   The POST goes out as text/plain on purpose. An application/json body makes
+   the browser send a CORS preflight first, and Apps Script does not answer
+   one, so the sync would fail with nothing useful in the console. */
+
+let syncing = false;
+
+async function syncNow(){
+  const url = String(state.prefs.syncUrl || '').trim();
+  if (!url){ toast('No sync address set'); return; }
+  if (!/^https:\/\/script\.google\.com\//.test(url)){
+    toast('That does not look like an Apps Script address'); return;
+  }
+  if (syncing) return;
+  syncing = true; render();
+
+  let theirs = null;
+  try{
+    const res = await fetch(url, { method:'GET' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const txt = (await res.text()).trim();
+    theirs = txt ? JSON.parse(txt) : null;
+  }catch(e){
+    syncing = false; render();
+    toast('Could not reach the sheet. Check the address and the signal');
+    return;
+  }
+  if (theirs && theirs.state) theirs = theirs.state;
+
+  state = mergeStates(state, theirs);
+  rebase();
+
+  /* prefs never travels: the API key and this very address are per-device. */
+  const send = JSON.parse(JSON.stringify(state));
+  delete send.prefs;
+
+  try{
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(send)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    state.prefs.syncedAt = Date.now();
+    syncing = false; save(); render();
+    toast('Synced');
+  }catch(e){
+    syncing = false; save(); render();
+    toast('Merged here, but could not send it back');
+  }
+}
+
+/* ------------------------------------------------------------- the scan log
+
+   Frigo throws the barcode away on purpose — a shelf holds names, not digits —
+   so a second tab of the same Sheet is the only place the number survives. That
+   turns a pile of scans into a catalogue of the jars he actually buys, with the
+   brand and size the app itself has no use for.
+
+   Fire and forget, always. He is standing in front of an open fridge; a scan
+   that cannot be logged must never hold up the tick or raise a dialog. */
+
+function logScan(hit, landedAs){
+  const url = String(state.prefs.syncUrl || '').trim();
+  if (!url || !/^https:\/\/script\.google\.com\//.test(url)) return;
+
+  const shelf = allItems().find(i => norm(i.name) === norm(landedAs))
+             || allItems().find(i => sameItem(i.name, landedAs));
+  const aisle = shelf ? shelf.aisle : 'other';
+
+  /* The label EXACTLY as the database gave it and exactly as he saw it on the
+     confirm screen. `saved` is what the shelf renamed it to; both are kept, and
+     this one is never rewritten. */
+  const label = [hit.brand, hit.name, hit.size].filter(Boolean).join(' · ');
+
+  const row = {
+    label:   String(label),
+    code:    String(hit.code || ''),
+    product: String(hit.name || ''),
+    brand:   String(hit.brand || ''),
+    size:    String(hit.size || ''),
+    saved:   String(landedAs || ''),
+    shelf:   shelf ? (TAB_LABEL[shelf.tab] || shelf.tab) : '',
+    section: SECTION_LABEL[aisle] || 'Other',
+    at:      new Date().toISOString().slice(0, 10)
+  };
+
+  try{
+    fetch(url, { method:'POST',
+                 headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+                 body: JSON.stringify({ log: row }) }).catch(() => {});
+  }catch(e){ /* no signal in the kitchen is normal, not an error */ }
+}
+
+async function pasteInto(which){
+  const box = document.getElementById(which);
+  if (!box) return;
+  let text = '';
+  try{
+    text = await navigator.clipboard.readText();
+  }catch(e){
+    box.focus();
+    toast('Your browser will not let me read the clipboard. Long-press the box and paste.');
+    return;
+  }
+  text = String(text || '').trim();
+  if (!text){ toast('Nothing on the clipboard'); return; }
+
+  box.value = text;
+  if (which === 'apikey') state.prefs.apiKey = text;
+  if (which === 'syncurl') state.prefs.syncUrl = text;
+  save(); render();
+  toast(which === 'apikey' ? 'Key pasted' : 'Address pasted');
+}
+
 let saveTimer = null;
 function writeState(){
+  stampInventory();
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
 }
 function save(){
@@ -1545,8 +1757,11 @@ function screenSettings(){
   <div class="section"><h2>Invent-a-recipe</h2>
     <div class="field">
       <label for="apikey">Claude API key</label>
-      <input id="apikey" type="password" data-role="apikey" value="${esc(p.apiKey)}"
-             placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      <div class="field-row">
+        <input id="apikey" type="password" data-role="apikey" value="${esc(p.apiKey)}"
+               placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+        <button class="btn ghost pastebtn" data-act="paste-into" data-target="apikey">Paste</button>
+      </div>
       <p class="hint">Only needed for the &ldquo;invent me something&rdquo; button. Stored on this
          phone and nowhere else. You get a key at console.anthropic.com, and it is billed
          separately from a Claude subscription &mdash; having one does not give you the other.
@@ -1581,11 +1796,38 @@ function screenSettings(){
        means it can sit on an old copy. This fetches the newest one and restarts.</p>
   </div>
 
+  <div class="section"><h2>Keep my phones in step</h2>
+    <div class="field">
+      <label for="syncurl">Sync address</label>
+      <div class="field-row">
+        <input id="syncurl" type="url" data-role="syncurl" value="${esc(p.syncUrl)}"
+               placeholder="https://script.google.com/macros/s/..." autocomplete="off"
+               spellcheck="false">
+        <button class="btn ghost pastebtn" data-act="paste-into" data-target="syncurl">Paste</button>
+      </div>
+    </div>
+    <button class="btn" data-act="sync-now" ${syncing ? 'disabled' : ''}>
+      ${svg('i-check')} ${syncing ? 'Syncing&hellip;' : 'Sync now'}</button>
+    <p class="hint">${p.syncedAt
+        ? 'Last synced ' + esc(new Date(p.syncedAt).toLocaleString()) + '.'
+        : 'Not synced yet.'}
+       Every device with this address shares one kitchen. Syncing only ever
+       <b>adds</b> &mdash; ratings, notes, shopping rows and your own recipes are never
+       deleted by it. Ticks are the exception: the <b>most recent</b> tap wins, so
+       drinking the milk on one phone unticks it on the other.</p>
+    <p class="hint">You make the address yourself from a Google Sheet &mdash; the file
+       <b>sync-sheet.gs</b> in the app folder has the twenty lines and the steps. Nothing
+       goes through anyone else&rsquo;s service. <b>Treat that address like a password</b>:
+       anyone holding it can read your kitchen. Your API key is never sent.</p>
+  </div>
+
   <div class="section"><h2>Your data</h2>
     <button class="btn ghost" data-act="export">Save a backup file</button>
     <button class="btn ghost" data-act="import">Restore from a backup</button>
-    <p class="hint">Everything lives on this phone only. Nothing is uploaded, ever. The backup
-       file carries the lot &mdash; ratings, notes, shopping list and all.</p>
+    <p class="hint">Nothing leaves this phone unless you set up syncing above. The backup
+       file carries the lot &mdash; ratings, notes, shopping list and all &mdash; including
+       your API key, so don&rsquo;t leave it anywhere public. Restoring <b>adds</b> to what
+       is here; it never wipes it.</p>
   </div>`;
 }
 
@@ -2158,6 +2400,7 @@ const CAM = {
   timer: null,
   busy: false,
   seen: '',            /* the code being asked about, so it isn't asked twice */
+  hit: null,           /* the last lookup, kept for the scan log */
   msg: ''
 };
 
@@ -2329,6 +2572,7 @@ function matchLabel(label){
 }
 
 function askAboutBarcode(hit){
+  CAM.hit = hit;
   const found = matchLabel(hit.name);
   const match = found.item;
   const label = [hit.brand, hit.name, hit.size].filter(Boolean).join(' · ');
@@ -3002,6 +3246,7 @@ document.addEventListener('click', e => {
     case 'barcode-no': resumeScanning(); break;
     case 'barcode-yes': {
       const r = applyItemList(t.dataset.name);
+      if (CAM.hit) logScan(CAM.hit, t.dataset.name);
       save();
       resumeScanning();
       toast(t.dataset.name + (r.added.length ? ' added' : ' ticked'));
@@ -3229,6 +3474,12 @@ document.addEventListener('click', e => {
 
     case 'check-update': checkForUpdate(); break;
 
+    /* Long-pressing a password field to paste is a fight on Android, and an
+       API key is 108 characters nobody is going to type. One button instead. */
+    case 'paste-into': pasteInto(t.dataset.target); break;
+
+    case 'sync-now': syncNow(); break;
+
     case 'export': {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
       const a = document.createElement('a');
@@ -3243,7 +3494,11 @@ document.addEventListener('click', e => {
       inp.onchange = () => {
         const f = inp.files[0]; if (!f) return;
         f.text().then(txt => {
-          try{ state = deepMerge(FRESH(), JSON.parse(txt)); save(); setTheme(); render(); toast('Restored'); }
+          try{
+            state = mergeStates(state, JSON.parse(txt));
+            rebase(); save(); setTheme(); render();
+            toast('Restored — nothing was removed');
+          }
           catch(err){ toast('That file could not be read'); }
         });
       };
@@ -3309,6 +3564,7 @@ document.addEventListener('input', e => {
     if (id){ state.notes[id] = e.target.value; save(); }
   }
   if (e.target.dataset.role === 'apikey'){ state.prefs.apiKey = e.target.value.trim(); save(); }
+  if (e.target.dataset.role === 'syncurl'){ state.prefs.syncUrl = e.target.value.trim(); save(); }
 });
 
 /* ------------------------------------------------------------ wake lock */
@@ -3526,6 +3782,7 @@ function applyLinkList(){
 }
 
 load();
+rebase();
 setTheme();
 readBuild();
 const fromLink = applyLinkList();

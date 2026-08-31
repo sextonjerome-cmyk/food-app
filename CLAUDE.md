@@ -22,8 +22,11 @@ Stove & oven · Rice cooker ~1.5 qt.
 
 1. **Vanilla HTML/CSS/JS. Zero dependencies, zero build step.** No framework, no npm, no
    bundler. Open `index.html` and it runs. If a feature needs a library, find another way.
-2. **Nothing leaves the phone.** All state in `localStorage`. The single exception is the
-   optional "Ask AI" call, which uses Jerome's own API key and only when he taps it.
+2. **Nothing leaves the phone.** All state in `localStorage`. Two exceptions, both
+   opt-in and both off until Jerome pastes an address in Settings: the "Ask AI" call,
+   which uses his own API key; and syncing, which POSTs the kitchen to an Apps Script
+   he deployed from his own Google Sheet. `prefs` is never synced — the API key and the
+   sync address stay on one device.
 3. **Works offline.** No fonts, images, or scripts loaded from the internet — everything is
    bundled. A service worker caches the app on first visit.
 4. **Mobile first, always.** Design at 360–412 px wide. Touch targets ≥ 44 px. Reachable
@@ -65,6 +68,7 @@ ingredients.js  the tick-box list Jerome starts from (data only, one item per li
 items.html      edit that list on a computer, then download the file back out
 recipes.js      the recipe collection (data only, no logic)
 ai.js           optional Claude API call
+sync-sheet.gs   the Apps Script Jerome pastes into his own Sheet (not shipped to the app)
 img/            one small WebP per recipe
 manifest.json   sw.js   icons/      makes it installable and offline
 style-picker.html   the ten design directions (kept for reference)
