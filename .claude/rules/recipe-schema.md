@@ -8,7 +8,8 @@ Everything in `recipes.js` is data. No logic, no functions, no computed values.
   title: "Poulet à la Moutarde",
   subtitle: "Mustard cream chicken",  // optional plain-English gloss for non-French dishes
   photo: "img/poulet-moutarde.webp",
-  cuisine: "french",                  // french | american | middle-eastern | turkish | asian | other
+  cuisine: "french",                  // french | american | mediterranean | middle-eastern
+                                      // turkish | asian | other
   appliances: ["stove"],              // stove | oven | crockpot | instantpot | airfryer | ricecooker
   minutes: 30,                        // TOTAL wall-clock for stove/oven/air fryer.
   activeMinutes: 20,                  // hands-on time. For crockpot: minutes 480, active 15.

@@ -65,8 +65,8 @@ const TAB_LABEL = { fridge:'Fridge', freezer:'Freezer', pantry:'Pantry', spices:
 
 const CUISINES = [
   ['any','Any'],['french','French'],['american','American'],
-  ['middle-eastern','Middle Eastern'],['turkish','Turkish'],['asian','Asian'],
-  ['other','Other']
+  ['mediterranean','Mediterranean'],['middle-eastern','Middle Eastern'],
+  ['turkish','Turkish'],['asian','Asian'],['other','Other']
 ];
 const TIMES = [[15,'15 min'],[30,'30 min'],[45,'45 min'],[60,'1 hour'],[0,'Any']];
 
@@ -81,14 +81,25 @@ const STYLES = [
 /* The five questions asked most often, as one-tap chips above the fold.
    Anything needing two answers at once still belongs in the panel below. */
 const QUICK = [
-  ['all',   'Everything'],
-  ['ready', 'Ready now'],
-  ['quick', 'Done in 30 min'],
-  ['onepan','One pan'],
-  ['kick',  'Big kick'],
-  ['veg',   'Vegetarian'],
-  ['soon',  'Going off soon']
+  ['all',       'Everything'],
+  ['ready',     'Ready now'],
+  ['fast',      'In a hurry'],
+  ['breakfast', 'Breakfast'],
+  ['lunch',     'Lunch'],
+  ['dinner',    'Dinner'],
+  ['snack',     'Snack'],
+  ['quick',     'Done in 30 min'],
+  ['onepan',    'One pan'],
+  ['kick',      'Big kick'],
+  ['veg',       'Vegetarian'],
+  ['soon',      'Going off soon']
 ];
+
+/* "In a hurry" is about the time he is actually standing at the stove, not the
+   time on the clock — a crockpot stew is eight hours away but fifteen minutes
+   of work, and a twenty minute pasta is twenty minutes of standing there. So it
+   asks for BOTH: on the table soon, and barely any hands-on. */
+const HURRY_TOTAL = 25, HURRY_ACTIVE = 20;
 
 const STYLE_TAGS = {
   'one-pan':  ['one-pan','one-pot','sheet-pan'],
@@ -286,12 +297,59 @@ async function syncNow(){
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     state.prefs.syncedAt = Date.now();
+    pushReadableKitchen(url);
     syncing = false; save(); render();
     toast('Synced');
   }catch(e){
     syncing = false; save(); render();
     toast('Merged here, but could not send it back');
   }
+}
+
+/* -------------------------------------------------- the readable kitchen
+
+   What goes UP to the sheet is one long line of JSON in column A. That is the
+   right shape for a machine and no shape at all for a person — and the whole
+   reason he wanted a sheet was to be able to look at it, or paste it into
+   another chat and say 'here is exactly what I have, give me a recipe'.
+
+   So a second, plain-English copy goes to its own tab. It is a snapshot, not a
+   log: every sync clears it and writes what is in the kitchen NOW, so it never
+   lists a jar he finished in July. The scan log next door is the opposite, and
+   that is on purpose — one is history, this is the shelf.
+
+   The rows are built HERE rather than in the Apps Script so that the shelf
+   words, the section names and the exact product all come from one place. */
+
+function readableKitchen(){
+  const rows = [];
+  allItems().forEach(it => {
+    const st = state.inventory[it.tab][it.name] || {};
+    const assumed = it.staple && state.prefs.staplesOn;
+    if (!st.have && !assumed) return;
+    rows.push([
+      TAB_LABEL[it.tab] || it.tab,
+      SECTION_LABEL[sectionOf(it, it.tab)] || 'Other',
+      it.name,
+      st.exactly || '',
+      st.always ? 'always in stock' : st.low ? 'running low' : '',
+      st.useBy || ''
+    ]);
+  });
+  rows.sort((a, b) => (a[0] + a[1] + a[2]).localeCompare(b[0] + b[1] + b[2]));
+  return rows;
+}
+
+/* Fire and forget, exactly like the scan log. A sheet that cannot be written
+   is not a reason to tell him the sync failed — the kitchen itself got there. */
+function pushReadableKitchen(url){
+  try{
+    fetch(url, { method:'POST',
+                 headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+                 body: JSON.stringify({ kitchen: readableKitchen(),
+                                        at: new Date().toISOString().slice(0, 10) }) })
+      .catch(() => {});
+  }catch(e){}
 }
 
 /* ------------------------------------------------------------- the scan log
@@ -396,7 +454,10 @@ const view = {
   quick:'all',
   filters:{ appliance:'any', cuisine:'any', time:0, difficulty:'any', style:'any' },
   review:null,
-  camera:false
+  camera:false,
+  showReady:false,  /* the photo rail under the score, opened by tapping it */
+  meatOz:null,      /* { id, oz } — scale this recipe to the pack he bought */
+  kick:null         /* { id, i } — which flavour boost is showing */
 };
 
 /* ------------------------------------------------------------- utilities */
@@ -616,10 +677,26 @@ function keyWords(name){
   const real = words.filter(w => !BRAND_WORD.has(w));
   return real.length ? real : words;
 }
+/* Held onto for the life of the page.
+
+   Breaking a name into words costs a dozen regex passes, and the matcher asks
+   for the SAME two hundred names over and over: every recipe checks every one
+   of its ingredients against every ticked item in the kitchen. On the Cook
+   screen that came to roughly a hundred thousand calls per keystroke, which is
+   why typing in the search box crawled on the phone.
+
+   keyWords() only ever depends on the string handed to it, so the answer can
+   simply be kept. Nothing invalidates it. */
+const PARTS_CACHE = new Map();
 function itemParts(name){
-  const words = keyWords(name);
-  if (!words.length) return null;
-  return { head: words[words.length - 1], mods: new Set(words.slice(0, -1)) };
+  const key = String(name);
+  if (PARTS_CACHE.has(key)) return PARTS_CACHE.get(key);
+  const words = keyWords(key);
+  const out = words.length
+    ? { head: words[words.length - 1], mods: new Set(words.slice(0, -1)) }
+    : null;
+  PARTS_CACHE.set(key, out);
+  return out;
 }
 
 /* Two names mean the same thing when they're the same thing (same head noun)
@@ -941,13 +1018,177 @@ function scaleIngredient(ing, factor){
   if (!ing.unit || WHOLE_UNITS.includes(ing.unit)) q = Math.max(1, Math.round(q));
   return { qty:q, unit:ing.unit };
 }
+/* Spoons get written out in full. "tbsp" and "tsp" are one letter apart and he
+   reads this with the pan already hot — a three-times-too-big spoon of cayenne
+   is not a recoverable mistake. */
+const UNIT_WORDS = {
+  tbsp:  ['tablespoon', 'tablespoons'],
+  tsp:   ['teaspoon',   'teaspoons'],
+  cup:   ['cup',        'cups'],
+  lb:    ['pound',      'pounds'],
+  lbs:   ['pound',      'pounds'],
+  oz:    ['ounce',      'ounces'],
+  clove: ['clove',      'cloves'],
+  can:   ['can',        'cans'],
+  jar:   ['jar',        'jars'],
+  bunch: ['bunch',      'bunches'],
+  stalk: ['stalk',      'stalks'],
+  slice: ['slice',      'slices'],
+  sprig: ['sprig',      'sprigs'],
+  pinch: ['pinch',      'pinches']
+};
+function unitWord(unit, qty){
+  if (!unit) return '';
+  const pair = UNIT_WORDS[String(unit).toLowerCase()];
+  if (!pair) return unit;
+  return (qty != null && qty > 1.0001) ? pair[1] : pair[0];
+}
 function qtyLabel(ing, factor){
   const s = scaleIngredient(ing, factor);
-  const q = prettyQty(s.qty);
-  /* "four piece eggs" is not English. Counted things take no unit at all. */
-  const unit = (s.unit === 'piece' || s.unit === 'pieces') ? '' : (s.unit || '');
+  let qty = s.qty;
+  /* "forty-four ounces of tofu" is a number nobody can picture, and no shop
+     sells it that way. Past a pound and a half, ounces become pounds. */
+  let raw = (s.unit === 'piece' || s.unit === 'pieces') ? '' : (s.unit || '');
+  if (raw === 'oz' && qty != null && qty >= 16){ qty = Math.round(qty / 16 * 4) / 4; raw = 'lb'; }
+  const q = prettyQty(qty);
+  const unit = unitWord(raw, qty);
   if (!q && !unit) return '';
   return (q + ' ' + unit).trim();
+}
+
+/* ------------------------------------------------- what that weight looks like
+
+   "One pound of potatoes" means nothing standing in the vegetable aisle. Three
+   golden potatoes does. Weights are averages of what a supermarket actually
+   sells, so every one of these is written as "about".
+
+   `perLb` is how many of the thing make a pound; the same number turns a count
+   back into a weight for the things sold by weight but written as pieces. */
+const COUNT_HINTS = [
+  { match:['yukon','gold potato','golden potato'], perLb:3,   one:'golden potato',  many:'golden potatoes' },
+  { match:['baby potato','new potato'],            perLb:10,  one:'baby potato',    many:'baby potatoes' },
+  { match:['potato'],                              perLb:3,   one:'medium potato',  many:'medium potatoes' },
+  { match:['sweet potato'],                        perLb:2,   one:'sweet potato',   many:'sweet potatoes' },
+  { match:['yellow onion','onion'],                perLb:2.5, one:'medium onion',   many:'medium onions' },
+  { match:['shallot'],                             perLb:9,   one:'shallot',        many:'shallots' },
+  { match:['carrot'],                              perLb:6,   one:'medium carrot',  many:'medium carrots' },
+  { match:['celery'],                              perLb:8,   one:'stalk',          many:'stalks' },
+  { match:['plum tomato','roma tomato'],           perLb:5,   one:'plum tomato',    many:'plum tomatoes' },
+  { match:['cherry tomato'],                       perLb:26,  one:'cherry tomato',  many:'cherry tomatoes' },
+  { match:['tomato'],                              perLb:3,   one:'medium tomato',  many:'medium tomatoes' },
+  { match:['bell pepper','red pepper','green pepper'], perLb:3, one:'bell pepper',  many:'bell peppers' },
+  { match:['jalapeno','jalapeño'],                 perLb:16,  one:'jalapeno',       many:'jalapenos' },
+  { match:['zucchini','courgette'],                perLb:2.5, one:'zucchini',       many:'zucchini' },
+  { match:['mushroom'],                            perLb:9,   one:'mushroom',       many:'mushrooms' },
+  { match:['lemon'],                               perLb:4,   one:'lemon',          many:'lemons' },
+  { match:['lime'],                                perLb:7,   one:'lime',           many:'limes' },
+  { match:['garlic'],                              perLb:24,  one:'clove',          many:'cloves' },
+  { match:['eggplant','aubergine'],                perLb:1,   one:'eggplant',       many:'eggplants' },
+  { match:['broccoli'],                            perLb:1.3, one:'head',           many:'heads' },
+  { match:['cauliflower'],                         perLb:0.5, one:'head',           many:'heads' },
+  { match:['chicken thigh'],                       perLb:3,   one:'thigh',          many:'thighs',   weighed:true },
+  { match:['chicken breast'],                      perLb:2,   one:'breast',         many:'breasts',  weighed:true },
+  { match:['pork chop'],                           perLb:2.3, one:'chop',           many:'chops',    weighed:true },
+  { match:['salmon'],                              perLb:2.7, one:'fillet',         many:'fillets',  weighed:true },
+  { match:['bacon'],                               perLb:16,  one:'rasher',         many:'rashers',  weighed:true },
+  { match:['shrimp','prawn'],                      perLb:26,  one:'shrimp',         many:'shrimp',   weighed:true },
+  { match:['scallion','green onion','spring onion'], perLb:14, one:'scallion',      many:'scallions' },
+  { match:['pita'],                                perLb:5,   one:'pita',           many:'pitas' }
+];
+function countHintFor(name){
+  const n = norm(name);
+  /* Longest match wins, so "sweet potato" never answers to the "potato" row. */
+  let best = null;
+  COUNT_HINTS.forEach(h => h.match.forEach(m => {
+    if (n.includes(m) && (!best || m.length > best.len)) best = { h, len:m.length };
+  }));
+  return best && best.h;
+}
+const TO_LB = { lb:1, lbs:1, oz:1/16, g:1/453.6, kg:2.205 };
+
+/* A weight, turned into things you can pick up. */
+function countHint(ing, factor){
+  const s = scaleIngredient(ing, factor);
+  if (s.qty == null) return '';
+  const h = countHintFor(ing.item);
+  if (!h) return '';
+  const perLbUnit = TO_LB[String(s.unit || '').toLowerCase()];
+
+  if (perLbUnit){
+    const n = s.qty * perLbUnit * h.perLb;
+    if (n < 0.6) return '';
+    const rounded = n < 3 ? Math.round(n * 2) / 2 : Math.round(n);
+    return 'about ' + prettyQty(rounded) + ' ' + (rounded > 1 ? h.many : h.one);
+  }
+  /* The other way round: a count of something the shop actually weighs, which
+     is the number he needs at the counter. Nobody needs to be told that one
+     onion weighs half a pound. */
+  if (h.weighed && (!s.unit || s.unit === 'piece' || s.unit === 'pieces')){
+    const lb = s.qty / h.perLb;
+    if (lb < 0.35) return '';
+    return 'about ' + prettyQty(Math.round(lb * 4) / 4) + (lb > 1.0001 ? ' pounds' : ' pound');
+  }
+  return '';
+}
+
+/* ------------------------------------------------- scaling by what you bought
+
+   Meat is not sold in servings. He comes home with a one pound pack of ground
+   beef, and the recipe wants ten ounces of it — so the leftover six ounces sits
+   in the fridge until it goes off. These let him say "I have a pound" and drag
+   the whole recipe to fit it. */
+/* What one piece weighs, read straight off COUNT_HINTS so the two never drift
+   apart and tell him different things on the same screen. */
+const EXTRA_PIECE_OZ = { 'steak':8, 'lamb chop':4, 'sausage':3, 'chicken drumstick':4 };
+function pieceOunces(name){
+  const h = countHintFor(name);
+  if (h && h.weighed) return 16 / h.perLb;
+  const n = norm(name);
+  let best = 0, len = 0;
+  for (const key in EXTRA_PIECE_OZ){
+    if (n.includes(key) && key.length > len){ len = key.length; best = EXTRA_PIECE_OZ[key]; }
+  }
+  return best;
+}
+/* The weight of meat a recipe calls for AS WRITTEN, in ounces. Zero means the
+   recipe has no meat to scale by, and the control stays hidden. */
+function meatOunces(recipe){
+  let oz = 0;
+  (recipe.ingredients || []).forEach(ing => {
+    if (ing.aisle !== 'meat' || ing.qty == null || !ing.scale) return;
+    const u = String(ing.unit || '').toLowerCase();
+    if (TO_LB[u]) oz += ing.qty * TO_LB[u] * 16;
+    else if (!ing.unit || u === 'piece' || u === 'pieces') oz += ing.qty * pieceOunces(ing.item);
+  });
+  return Math.round(oz);
+}
+const MEAT_PICKS = [8, 12, 16, 24, 32];
+function meatPickLabel(oz){
+  if (oz % 16 === 0) return (oz / 16) + ' lb';
+  if (oz === 24) return '1½ lb';
+  return oz + ' oz';
+}
+/* Under a pound, say it in ounces — "a third of a pound of pork" is not how
+   anyone thinks about a packet of mince. */
+function weightLabel(oz){
+  if (oz < 16) return Math.round(oz) + (Math.round(oz) === 1 ? ' ounce' : ' ounces');
+  const lb = Math.round(oz / 16 * 4) / 4;
+  return prettyQty(lb) + (lb > 1.0001 ? ' pounds' : ' pound');
+}
+/* Servings for the open recipe: normally the dial in Settings, but a meat pick
+   overrides it and lands wherever the weight lands, fractions and all. */
+function recipeServings(recipe){
+  const pick = view.meatOz;
+  if (pick && pick.id === recipe.id){
+    const base = meatOunces(recipe);
+    if (base) return (recipe.baseServings || 2) * (pick.oz / base);
+  }
+  return state.prefs.servings;
+}
+function servingsLabel(n){
+  const r = Math.round(n * 2) / 2;
+  if (Math.abs(n - Math.round(n)) < 0.08) return Math.round(n) + ' serving' + (Math.round(n) === 1 ? '' : 's');
+  return 'about ' + prettyQty(r) + ' servings';
 }
 
 /* ------------------------------------------------------------ matching */
@@ -1037,6 +1278,12 @@ function applyQuick(list){
   switch (view.quick){
     case 'ready':  return list.filter(m => !m.missing.length);
     case 'quick':  return list.filter(m => (m.r.minutes || 0) <= 30);
+    case 'fast':   return list.filter(m => (m.r.minutes || 0) <= HURRY_TOTAL
+                                        && (m.r.activeMinutes || m.r.minutes || 0) <= HURRY_ACTIVE);
+    case 'breakfast':
+    case 'lunch':
+    case 'dinner':
+    case 'snack':  return list.filter(m => (m.r.meals || []).includes(view.quick));
     case 'onepan': return list.filter(m => tagged(m, ['one-pan','one-pot','sheet-pan']));
     case 'kick':   return list.filter(m => tagged(m, ['spicy','big-kick']) || (m.r.spiceLevel||0) >= 3);
     case 'veg':    return list.filter(m => tagged(m, ['vegetarian','vegan']));
@@ -1045,9 +1292,45 @@ function applyQuick(list){
   }
 }
 
+/* Typing in the search box does not change the kitchen, so working out what is
+   missing from each recipe — the expensive part — must not happen again on
+   every letter. It is redone only when something it actually depends on moves.
+
+   The stamp is a cheap fingerprint of exactly what analyse() reads. Miss a
+   field out of it and the Cook screen goes stale, which is far worse than a
+   slow one, so anything added to analyse() has to be added here too. */
+let matchCache = { stamp: null, rows: new Map(), hay: new Map() };
+
+function analyseStamp(){
+  const parts = [];
+  TABS.forEach(tab => {
+    const inv = state.inventory[tab] || {};
+    for (const k in inv){
+      const v = inv[k];
+      if (v && v.have) parts.push(k + (v.low ? '!' : '') + (v.always ? '*' : '') + (v.useBy || ''));
+    }
+  });
+  return state.prefs.servings + '|' + state.prefs.staplesOn + '|'
+       + state.appliances.map(a => a.id + a.qt).join(',') + '|'
+       + parts.join(',');
+}
+
+function searchHay(r){
+  const key = r.id + '|' + r.title;
+  let hay = matchCache.hay.get(key);
+  if (hay === undefined){
+    hay = norm([r.title, r.subtitle || '', (r.tags || []).join(' '),
+                (r.ingredients || []).map(i => i.item).join(' ')].join(' '));
+    matchCache.hay.set(key, hay);
+  }
+  return hay;
+}
+
 function matchRecipes(){
   const f = view.filters, servings = state.prefs.servings;
   const q = norm(view.recipeSearch);
+  const stamp = analyseStamp();
+  if (stamp !== matchCache.stamp){ matchCache.stamp = stamp; matchCache.rows = new Map(); }
   const out = [];
   recipePool().forEach(r => {
     if (f.appliance !== 'any' && !(r.appliances||[]).includes(f.appliance)) return;
@@ -1058,13 +1341,12 @@ function matchRecipes(){
       const want = STYLE_TAGS[f.style] || [f.style];
       if (!(r.tags || []).some(t => want.includes(t))) return;
     }
-    const a = analyse(r, servings);
+    /* Cheap text filter first — no point analysing a recipe the search has
+       already ruled out. */
+    if (q && !searchHay(r).includes(q)) return;
+    let a = matchCache.rows.get(r.id);
+    if (!a){ a = analyse(r, servings); matchCache.rows.set(r.id, a); }
     if (view.onlyReady && a.missing.length) return;
-    if (q){
-      const hay = [r.title, r.subtitle || '', (r.tags||[]).join(' '),
-                   (r.ingredients||[]).map(i => i.item).join(' ')].join(' ');
-      if (!norm(hay).includes(q)) return;
-    }
     out.push({ r, ...a });
   });
   out.sort((x, y) => {
@@ -1210,11 +1492,55 @@ function screenCook(){
   const nNear  = results.filter(m => m.missing.length === 1).length;
   const nFar   = results.filter(m => m.missing.length > 1).length;
   const total  = nReady + nNear + nFar || 1;
+  /* The number was the answer to the question and then a dead end — he could
+     read it but not get at it. Tapping it now opens the things it counted, as
+     photos he can thumb through, because a picture decides dinner faster than a
+     list of names does. */
+  const readyList = results.filter(m => !m.missing.length);
+  const nearList  = results.filter(m => m.missing.length === 1);
+  /* Keep swiping past the ready ones and the rail carries on into the dishes
+     that are one shop away, each saying what the one thing is. The colour does
+     the explaining: lime means cook it, violet means buy one thing. */
+  const railList = readyList.concat(nearList);
+  const railOpen = view.showReady && railList.length > 0;
+
+  const slide = m => {
+    const r = m.r, near = m.missing.length === 1;
+    const gap = near ? m.missing[0].item : '';
+    return `<div class="rslide ${near ? 'near' : ''}">
+      <button class="rs-open" data-open="${esc(r.id)}">
+        <span class="rs-photo">${photoHTML(r)}</span>
+        <span class="rs-body">
+          <span class="eyebrow">${near ? 'One thing away' : 'Ready now'} &middot; ${esc(cuisineLabel(r.cuisine))}</span>
+          <b>${esc(r.title)}</b>
+          ${r.subtitle ? `<small>${esc(r.subtitle)}</small>` : ''}
+          <span class="rs-chips">
+            <span class="chip">${r.minutes} min</span>
+            <span class="chip">${r.activeMinutes || r.minutes} min hands-on</span>
+            ${(r.spiceLevel || 0) >= 3 ? `<span class="chip need">spicy</span>` : ''}
+          </span>
+        </span>
+      </button>
+      ${near ? `<div class="rs-gap">
+        <span>You only need <b>${esc(gap)}</b></span>
+        <button class="btn sm ghost" data-act="rail-buy" data-id="${esc(r.id)}"
+                data-name="${esc(gap)}">${svg('i-cart','icon-sm')} Add it</button>
+      </div>` : ''}
+    </div>`;
+  };
+
+  const rail = !railOpen ? '' : `<div class="readyrail">${railList.map(slide).join('')}</div>
+    <p class="railhint">${readyList.length} ready${nearList.length
+      ? ` &middot; keep swiping for ${nearList.length} you are one thing away from` : ''}</p>`;
+
   const score = `<div class="score">
-      <div class="score-top">
+      <button class="score-top" data-act="toggle-ready"
+              aria-expanded="${railOpen ? 'true' : 'false'}"
+              ${readyList.length ? '' : 'disabled'}>
         <span class="score-n num">${nReady}</span>
-        <span class="score-u">${nReady === 1 ? 'dish you can cook' : 'dishes you can cook'} right now</span>
-      </div>
+        <span class="score-u">${nReady === 1 ? 'dish you can cook' : 'dishes you can cook'} right now
+          ${readyList.length ? `<span class="score-see">${view.showReady ? 'Hide them' : 'Show me'}${svg('i-chev','icon-sm chev' + (railOpen ? ' up' : ''))}</span>` : ''}</span>
+      </button>
       <div class="score-bar" role="img"
            aria-label="${nReady} ready, ${nNear} one thing away, ${nFar} further off">
         ${nReady ? `<i class="a" style="flex:${nReady}"></i>` : ''}
@@ -1226,7 +1552,7 @@ function screenCook(){
         <span class="k2">${nNear} one away</span>
         <span class="k3">${nFar} further off</span>
       </div>
-    </div>`;
+    </div>` + rail;
 
   /* One tap for the things he actually asks for. The detailed panel is still
      underneath for cuisine, appliance and exact times — these are the five
@@ -1460,7 +1786,8 @@ function screenFridge(){
         : st.have && st.low ? `<span class="low">LOW</span>` : '';
     return `<button class="item ${st.have?'on':''} ${st.always?'always':''}" data-item="${esc(i.name)}">
       <span class="box"></span>
-      <span class="name">${esc(i.name)}</span>
+      <span class="name">${esc(i.name)}${
+        st.have && st.exactly ? `<small class="exactly">${esc(st.exactly)}</small>` : ''}</span>
       ${flag}
       <span class="more" data-more="${esc(i.name)}" role="presentation">${svg('i-plus','icon-sm')}</span>
     </button>`;
@@ -1622,7 +1949,7 @@ function whenLabel(iso){
 function screenRecipe(){
   const r = findRecipe(view.recipeId);
   if (!r) return `<div class="empty"><strong>Recipe not found</strong></div>`;
-  const servings = state.prefs.servings;
+  const servings = recipeServings(r);
   const a = analyse(r, servings);
   const rating = state.ratings[r.id] || 0;
 
@@ -1630,9 +1957,12 @@ function screenRecipe(){
     const missing = a.missing.includes(ing);
     const swapped = (a.swaps || []).find(s => s.ing === ing);
     const madeable = (a.makes || []).find(s => s.ing === ing);
+    const hint = countHint(ing, a.factor);
     return `<div class="ing ${missing?'missing':''}${(swapped||madeable)?' swapped':''}">
       <span class="q">${esc(qtyLabel(ing, a.factor))}</span>
-      <span class="n">${esc(ing.item)}${ing.note ? `<small>${esc(ing.note)}</small>` : ''}${
+      <span class="n">${esc(ing.item)}${
+        hint ? `<small class="counthint">${esc(hint)}</small>` : ''}${
+        ing.note ? `<small>${esc(ing.note)}</small>` : ''}${
         madeable ? `<small class="swapnote"><b>Make it:</b> ${esc(madeable.make.how)}</small>` : ''}${
         swapped ? `<small class="swapnote">Use your <b>${esc(swapped.swap.item)}</b> — ${esc(swapped.swap.note)}</small>` : ''}${
         missing && ing.sub ? `<small>Or: ${esc(ing.sub)}</small>` : ''}</span>
@@ -1665,7 +1995,7 @@ function screenRecipe(){
       <span class="chip">${r.minutes} min total</span>
       <span class="chip">${r.activeMinutes||r.minutes} min hands-on</span>
       <span class="chip">${esc(r.difficulty)}</span>
-      <span class="chip accent">${servings} serving${servings===1?'':'s'}</span>
+      <span class="chip accent">${esc(servingsLabel(servings))}</span>
     </div>
     ${a.capacityWarning ? `<p class="warnline" style="color:var(--warn);font-size:13px">${esc(a.capacityWarning)}</p>` : ''}
   </div>
@@ -1674,10 +2004,12 @@ function screenRecipe(){
     <div class="lab"><b>Cooking for</b><small>Everything below rescales</small></div>
     <div class="stepper">
       <button data-act="serv-" aria-label="Fewer">&minus;</button>
-      <span class="val num">${servings}</span>
+      <span class="val num">${Math.round(servings)}</span>
       <button data-act="serv+" aria-label="More">+</button>
     </div>
   </div>
+
+  ${meatBlock(r, servings)}
 
   <button class="btn" data-act="cookalong">${svg('i-speak')} Read it to me, step by step</button>
   <button class="btn ghost" data-act="claude-recipe">${svg('i-sparkle')} Talk it through with Claude</button>
@@ -1697,6 +2029,8 @@ function screenRecipe(){
 
   ${r.beginnerTip ? `<div class="note tip"><span class="label">Beginner tip</span>${esc(r.beginnerTip)}</div>` : ''}
   ${r.makeItBetter ? `<div class="note better"><span class="label">Make it better</span>${esc(r.makeItBetter)}</div>` : ''}
+
+  ${kickBlock(r)}
   ${r.vetting ? `<div class="note vetted"><span class="label">Why this one is in here</span>${esc(r.vetting)}${
     r.source && r.source.url ? `<a class="srclink" href="${esc(r.source.url)}" target="_blank" rel="noopener">Read the original &rsaquo;</a>` : ''}</div>` : ''}
 
@@ -1719,6 +2053,75 @@ function screenRecipe(){
     Adapted from ${esc(r.source.name)}</p>` : ''}
   ${r.photoCredit ? `<p class="eyebrow" style="text-align:center;line-height:1.6">
     Photo by ${esc(r.photoCredit.by)} &middot; ${esc(r.photoCredit.lic)}</p>` : ''}`;
+}
+
+/* The pack-size row. Hidden unless the recipe actually has meat with a weight
+   behind it, because "scale to a pound" is meaningless for a lentil soup. */
+function meatBlock(r, servings){
+  const base = meatOunces(r);
+  if (!base) return '';
+  const cur = (view.meatOz && view.meatOz.id === r.id) ? view.meatOz.oz : null;
+  const now = cur || Math.round(base * (servings / (r.baseServings || 2)));
+  const picks = MEAT_PICKS.map(oz => `
+    <button class="chip pick ${oz === cur ? 'on' : ''}" data-meat="${oz}">${esc(meatPickLabel(oz))}</button>`).join('');
+  return `<div class="section meatpick">
+    <span class="eyebrow">Or scale it to the meat you bought</span>
+    <p class="muted" style="font-size:13.5px;margin:2px 0 8px">
+      As written that's <b>${esc(weightLabel(now))}</b>. Tap a pack size and the whole
+      recipe moves to fit it, so nothing is left over.</p>
+    <div class="chiprow">${picks}${cur ? `<button class="chip pick" data-meat="0">Back to servings</button>` : ''}</div>
+  </div>`;
+}
+
+/* ------------------------------------------------------------ the kick
+
+   One button, one suggestion, from the KICKS table in kicks.js. It only ever
+   offers something whose ingredients are actually in the kitchen, and never
+   something the recipe already contains — telling him to add chilli flakes to
+   a recipe that opens with chilli flakes is how a feature stops being trusted. */
+function kicksFor(r){
+  const inRecipe = (r.ingredients || []).map(i => norm(i.item)).join(' | ');
+  /* Butter, oil and salt are assumed to be there, the same as anywhere else in
+     the app — a kick shouldn't hide itself because a staple box is unticked. */
+  const ALWAYS = ['butter','olive oil','vegetable oil','salt','black pepper','sugar','flour'];
+  const have = name => ALWAYS.includes(norm(name)) || inventoryHas(name);
+  return (window.KICKS || []).filter(k => {
+    if (k.cuisines && k.cuisines.length && !k.cuisines.includes('any')
+        && !k.cuisines.includes(r.cuisine)) return false;
+    if (k.notWith && k.notWith.some(n => inRecipe.includes(norm(n)))) return false;
+    if (k.needs.every(n => inRecipe.includes(norm(n)))) return false;
+    return k.needs.every(have);
+  }).sort((a, b) => {
+    const fit = k => (k.cuisines || []).includes(r.cuisine) ? 0 : 1;
+    return fit(a) - fit(b)
+        || Math.abs((a.heat||2) - state.prefs.spice) - Math.abs((b.heat||2) - state.prefs.spice);
+  });
+}
+function kickBlock(r){
+  const list = kicksFor(r);
+  const open = view.kick && view.kick.id === r.id;
+  if (!open){
+    return `<button class="btn ghost" data-act="kick">${svg('i-sparkle')} Give it a kick${
+      list.length ? '' : ' — see what you\'d need'}</button>`;
+  }
+  if (!list.length){
+    return `<div class="note kick">
+      <span class="label">Give it a kick</span>
+      Nothing in your spice rack fits this one yet. Chilli crisp, harissa, gochujang and
+      Aleppo pepper each unlock a handful of these — tick one in your kitchen and come back.
+      <button class="btn ghost sm" data-act="kick-close">Close</button></div>`;
+  }
+  const k = list[((view.kick.i % list.length) + list.length) % list.length];
+  return `<div class="note kick">
+    <span class="label">Give it a kick &middot; ${((view.kick.i % list.length) + list.length) % list.length + 1} of ${list.length}</span>
+    <b>${esc(k.name)}</b>
+    <span class="kickhow">${esc(k.how)}</span>
+    <span class="kickwhy">${esc(k.why)}</span>
+    <div class="kicknav">
+      <button class="btn ghost sm" data-act="kick-next">Another one</button>
+      <button class="btn ghost sm" data-act="kick-close">Close</button>
+    </div>
+  </div>`;
 }
 
 /* ------------------------------------------------------- COOK-ALONG */
@@ -2205,6 +2608,29 @@ function readItemList(text){
 function tickHave(tab, name){
   const inv = state.inventory[tab];
   inv[name] = Object.assign({ low:false }, inv[name], { have:true });
+}
+
+/* What the jar in the cupboard ACTUALLY is.
+
+   The shelf list is deliberately generic — a barcode for French's ground
+   mustard powder ticks the box called 'mustard', because that is what the
+   recipe matcher needs to see. But then the real product is gone, and 'mustard'
+   is not enough to hand to anyone and ask for a recipe.
+
+   So the scanned label is kept alongside the tick. It changes nothing about
+   matching; it is only ever read back out. Unticking clears it, because the jar
+   has left the kitchen. */
+function rememberExactly(name, label){
+  if (!label) return;
+  TABS.forEach(tab => {
+    const inv = state.inventory[tab];
+    for (const key in inv){
+      if (inv[key] && inv[key].have && norm(key) === norm(name)) inv[key].exactly = label;
+    }
+  });
+}
+function exactLabel(hit){
+  return [hit.brand, hit.name, hit.size].filter(Boolean).join(' · ');
 }
 
 function applyItemList(text){
@@ -2824,19 +3250,37 @@ function applyUsedUp(){
     }
   });
 
+  /* Coming out of the kitchen is not in question — he just said he finished
+     it. Going onto the shopping list is a separate decision, and it used to be
+     made for him silently, which meant a list that grew on its own. */
   gone.forEach(name => {
     eachRow(name, (tab, k) => { state.inventory[tab][k] = { have:false, low:false }; });
-    addToShopping(name, '', '');
   });
   low.forEach(name => {
     eachRow(name, (tab, k) => { state.inventory[tab][k].low = true; });
   });
 
   closeSheet(); save(); render();
-  const bits = [];
-  if (gone.length) bits.push(gone.length + ' onto the shopping list');
-  if (low.length) bits.push(low.length + ' marked low');
-  if (bits.length) toast(bits.join(', '));
+
+  if (gone.length){ askToShop(gone); return; }
+  if (low.length) toast(low.length + ' marked low');
+}
+
+/* "You finished the beef. Do you want it on the list?" — asked, not assumed.
+   Anything already on the list is left out of the question entirely, because
+   being asked twice about the same thing is how a prompt starts getting
+   dismissed without reading. */
+function askToShop(names){
+  const fresh = names.filter(n => !onShoppingList(n));
+  if (!fresh.length){ toast('Already on your list'); return; }
+
+  const rows = fresh.map(n => `<li>${esc(n)}</li>`).join('');
+  openSheet(`<h2>Add ${fresh.length === 1 ? 'it' : 'these'} to your shopping list?</h2>
+    <p class="hint">You just said you finished ${fresh.length === 1 ? 'this' : 'these'}.</p>
+    <ul class="mise">${rows}</ul>
+    <button class="btn" data-act="shop-yes" data-names="${esc(fresh.join('|'))}">
+      ${svg('i-cart')} Add ${fresh.length === 1 ? 'it' : 'all ' + fresh.length} to my list</button>
+    <button class="btn ghost" data-act="close-sheet">No, I will get it another time</button>`);
 }
 
 /* ------------------------------------------- checking a list before it lands
@@ -3108,17 +3552,42 @@ function beep(){
   }catch(e){}
   if (navigator.vibrate) navigator.vibrate([220, 120, 220]);
 }
+/* Running timers, held against the button they live on. Not in `state` — a
+   timer means nothing once the page has been closed. */
+const RUNNING = new WeakMap();
+function stopTimer(btn, mins){
+  const t = RUNNING.get(btn);
+  if (t) clearInterval(t.id);
+  RUNNING.delete(btn);
+  btn.classList.remove('running');
+  btn.innerHTML = svg('i-timer','icon-sm') + ` Start ${mins} min`;
+}
 function startTimer(mins, btn){
-  if (btn.classList.contains('running')) return;
+  const t = RUNNING.get(btn);
+  if (t){
+    /* Double tap wipes it and puts the button back to the start. One tap says
+       so, rather than doing nothing and looking broken. */
+    if (Date.now() - t.tapped < 500){ stopTimer(btn, mins); toast('Timer reset'); return; }
+    t.tapped = Date.now();
+    toast('Tap again to reset it');
+    return;
+  }
   btn.classList.add('running');
   const end = Date.now() + mins * 60000;
   const tick = () => {
     const left = Math.max(0, end - Date.now());
     const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
     btn.innerHTML = svg('i-timer','icon-sm') + ` ${m}:${String(s).padStart(2,'0')}`;
-    if (left <= 0){ clearInterval(id); beep(); toast('Timer done'); btn.classList.remove('running'); }
+    if (left <= 0){
+      const cur = RUNNING.get(btn);
+      if (cur) clearInterval(cur.id);
+      RUNNING.delete(btn);
+      beep(); toast('Timer done'); btn.classList.remove('running');
+    }
   };
-  const id = setInterval(tick, 250); tick();
+  const id = setInterval(tick, 250);
+  RUNNING.set(btn, { id, tapped: Date.now() });
+  tick();
 }
 
 function isoPlus(days){
@@ -3183,7 +3652,7 @@ document.addEventListener('contextmenu', e => {
 /* ------------------------------------------------------------- events */
 document.addEventListener('click', e => {
   if (swallowClick){ swallowClick = false; e.preventDefault(); e.stopPropagation(); return; }
-  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-useby],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i],[data-pick],[data-edit],[data-pickused]');
+  const t = e.target.closest('[data-go],[data-act],[data-open],[data-f],[data-tab],[data-sect],[data-useby],[data-item],[data-more],[data-shop],[data-rate],[data-buy],[data-timer],[data-theme],[data-i],[data-pick],[data-edit],[data-pickused],[data-meat]');
   if (!t) {
     if (e.target.id === 'sheet') closeSheet();
     return;
@@ -3191,7 +3660,11 @@ document.addEventListener('click', e => {
 
   /* nav */
   if (t.dataset.go){ view.screen = t.dataset.go; view.recipeId = null; render(); return; }
-  if (t.dataset.open){ view.screen = 'recipe'; view.recipeId = t.dataset.open; render(); return; }
+  if (t.dataset.open){
+    view.screen = 'recipe'; view.recipeId = t.dataset.open;
+    view.meatOz = null; view.kick = null;
+    render(); return;
+  }
 
   /* cook filters */
   if (t.dataset.f){
@@ -3277,6 +3750,13 @@ document.addEventListener('click', e => {
   }
   if (t.dataset.timer){ startTimer(Number(t.dataset.timer), t); return; }
 
+  /* Scale the whole recipe to the pack of meat he actually bought. */
+  if (t.dataset.meat){
+    const oz = Number(t.dataset.meat);
+    view.meatOz = oz ? { id: view.recipeId, oz } : null;
+    render(); return;
+  }
+
   /* named actions */
   const act = t.dataset.act;
   if (!act) return;
@@ -3292,8 +3772,20 @@ document.addEventListener('click', e => {
       if (i >= 0) state.favorites.splice(i,1); else state.favorites.push(id);
       save(); render(); break;
     }
-    case 'serv+': state.prefs.servings = Math.min(8, state.prefs.servings + 1); save(); render(); break;
-    case 'serv-': state.prefs.servings = Math.max(1, state.prefs.servings - 1); save(); render(); break;
+    case 'serv+': view.meatOz = null; state.prefs.servings = Math.min(8, state.prefs.servings + 1); save(); render(); break;
+    case 'serv-': view.meatOz = null; state.prefs.servings = Math.max(1, state.prefs.servings - 1); save(); render(); break;
+    case 'toggle-ready': view.showReady = !view.showReady; render(); break;
+    case 'rail-buy': {
+      const r = findRecipe(t.dataset.id), name = t.dataset.name;
+      const ing = r && (r.ingredients || []).find(i => i.item === name);
+      const added = addToShopping(name, '', r ? r.title : '', ing && ing.aisle);
+      save(); render();
+      toast(added ? name + ' on your list' : name + ' is already on your list');
+      break;
+    }
+    case 'kick':      view.kick = { id: view.recipeId, i: 0 }; render(); break;
+    case 'kick-next': if (view.kick) view.kick.i++; render(); break;
+    case 'kick-close':view.kick = null; render(); break;
     case 'spice+': state.prefs.spice = Math.min(5, state.prefs.spice + 1); save(); render(); break;
     case 'spice-': state.prefs.spice = Math.max(1, state.prefs.spice - 1); save(); render(); break;
     case 'toggle-staples': state.prefs.staplesOn = !state.prefs.staplesOn; save(); render(); break;
@@ -3310,7 +3802,10 @@ document.addEventListener('click', e => {
     case 'barcode-no': resumeScanning(); break;
     case 'barcode-yes': {
       const r = applyItemList(t.dataset.name);
-      if (CAM.hit) logScan(CAM.hit, t.dataset.name);
+      if (CAM.hit){
+        rememberExactly(t.dataset.name, exactLabel(CAM.hit));
+        logScan(CAM.hit, t.dataset.name);
+      }
       save();
       resumeScanning();
       toast(t.dataset.name + (r.added.length ? ' added' : ' ticked'));
@@ -3478,6 +3973,14 @@ document.addEventListener('click', e => {
       break;
     }
     case 'usedup-done': applyUsedUp(); break;
+    case 'shop-yes': {
+      const names = String(t.dataset.names || '').split('|').filter(Boolean);
+      let n = 0;
+      names.forEach(name => { if (addToShopping(name, '', '')) n++; });
+      closeSheet(); save(); render();
+      toast(n + (n === 1 ? ' thing on your list' : ' things on your list'));
+      break;
+    }
 
     case 'cookalong': {
       view.cookAlong = { recipeId: view.recipeId, i: 0 };
@@ -3663,7 +4166,10 @@ If I ask something in the middle, answer it in a sentence and then put me back w
 function haveList(){
   return allItems()
     .filter(i => (state.inventory[i.tab][i.name] || {}).have)
-    .map(i => i.name);
+    .map(i => {
+      const ex = (state.inventory[i.tab][i.name] || {}).exactly;
+      return ex ? i.name + ' (' + ex + ')' : i.name;
+    });
 }
 function gearList(){
   return state.appliances.map(a => a.qt ? `${a.name} (${a.qt} quart)` : a.name).join(', ');
@@ -3739,15 +4245,19 @@ function kitchenFile(){
       /* Same assumption the matcher makes: with staples on, salt and oil count
          as present. Without this the file tells Claude he owns no butter. */
       const assumed = it.staple && state.prefs.staplesOn;
-      if (s.always) always.push(it.name);
-      else if (s.have && s.low) low.push(it.name);
-      else if (s.have || assumed) have.push(label[tab] + ': ' + it.name);
+      /* A scanned jar knows exactly what it is. Say so — this file exists to be
+         handed to someone who cannot look in the cupboard. */
+      const named = s.exactly ? it.name + ' (' + s.exactly + ')' : it.name;
+      if (s.always) always.push(named);
+      else if (s.have && s.low) low.push(named);
+      else if (s.have || assumed) have.push(label[tab] + ': ' + named);
       else rest.push(it.name);
     });
   });
   const byTab = {};
   have.forEach(h => {
-    const [k, v] = h.split(': ');
+    const cut = h.indexOf(': ');
+    const k = h.slice(0, cut), v = h.slice(cut + 2);
     (byTab[k] = byTab[k] || []).push(v);
   });
   const stock = Object.keys(byTab).map(k => k + '\n  ' + byTab[k].join(', ')).join('\n\n');

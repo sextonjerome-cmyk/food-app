@@ -107,6 +107,13 @@ RULES:
 - The steps get read aloud by a phone. One action per step. Write numbers as
   spoken words ("about ten minutes", not "10-12 min"). No abbreviations, no
   emoji, no URLs, no markdown.
+- EVERY ingredient on the list must be named out loud in a step or in misePlace,
+  by its own name. Not "add the sauce", not "stir in the seasonings" — say "stir
+  in the dijon mustard and the soy sauce". If an ingredient is in the list and
+  never named in the method, I stand there holding a jar not knowing what to do
+  with it. Check the list against the steps before you answer.
+- Write spoon measures in full: "one tablespoon", "two teaspoons". Never tbsp
+  or tsp, they are one letter apart and I will use the wrong one.
 - misePlace is what I prep before the heat goes on — two to four short items.
 - beginnerTip: one technique explained plainly, ideally the thing most people
   get wrong in this dish.

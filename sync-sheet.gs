@@ -22,11 +22,20 @@
    7.  Paste that into Frigo  >  Settings  >  Sync address, on every device.
    8.  Tap Sync now on the phone that has the most in it, first.
 
-   A second tab called "Scans" makes itself the first time you scan a barcode.
+   TWO tabs make themselves as you use it, and neither one needs setting up.
+
+   "My kitchen" is rewritten every time you sync: one row per thing you actually
+   have, in plain English, with the exact product name where a barcode gave one.
+   That is the tab to select and paste into a chat when you want to say "here is
+   exactly what is in my kitchen, give me a recipe". It is a snapshot, so it
+   never lists something you finished last month.
+
+   A tab called "Scans" makes itself the first time you scan a barcode.
    One row per jar, with the product name exactly as the database gave it, the
    brand, the size, the shelf it went to and how many times you have scanned it.
    Nothing in it is ever renamed. You can sort and filter it like any Sheet —
-   just do not rename or reorder the FIRST tab, which holds the kitchen.
+   just do not rename or reorder the FIRST tab, which holds the kitchen blob the
+   phones actually read. The other two are for you, not for the app.
 
    "Who has access: Anyone" is required — your phone is not signed in to Google
    inside the app. It means anyone HOLDING THE ADDRESS can read your kitchen, so
@@ -131,11 +140,47 @@ function logScan_(row) {
   return ContentService.createTextOutput('logged');
 }
 
+/* ------------------------------------------------- the readable kitchen
+
+   Tab one holds the kitchen as one long line of JSON, which is correct and
+   unreadable. This tab is the same kitchen written out in English: one row per
+   thing you actually have, so you can look at it, sort it, or select the lot
+   and paste it into a chat and ask for a recipe using exactly these.
+
+   It is a SNAPSHOT. Every sync wipes it and writes what is in the kitchen at
+   that moment, so nothing lingers here after you have eaten it. The Scans tab
+   next door is the opposite — that one only ever grows. */
+const KITCHEN_TAB  = 'My kitchen';
+const KITCHEN_HEAD = ['Shelf', 'Section', 'Item', 'Exactly what it is',
+                      'Note', 'Use by'];
+
+function writeKitchen_(rows, at) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const ss = book_();
+    let sh = ss.getSheetByName(KITCHEN_TAB);
+    if (!sh) sh = ss.insertSheet(KITCHEN_TAB, ss.getNumSheets());
+
+    sh.clear();
+    sh.getRange(1, 1).setValue('My kitchen, as of ' + (at || ''));
+    sh.getRange(2, 1, 1, KITCHEN_HEAD.length).setValues([KITCHEN_HEAD]);
+    if (rows && rows.length) {
+      sh.getRange(3, 1, rows.length, KITCHEN_HEAD.length).setValues(rows);
+    }
+    sh.setFrozenRows(2);
+  } finally {
+    lock.releaseLock();
+  }
+  return ContentService.createTextOutput('kitchen written');
+}
+
 function doPost(e) {
   const body = (e && e.postData && e.postData.contents) || '';
   const parsed = JSON.parse(body);
 
   if (parsed && parsed.log) return logScan_(parsed.log);
+  if (parsed && parsed.kitchen) return writeKitchen_(parsed.kitchen, parsed.at);
 
   /* Refuse anything that isn't a whole kitchen. A half-sent body would
      otherwise overwrite a good one with rubbish. */

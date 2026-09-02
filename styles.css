@@ -707,7 +707,9 @@ p{margin:0}
 .steps .timer{
   margin-top:9px;display:inline-flex;align-items:center;gap:7px;
   border:1px solid var(--line-2);border-radius:var(--r-pill);
-  padding:7px 13px;font-size:13px;font-weight:600;color:var(--ink-2);
+  padding:7px 16px;font-size:13px;font-weight:600;color:var(--ink-2);
+  /* It gets double-tapped to reset, wet-handed, so it needs a real target. */
+  min-height:44px;
 }
 .steps .timer:hover{border-color:var(--accent);color:var(--accent)}
 .steps .timer.running{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
@@ -898,4 +900,109 @@ p{margin:0}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important;animation:none !important;scroll-behavior:auto !important}
+}
+
+/* ---------------------------------------------- the kick, and the pack size
+
+   Both of these are answers to a question he asked standing at the counter, so
+   they read at arm's length and their buttons are thumb-sized. */
+.note.kick{
+  background:var(--surface-2);color:var(--ink);
+  border-left:3px solid var(--need);
+}
+.note.kick .label{color:var(--need)}
+.note.kick b{font-size:16px;font-weight:650;line-height:1.35}
+.note.kick .kickhow{color:var(--ink)}
+.note.kick .kickwhy{color:var(--ink-2);font-size:13.5px;line-height:1.45}
+.note.kick .kicknav{display:flex;gap:8px;margin-top:6px}
+.note.kick .kicknav .btn{flex:1;margin:0}
+
+/* One row of pack sizes, scrolling sideways rather than wrapping into a
+   ragged block on a 360 px screen. */
+.chiprow{
+  display:flex;gap:8px;overflow-x:auto;
+  padding-bottom:4px;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.chiprow::-webkit-scrollbar{display:none}
+.chip.pick{
+  flex:none;min-height:44px;padding:0 16px;
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-size:14px;font-weight:600;
+  border-radius:var(--r-pill);cursor:pointer;
+}
+.chip.pick.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* The "about three golden potatoes" line — what that weight looks like in your
+   hand. It sits with the ingredient name so the weight column stays aligned. */
+.ing .q{min-width:96px}
+.ing .n small.counthint{color:var(--ink-2);font-weight:560}
+
+/* What the jar actually is, under the shelf word for it. The box says "mustard"
+   because that is what the recipes ask for; this line says which mustard, so
+   the kitchen you hand to someone else is the real one. */
+.item .name small.exactly{
+  display:block;font-size:11.5px;line-height:1.3;
+  color:var(--ink-3);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* ------------------------------------------------ the score, and what it counted
+
+   The number answers the app's only question, so tapping it opens the answer:
+   the ready dishes as photos you thumb through. A picture settles dinner faster
+   than a column of names. */
+.score-top{
+  width:100%;text-align:left;background:none;border:none;padding:0;
+  color:inherit;font:inherit;cursor:pointer;min-height:44px;
+}
+.score-top[disabled]{cursor:default}
+.score-see{
+  display:inline-flex;align-items:center;gap:2px;margin-left:8px;
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);white-space:nowrap;
+}
+.score-see .chev{transition:transform .15s ease}
+.score-see .chev.up{transform:rotate(180deg)}
+
+/* The rail scrolls inside itself; the page never moves sideways. Slides snap so
+   a thumb-flick always lands on a whole card, not half of two. */
+.readyrail{
+  display:flex;gap:12px;overflow-x:auto;align-items:flex-start;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  padding:2px 0 6px;margin:0 -16px 0;padding-left:16px;padding-right:16px;
+  scrollbar-width:none;
+}
+.readyrail::-webkit-scrollbar{display:none}
+.rslide{
+  flex:0 0 82%;scroll-snap-align:center;
+  display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--shadow);
+  overflow:hidden;
+}
+/* Violet down the edge means the same thing it means everywhere else in the
+   app: one thing away. Nothing here is decoration. */
+.rslide.near{border-color:var(--near)}
+.rslide .rs-open{
+  display:flex;flex-direction:column;text-align:left;
+  background:none;border:none;padding:0;color:inherit;font:inherit;cursor:pointer;
+}
+.rslide .rs-gap{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px 12px;border-top:1px solid var(--line);
+  font-size:13.5px;color:var(--ink-2);
+}
+.rslide .rs-gap b{color:var(--near);font-weight:650}
+.rslide .rs-gap .btn{flex:none;margin:0;white-space:nowrap}
+.rslide.near .eyebrow{color:var(--near)}
+.rslide .rs-photo{display:block;width:100%;aspect-ratio:16/10;overflow:hidden;background:var(--surface-2)}
+.rslide .rs-photo img,.rslide .rs-photo svg{width:100%;height:100%;object-fit:cover;display:block}
+.rslide .rs-body{display:flex;flex-direction:column;gap:4px;padding:12px 14px 14px}
+.rslide .rs-body b{font-size:18px;font-weight:650;letter-spacing:-.015em;line-height:1.25;color:var(--ink)}
+.rslide .rs-body small{font-size:13px;color:var(--ink-2);line-height:1.35}
+.rslide .rs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.railhint{
+  font-size:11px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);text-align:center;margin:0 0 12px;
 }

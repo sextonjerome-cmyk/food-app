@@ -67,6 +67,7 @@ app.js          inventory, matching, scaling, ratings, shopping list, planning
 ingredients.js  the tick-box list Jerome starts from (data only, one item per line)
 items.html      edit that list on a computer, then download the file back out
 recipes.js      the recipe collection (data only, no logic)
+kicks.js        the flavour boosts behind the "Give it a kick" button (data only)
 ai.js           optional Claude API call
 sync-sheet.gs   the Apps Script Jerome pastes into his own Sheet (not shipped to the app)
 img/            one small WebP per recipe
