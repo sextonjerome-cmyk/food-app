@@ -89,3 +89,45 @@ adapted from, so at least the picture and the method come from the same kitchen.
 **If Panning the Globe ever object, delete `img/poulet-zaatar.webp` and set
 `photo: null` on that recipe** — the app draws a placeholder and nothing breaks.
 
+## Added 2026-09-02 — the twenty-nine new dishes
+
+All from [Wikimedia Commons](https://commons.wikimedia.org), all freely licensed,
+each one looked at before it was chosen rather than taken on the strength of its
+filename. Resized to 720 × 540 WebP like the rest; nothing else changed.
+
+**Four recipes still have no photo** — Bulgogi Meatballs, Chicken al Limone,
+Sheet-Pan Harissa Chicken and Ezme. Commons has nothing that is honestly those
+dishes rather than a near neighbour, so they keep the drawn placeholder. That is
+the rule working, not a gap to be filled with a lookalike.
+
+| Recipe | Photographer | Licence | Original |
+|---|---|---|---|
+| Air Fryer Halloumi | Hmioannou | CC BY 3.0 | [Grilled Halloumi.jpg](https://commons.wikimedia.org/wiki/File:Grilled_Halloumi.jpg) |
+| Cacık | Rainer Zenz | CC BY-SA 3.0 | [Cacik-1.jpg](https://commons.wikimedia.org/wiki/File:Cacik-1.jpg) |
+| Spaghetti alla Carbonara | FakirNL | CC BY-SA 3.0 | [Spaghetti alla Carbonara (2).jpg](https://commons.wikimedia.org/wiki/File:Spaghetti_alla_Carbonara_(2).jpg) |
+| Chicken Adobo | dbgg1979 on flickr | CC BY 2.0 | [Chicken adobo.jpg](https://commons.wikimedia.org/wiki/File:Chicken_adobo.jpg) |
+| Chicken Congee | Giovanni JL | CC BY-SA 2.0 | [Mama's congee by Giovanni JL.jpg](https://commons.wikimedia.org/wiki/File:Mama%27s_congee_by_Giovanni_JL.jpg) |
+| Chicken Tinga Tacos | Axochilt | CC BY-SA 4.0 | [Tinga de pollo.JPG](https://commons.wikimedia.org/wiki/File:Tinga_de_pollo.JPG) |
+| Çılbır | Andy Li | CC0 | [Çılbır - Cafe Rust 2025-03-31.jpg](https://commons.wikimedia.org/wiki/File:%C3%87%C4%B1lb%C4%B1r_-_Cafe_Rust_2025-03-31.jpg) |
+| Çoban Salatası | E4024 | CC BY-SA 4.0 | [Amanida turca.jpg](https://commons.wikimedia.org/wiki/File:Amanida_turca.jpg) |
+| Crispy Parmesan Chicken | Bonnachoven | CC0 | [Longhorn Parmesan Crusted Chicken.jpg](https://commons.wikimedia.org/wiki/File:Longhorn_Parmesan_Crusted_Chicken.jpg) |
+| Crockpot Ropa Vieja | Sarang | Public domain | [Ropa viecha 2.jpg](https://commons.wikimedia.org/wiki/File:Ropa_viecha_2.jpg) |
+| Croque Monsieur | Michael Brewer | CC BY-SA 2.5 | [Croque monsieur.jpg](https://commons.wikimedia.org/wiki/File:Croque_monsieur.jpg) |
+| Dutch Baby | Wheeler Cowperthwaite | CC BY 2.0 | [2-22-2025 Dutch baby pancake (7 of 12).jpg](https://commons.wikimedia.org/wiki/File:2-22-2025_Dutch_baby_pancake_(7_of_12).jpg) |
+| Esquites | Alondrapr | CC BY-SA 4.0 | [Traditional "esquites".jpg](https://commons.wikimedia.org/wiki/File:Traditional_%22esquites%22.jpg) |
+| Fattoush | Unknown | Public domain | [Fattoush.JPG](https://commons.wikimedia.org/wiki/File:Fattoush.JPG) |
+| Omelette Nature | Krzysztof Golik | CC BY-SA 4.0 | [Omelette with bread and parsley 03.jpg](https://commons.wikimedia.org/wiki/File:Omelette_with_bread_and_parsley_03.jpg) |
+| Soupe à l'Oignon Gratinée | jeffreyw | CC BY 2.0 | [Mmm...onion soup (5344349906).jpg](https://commons.wikimedia.org/wiki/File:Mmm...onion_soup_(5344349906).jpg) |
+| Ful Medames | Abdullah Geelah | CC BY-SA 3.0 | [Ful medames (arabic meal).jpg](https://commons.wikimedia.org/wiki/File:Ful_medames_(arabic_meal).jpg) |
+| Garlic Mushrooms on Toast | Andy Li | CC0 | [Mixed mushrooms on toast - Joe's Cafe 2024-04-14.jpg](https://commons.wikimedia.org/wiki/File:Mixed_mushrooms_on_toast_-_Joe%27s_Cafe_2024-04-14.jpg) |
+| Horiatiki | User:Jpatokal | CC BY-SA 4.0 | [Greece Food Horiatiki.JPG](https://commons.wikimedia.org/wiki/File:Greece_Food_Horiatiki.JPG) |
+| Huevos Rancheros | Luca Nebuloni from Milan, Italy | CC BY 2.0 | [Huevos Rancheros (11494813583).jpg](https://commons.wikimedia.org/wiki/File:Huevos_Rancheros_(11494813583).jpg) |
+| Kimchi Jjigae | Alan Chan | CC BY-SA 2.0 | [Korean stew-Kimchi jjigae-05.jpg](https://commons.wikimedia.org/wiki/File:Korean_stew-Kimchi_jjigae-05.jpg) |
+| Muhammara | Karen and Brad Emerson | CC BY 2.0 | [Muhumarra w foccacia (3967177145).jpg](https://commons.wikimedia.org/wiki/File:Muhumarra_w_foccacia_(3967177145).jpg) |
+| Pad Krapow Gai | Takeaway | CC BY-SA 3.0 | [Kraphao mu khai dao.jpg](https://commons.wikimedia.org/wiki/File:Kraphao_mu_khai_dao.jpg) |
+| Piyaz | Miansari66 | CC0 | [Piyaz..JPG](https://commons.wikimedia.org/wiki/File:Piyaz..JPG) |
+| Poulet Basquaise | Arnaud 25 | CC BY-SA 4.0 | [Poulet basquaise.jpg](https://commons.wikimedia.org/wiki/File:Poulet_basquaise.jpg) |
+| Pub-Style Shepherd's Pie | User M0nkmaster on en.wikipedia | Public domain | [ShepherdsPie.jpg](https://commons.wikimedia.org/wiki/File:ShepherdsPie.jpg) |
+| Szechuan Pork and Green Beans | Andy Li | CC0 | [Sichuan-style-dried fried Green Beans with Minced Po](https://commons.wikimedia.org/wiki/File:Sichuan-style-dried_fried_Green_Beans_with_Minced_Pork_-_Aberdeen_Seafood,_Brighton_2026-07-19.jpg) |
+| Tabbouleh | cyclonebill | CC BY-SA 2.0 | [Flickr - cyclonebill - Tabbouleh.jpg](https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Tabbouleh.jpg) |
+| Whipped Feta with Hot Honey | Alexander Baxevanis | CC BY 2.0 | [Tirokafteri.jpg](https://commons.wikimedia.org/wiki/File:Tirokafteri.jpg) |

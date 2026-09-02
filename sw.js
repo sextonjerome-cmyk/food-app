@@ -1,15 +1,15 @@
 /* Frigo service worker — offline-first.
    BUMP CACHE_VERSION ON EVERY DEPLOY or the phone keeps running old code. */
-const CACHE_VERSION = 'frigo-v56';
+const CACHE_VERSION = 'frigo-v57';
 
 /* Recipe photos are cached up front, not on demand. He opens the app in the
    kitchen; the Cook screen is all photos, and it cannot go and fetch them
-   then. About 630 KB for the lot. */
+   then. About 2.6 MB for the lot, paid once on the first visit. */
 const PHOTOS = [
   './img/poulet-moutarde.webp',
-  './img/poulet-zaatar.webp',
   './img/gratin-dauphinois.webp',
   './img/shakshuka.webp',
+  './img/poulet-zaatar.webp',
   './img/menemen.webp',
   './img/mapo-tofu.webp',
   './img/smash-burger.webp',
@@ -36,7 +36,36 @@ const PHOTOS = [
   './img/honey-miso-donburi.webp',
   './img/onion-crunch-chicken.webp',
   './img/middle-eastern-chickpea-bowls.webp',
-  './img/pecan-crusted-chicken.webp'
+  './img/pecan-crusted-chicken.webp',
+  './img/szechuan-pork-green-beans.webp',
+  './img/shepherds-pie.webp',
+  './img/crispy-parmesan-chicken.webp',
+  './img/chicken-adobo.webp',
+  './img/cilbir-turkish-eggs.webp',
+  './img/french-onion-soup.webp',
+  './img/poulet-basquaise.webp',
+  './img/french-omelette.webp',
+  './img/huevos-rancheros.webp',
+  './img/croque-monsieur.webp',
+  './img/dutch-baby.webp',
+  './img/ful-medames.webp',
+  './img/chicken-congee.webp',
+  './img/esquites.webp',
+  './img/whipped-feta.webp',
+  './img/pad-krapow.webp',
+  './img/carbonara.webp',
+  './img/kimchi-jjigae.webp',
+  './img/chicken-tinga-tacos.webp',
+  './img/crockpot-ropa-vieja.webp',
+  './img/airfryer-halloumi.webp',
+  './img/garlic-mushrooms-on-toast.webp',
+  './img/horiatiki.webp',
+  './img/coban-salatasi.webp',
+  './img/cacik.webp',
+  './img/piyaz.webp',
+  './img/tabbouleh.webp',
+  './img/fattoush.webp',
+  './img/muhammara.webp'
 ];
 
 const SHELL = [

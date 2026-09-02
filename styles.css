@@ -952,18 +952,13 @@ p{margin:0}
    The number answers the app's only question, so tapping it opens the answer:
    the ready dishes as photos you thumb through. A picture settles dinner faster
    than a column of names. */
-.score-top{
-  width:100%;text-align:left;background:none;border:none;padding:0;
-  color:inherit;font:inherit;cursor:pointer;min-height:44px;
+/* The card itself is the button, so it needs no affordance bolted on. */
+button.score{
+  width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;
+  display:block;
 }
-.score-top[disabled]{cursor:default}
-.score-see{
-  display:inline-flex;align-items:center;gap:2px;margin-left:8px;
-  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--accent);white-space:nowrap;
-}
-.score-see .chev{transition:transform .15s ease}
-.score-see .chev.up{transform:rotate(180deg)}
+button.score[disabled]{cursor:default}
+button.score.open{border-color:var(--line-2)}
 
 /* The rail scrolls inside itself; the page never moves sideways. Slides snap so
    a thumb-flick always lands on a whole card, not half of two. */

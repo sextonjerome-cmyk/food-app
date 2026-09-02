@@ -1533,14 +1533,14 @@ function screenCook(){
     <p class="railhint">${readyList.length} ready${nearList.length
       ? ` &middot; keep swiping for ${nearList.length} you are one thing away from` : ''}</p>`;
 
-  const score = `<div class="score">
-      <button class="score-top" data-act="toggle-ready"
-              aria-expanded="${railOpen ? 'true' : 'false'}"
-              ${readyList.length ? '' : 'disabled'}>
+  /* The whole card is the button. No label telling you to press it — the
+     number is the thing you want and pressing it opens it, then closes it. */
+  const score = `<button class="score ${railOpen ? 'open' : ''}" data-act="toggle-ready"
+      aria-expanded="${railOpen ? 'true' : 'false'}" ${railList.length ? '' : 'disabled'}>
+      <div class="score-top">
         <span class="score-n num">${nReady}</span>
-        <span class="score-u">${nReady === 1 ? 'dish you can cook' : 'dishes you can cook'} right now
-          ${readyList.length ? `<span class="score-see">${view.showReady ? 'Hide them' : 'Show me'}${svg('i-chev','icon-sm chev' + (railOpen ? ' up' : ''))}</span>` : ''}</span>
-      </button>
+        <span class="score-u">${nReady === 1 ? 'dish you can cook' : 'dishes you can cook'} right now</span>
+      </div>
       <div class="score-bar" role="img"
            aria-label="${nReady} ready, ${nNear} one thing away, ${nFar} further off">
         ${nReady ? `<i class="a" style="flex:${nReady}"></i>` : ''}
@@ -1552,7 +1552,7 @@ function screenCook(){
         <span class="k2">${nNear} one away</span>
         <span class="k3">${nFar} further off</span>
       </div>
-    </div>` + rail;
+    </button>` + rail;
 
   /* One tap for the things he actually asks for. The detailed panel is still
      underneath for cuisine, appliance and exact times — these are the five
