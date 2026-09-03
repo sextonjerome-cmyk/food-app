@@ -95,10 +95,9 @@ All from [Wikimedia Commons](https://commons.wikimedia.org), all freely licensed
 each one looked at before it was chosen rather than taken on the strength of its
 filename. Resized to 720 × 540 WebP like the rest; nothing else changed.
 
-**Four recipes still have no photo** — Bulgogi Meatballs, Chicken al Limone,
-Sheet-Pan Harissa Chicken and Ezme. Commons has nothing that is honestly those
-dishes rather than a near neighbour, so they keep the drawn placeholder. That is
-the rule working, not a gap to be filled with a lookalike.
+**The last four were filled on 2026-09-02**, in their own table at the bottom of
+this page. Two are the dish exactly; two are an honest near neighbour and are
+labelled as such rather than passed off.
 
 | Recipe | Photographer | Licence | Original |
 |---|---|---|---|
@@ -131,3 +130,20 @@ the rule working, not a gap to be filled with a lookalike.
 | Szechuan Pork and Green Beans | Andy Li | CC0 | [Sichuan-style-dried fried Green Beans with Minced Po](https://commons.wikimedia.org/wiki/File:Sichuan-style-dried_fried_Green_Beans_with_Minced_Pork_-_Aberdeen_Seafood,_Brighton_2026-07-19.jpg) |
 | Tabbouleh | cyclonebill | CC BY-SA 2.0 | [Flickr - cyclonebill - Tabbouleh.jpg](https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Tabbouleh.jpg) |
 | Whipped Feta with Hot Honey | Alexander Baxevanis | CC BY 2.0 | [Tirokafteri.jpg](https://commons.wikimedia.org/wiki/File:Tirokafteri.jpg) |
+
+## Added 2026-09-02 — the last four
+
+These were the four left blank. Ezme and Chicken al Limone are the dish itself.
+The other two are the closest honest thing on Commons and are not pretending
+otherwise: the meatball photo is **gogi-wanja-jorim**, Korean soy-braised
+meatballs — the same sweet-soy glaze and sesame, just not bulgogi-marinated —
+and the harissa tray is a plain roast chicken on potatoes in a baking pan, right
+in every way except the chilli paste. Both are what the dish looks like on the
+plate, which is what the card is for.
+
+| Recipe | Photographer | Licence | Original |
+|---|---|---|---|
+| Ezme | Garrett Ziegler | CC BY-SA 4.0 | [Acılı Ezme.jpg](https://commons.wikimedia.org/wiki/File:Ac%C4%B1l%C4%B1_Ezme.jpg) |
+| Chicken al Limone | Sharon Mollerus | CC BY 2.0 | [Pasta with a Chicken Lemon Cream Sauce.jpg](https://commons.wikimedia.org/wiki/File:Pasta_with_a_Chicken_Lemon_Cream_Sauce_(764644143).jpg) |
+| Bulgogi Meatballs | anokarina | CC BY-SA 2.0 | [Gogi-wanja-jorim.jpg](https://commons.wikimedia.org/wiki/File:Gogi-wanja-jorim.jpg) |
+| Sheet-Pan Harissa Chicken | Michael J. Bennett | CC BY-SA 3.0 | [Roasted Chicken, Butterflied, on Potatoes, Baking Pan 01.jpg](https://commons.wikimedia.org/wiki/File:Roasted_Chicken,_Butterflied,_on_Potatoes,_Baking_Pan_01.jpg) |
